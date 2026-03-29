@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: shieldnet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespwd
+      POSTGRES_DB: PFEDB
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  node-university:
+    build: .
+    container_name: shieldnet-university
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.university
+    ports:
+      - "3001:8443"
+
+  node-pme:
+    build: .
+    container_name: shieldnet-pme
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.pme
+    ports:
+      - "3002:8443"
+
+  node-isp:
+    build: .
+    container_name: shieldnet-isp
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.isp
+    ports:
+      - "3003:8443"
+
+  node-datacenter:
+    build: .
+    container_name: shieldnet-datacenter
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.datacenter
+    ports:
+      - "3004:8443"
+
+volumes:
+  postgres_data:
