@@ -29,6 +29,8 @@ services:
       - .env.university
     ports:
       - "3001:8443"
+    volumes:
+      - ./certs:/app/certs:ro
 
   node-pme:
     build: .
@@ -41,6 +43,8 @@ services:
       - .env.pme
     ports:
       - "3002:8443"
+    volumes:
+      - ./certs:/app/certs:ro
 
   node-isp:
     build: .
@@ -53,6 +57,8 @@ services:
       - .env.isp
     ports:
       - "3003:8443"
+    volumes:
+      - ./certs:/app/certs:ro
 
   node-datacenter:
     build: .
@@ -65,6 +71,8 @@ services:
       - .env.datacenter
     ports:
       - "3004:8443"
+    volumes:
+      - ./certs:/app/certs:ro
 
 volumes:
   postgres_data:

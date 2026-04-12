@@ -9,6 +9,80 @@ const { logAudit } = require("../utils/logger");
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /simulation/node/init:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Initialiser le nœud local
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [node_name, organization_name, organization_type, tier, country_code, api_endpoint_url, public_key, max_scrubbing_capacity_gbps]
+ *             properties:
+ *               node_name: { type: string }
+ *               organization_name: { type: string }
+ *               organization_type: { type: string, enum: [UNIVERSITY, ISP, DATACENTER, PME, GOVERNMENT, RESEARCH] }
+ *               tier: { type: string, enum: [T1, T2, T3] }
+ *               country_code: { type: string }
+ *               api_endpoint_url: { type: string }
+ *               public_key: { type: string }
+ *               max_scrubbing_capacity_gbps: { type: number }
+ *               current_load_percent: { type: number }
+ *     responses:
+ *       200:
+ *         description: Nœud initialisé
+ *
+ * /simulation/attack/detect:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Simuler la détection d'une attaque
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attack_type, volume_gbps, severity, target_ip_range]
+ *             properties:
+ *               attack_type: { type: string, enum: [UDP_FLOOD, TCP_SYN, HTTP_FLOOD, DNS_AMP, ICMP_FLOOD] }
+ *               volume_gbps: { type: number }
+ *               severity: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
+ *               target_ip_range: { type: string }
+ *               target_service: { type: string }
+ *     responses:
+ *       201:
+ *         description: Attaque créée
+ *
+ * /simulation/attack/end:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Simuler la fin d'une attaque
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attack_id]
+ *             properties:
+ *               attack_id: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Attaque terminée
+ *
+ * /simulation/ping:
+ *   get:
+ *     tags: [Simulation]
+ *     summary: Vérifier que les routes simulation sont actives
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+
 // GET /simulation/ping
 router.get("/simulation/ping", (req, res) => {
   res.json({

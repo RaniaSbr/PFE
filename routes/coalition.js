@@ -6,10 +6,179 @@ const {
   LocalNodeConfig,
   Peer,
   PeerCapability,
+  ReciprocityLedger,
 } = require("../models");
 const { logAudit, logMessage } = require("../utils/logger");
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /attacks:
+ *   get:
+ *     tags: [Coalition]
+ *     summary: Lister les attaques
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [ONGOING, ENDED, MITIGATED] }
+ *       - in: query
+ *         name: severity
+ *         schema: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
+ *     responses:
+ *       200:
+ *         description: Liste des attaques
+ *
+ * /attacks/{attack_id}:
+ *   get:
+ *     tags: [Coalition]
+ *     summary: Détail d'une attaque
+ *     parameters:
+ *       - in: path
+ *         name: attack_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Attaque trouvée
+ *       404:
+ *         description: Attaque introuvable
+ *
+ * /help/request:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Demander l'aide d'un pair
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attack_id, helping_peer_id, requested_volume_gbps]
+ *             properties:
+ *               attack_id: { type: string, format: uuid }
+ *               helping_peer_id: { type: string, format: uuid }
+ *               requested_volume_gbps: { type: number }
+ *     responses:
+ *       201:
+ *         description: Session créée
+ *       400:
+ *         description: Données invalides
+ *       403:
+ *         description: Pair banni ou expulsé
+ *
+ * /help/offer:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Proposer de l'aide à un pair
+ *     responses:
+ *       201:
+ *         description: Offre créée
+ *
+ * /help/{session_id}/accept:
+ *   put:
+ *     tags: [Coalition]
+ *     summary: Accepter une session d'aide
+ *     parameters:
+ *       - in: path
+ *         name: session_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accepted_volume_gbps: { type: number }
+ *     responses:
+ *       200:
+ *         description: Session acceptée
+ *       409:
+ *         description: Statut invalide pour cette transition
+ *
+ * /help/{session_id}/reject:
+ *   put:
+ *     tags: [Coalition]
+ *     summary: Rejeter une session d'aide
+ *     parameters:
+ *       - in: path
+ *         name: session_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Session rejetée
+ *       409:
+ *         description: Statut invalide pour cette transition
+ *
+ * /traffic/redirect:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Rediriger le trafic vers un pair
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [session_id, tunnel_type]
+ *             properties:
+ *               session_id: { type: string, format: uuid }
+ *               tunnel_type: { type: string, enum: [GRE, IPIP, VXLAN] }
+ *               volume_gbps: { type: number }
+ *     responses:
+ *       200:
+ *         description: Redirection enregistrée
+ *       409:
+ *         description: Session pas encore acceptée
+ *
+ * /attack/over:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Clôturer une attaque et mettre à jour les crédits
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attack_id]
+ *             properties:
+ *               attack_id: { type: string, format: uuid }
+ *               session_ids: { type: array, items: { type: string, format: uuid } }
+ *               attack_duration_seconds: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Attaque clôturée et crédits mis à jour
+ *
+ * /sessions/active:
+ *   get:
+ *     tags: [Coalition]
+ *     summary: Lister les sessions actives
+ *     responses:
+ *       200:
+ *         description: Sessions actives
+ *
+ * /sessions/{session_id}:
+ *   get:
+ *     tags: [Coalition]
+ *     summary: Détail d'une session
+ *     parameters:
+ *       - in: path
+ *         name: session_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Session trouvée
+ *       404:
+ *         description: Session introuvable
+ */
 
 async function getLocalNodeId() {
   const node = await LocalNodeConfig.findOne();
@@ -366,6 +535,10 @@ router.post("/attack/over", async (req, res) => {
     const sessionIds = Array.isArray(req.body.session_ids) ? req.body.session_ids : [];
 
     if (sessionIds.length > 0) {
+      const sessions = await HelpSession.findAll({
+        where: { session_id: { [Op.in]: sessionIds } },
+      });
+
       await HelpSession.update(
         {
           status: "COMPLETED",
@@ -374,6 +547,20 @@ router.post("/attack/over", async (req, res) => {
         },
         { where: { session_id: { [Op.in]: sessionIds } } },
       );
+
+      for (const session of sessions) {
+        const volume = session.actual_volume_gbps || session.accepted_volume_gbps || session.requested_volume_gbps || 0;
+        const [ledger] = await ReciprocityLedger.findOrCreate({
+          where: { peer_id: session.helping_peer_id },
+          defaults: { peer_id: session.helping_peer_id, credits_received: 0, credits_given: 0, balance: 0 },
+        });
+        await ledger.update({
+          credits_given: ledger.credits_given + volume,
+          balance: ledger.balance + volume,
+          last_transaction_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
     }
 
     await attack.update({

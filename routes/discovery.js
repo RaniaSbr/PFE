@@ -15,6 +15,122 @@ const { logAudit, logMessage } = require("../utils/logger");
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /peers/register:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Enregistrer ou mettre à jour un pair
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [peer_name, organization_name, organization_type, tier, country_code, api_endpoint_url, public_key]
+ *             properties:
+ *               peer_name: { type: string }
+ *               organization_name: { type: string }
+ *               organization_type: { type: string, enum: [UNIVERSITY, ISP, DATACENTER, PME, GOVERNMENT, RESEARCH] }
+ *               tier: { type: string, enum: [T1, T2, T3] }
+ *               country_code: { type: string }
+ *               api_endpoint_url: { type: string }
+ *               public_key: { type: string }
+ *               ip_address: { type: string }
+ *               api_port: { type: integer }
+ *               max_scrubbing_capacity_gbps: { type: number }
+ *     responses:
+ *       201:
+ *         description: Pair créé
+ *       200:
+ *         description: Pair mis à jour
+ *       400:
+ *         description: Données invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *
+ * /peers:
+ *   get:
+ *     tags: [Discovery]
+ *     summary: Lister tous les pairs
+ *     responses:
+ *       200:
+ *         description: Liste des pairs
+ *
+ * /peers/{peer_id}:
+ *   get:
+ *     tags: [Discovery]
+ *     summary: Détail d'un pair
+ *     parameters:
+ *       - in: path
+ *         name: peer_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Pair trouvé
+ *       404:
+ *         description: Pair introuvable
+ *   delete:
+ *     tags: [Discovery]
+ *     summary: Supprimer un pair
+ *     parameters:
+ *       - in: path
+ *         name: peer_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Pair supprimé
+ *       404:
+ *         description: Pair introuvable
+ *
+ * /heartbeat:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Envoyer un heartbeat
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [peer_id]
+ *             properties:
+ *               peer_id: { type: string, format: uuid }
+ *               current_load_percent: { type: number }
+ *               available_capacity_gbps: { type: number }
+ *     responses:
+ *       200:
+ *         description: Heartbeat enregistré
+ *
+ * /goodbye:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Déconnexion propre d'un pair
+ *     responses:
+ *       200:
+ *         description: Pair déconnecté
+ *
+ * /node/state:
+ *   get:
+ *     tags: [Discovery]
+ *     summary: État actuel du nœud local
+ *     responses:
+ *       200:
+ *         description: État du nœud
+ *
+ * /capability/advertise:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Publier les capacités du nœud local
+ *     responses:
+ *       200:
+ *         description: Capacités publiées
+ */
+
 const ACTIVE_SESSION_STATUSES = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
 
 function resolveNodeState(loadPercent, policy) {
@@ -176,6 +292,11 @@ router.post("/peers/register", async (req, res) => {
     logMessage({ message_type: "HELLO", direction: "RECEIVED", peer_id: peerId, priority: "NORMAL" });
 
     if (created) {
+      await ReciprocityLedger.findOrCreate({
+        where: { peer_id: peerId },
+        defaults: { peer_id: peerId, credits_received: 0, credits_given: 0, balance: 0 },
+      });
+
       logAudit({
         event_type: "PEER_ADDED",
         severity: "INFO",

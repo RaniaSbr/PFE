@@ -41,7 +41,12 @@ Object.values(db).forEach((value) => {
 
 async function initDatabase() {
   await sequelize.authenticate();
-  await sequelize.sync({ alter: false });
+  try {
+    await sequelize.sync({ alter: false });
+  } catch (err) {
+    // 42P07 = index/relation already exists — DB already initialized, skip sync
+    if (err.parent?.code !== "42P07") throw err;
+  }
   return db;
 }
 

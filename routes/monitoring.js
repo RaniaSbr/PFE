@@ -11,6 +11,56 @@ const {
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /metrics:
+ *   get:
+ *     tags: [Monitoring]
+ *     summary: Métriques globales du nœud
+ *     responses:
+ *       200:
+ *         description: Métriques
+ *
+ * /logs/messages:
+ *   get:
+ *     tags: [Monitoring]
+ *     summary: Logs des messages P2P
+ *     parameters:
+ *       - in: query
+ *         name: direction
+ *         schema: { type: string, enum: [SENT, RECEIVED] }
+ *       - in: query
+ *         name: message_type
+ *         schema: { type: string }
+ *       - in: query
+ *         name: peer_id
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 50 }
+ *     responses:
+ *       200:
+ *         description: Logs messages
+ *
+ * /logs/audit:
+ *   get:
+ *     tags: [Monitoring]
+ *     summary: Logs d'audit
+ *     parameters:
+ *       - in: query
+ *         name: severity
+ *         schema: { type: string, enum: [INFO, WARNING, CRITICAL] }
+ *       - in: query
+ *         name: event_type
+ *         schema: { type: string }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 50 }
+ *     responses:
+ *       200:
+ *         description: Logs audit
+ */
+
 const ACTIVE_SESSION_STATUSES = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
 
 // GET /metrics
