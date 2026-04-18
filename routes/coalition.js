@@ -549,6 +549,14 @@ router.post("/attack/over", async (req, res) => {
       );
 
       for (const session of sessions) {
+        // Si actual_volume_gbps n'a pas été renseigné, on utilise le volume accepté
+        // (le pair a fourni ce qu'il avait promis)
+        if (!session.actual_volume_gbps) {
+          await session.update({
+            actual_volume_gbps: session.accepted_volume_gbps ?? session.requested_volume_gbps ?? 0,
+          });
+        }
+
         const volume = session.actual_volume_gbps || session.accepted_volume_gbps || session.requested_volume_gbps || 0;
         const [ledger] = await ReciprocityLedger.findOrCreate({
           where: { peer_id: session.helping_peer_id },

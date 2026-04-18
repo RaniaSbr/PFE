@@ -235,7 +235,20 @@ router.post("/trust/select-peers", async (req, res) => {
       ignoreTrust: ignore_trust ?? false,
     });
 
-    return res.json(result);
+    // Mapper plan → selected_peers avec les champs attendus par le script de démo
+    const selected_peers = result.plan.map((p) => ({
+      peer_id:               p.peer.peer_id,
+      peer_name:             p.peer.peer_name,
+      organization_name:     p.peer.organization_name,
+      api_endpoint_url:      p.peer.api_endpoint_url,
+      declared_available_gbps: p.peer.declared_available_gbps,
+      trust_level:           p.peer.trust_level,
+      wsm_score:             p.score,
+      allocated_gbps:        p.allocated_gbps,
+      criteria:              p.criteria,
+    }));
+
+    return res.json({ ...result, selected_peers });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

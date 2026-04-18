@@ -1,3 +1,10 @@
 node_modules
 .env
 .env.*
+
+# Clés privées et certificats
+*.key
+*.pem
+
+# Claude Code
+.claude/

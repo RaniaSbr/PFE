@@ -18,6 +18,12 @@ process.stdin.on("end", () => {
 async function run() {
   const payload = JSON.parse(input || "{}");
   const url = new URL(payload.url);
+  // Résoudre public_key_file → contenu PEM (évite le passage du PEM via PS ConvertTo-Json)
+  if (payload.body && payload.body.public_key_file) {
+    payload.body.public_key = fs.readFileSync(payload.body.public_key_file, "utf8");
+    delete payload.body.public_key_file;
+  }
+
   const body =
     payload.body === null || payload.body === undefined
       ? null

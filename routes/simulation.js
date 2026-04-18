@@ -4,6 +4,16 @@ const {
   LocalNodeConfig,
   PolicyConfig,
   ScrubbingCapability,
+  Peer,
+  PeerCapability,
+  TrustScore,
+  TrustViolation,
+  ReciprocityLedger,
+  ReciprocityTransaction,
+  HelpSession,
+  HeartbeatLog,
+  MessageLog,
+  AuditLog,
 } = require("../models");
 const { logAudit } = require("../utils/logger");
 
@@ -89,6 +99,31 @@ router.get("/simulation/ping", (req, res) => {
     message: "Simulation routes are ready",
     timestamp: new Date().toISOString(),
   });
+});
+
+// POST /simulation/reset
+// Remet la base à zéro pour un démarrage propre de la démo (ordre respecte les FK)
+router.post("/simulation/reset", async (req, res) => {
+  try {
+    await ReciprocityTransaction.destroy({ where: {}, truncate: false });
+    await ReciprocityLedger.destroy({ where: {}, truncate: false });
+    await TrustViolation.destroy({ where: {}, truncate: false });
+    await TrustScore.destroy({ where: {}, truncate: false });
+    await HeartbeatLog.destroy({ where: {}, truncate: false });
+    await HelpSession.destroy({ where: {}, truncate: false });
+    await Attack.destroy({ where: {}, truncate: false });
+    await PeerCapability.destroy({ where: {}, truncate: false });
+    await Peer.destroy({ where: {}, truncate: false });
+    await MessageLog.destroy({ where: {}, truncate: false });
+    await AuditLog.destroy({ where: {}, truncate: false });
+    await ScrubbingCapability.destroy({ where: {}, truncate: false });
+    await PolicyConfig.destroy({ where: {}, truncate: false });
+    await LocalNodeConfig.destroy({ where: {}, truncate: false });
+
+    return res.json({ message: "Node reset — all demo data cleared." });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 // POST /simulation/node/init

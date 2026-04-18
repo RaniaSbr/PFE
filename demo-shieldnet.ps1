@@ -58,6 +58,8 @@ function InvokeShieldNet($url, $method = "GET", $headers = @{}, $body = $null) {
         throw "Helper mTLS introuvable : $MTLS_HELPER"
     }
 
+    # Le PEM est passé via public_key_file (chemin) pour éviter le bug de
+    # ConvertTo-Json PS 5.1 qui se bloque sur les strings base64 longues.
     $payload = @{
         url      = $url
         method   = $method
@@ -119,6 +121,14 @@ if (-not $allUp) {
     exit 1
 }
 
+Step "Reinitialisation de la base de donnees (etat propre)..."
+foreach ($n in $NODES) {
+    try {
+        InvokeShieldNet "https://localhost:$($n.port)/api/v1/simulation/reset" "POST" @{} $null | Out-Null
+        Ok "$($n.name) resete"
+    } catch { Warn "Reset $($n.name) : $($_.Exception.Message)" }
+}
+
 # ----------------------------------------------------------------
 Title "PHASE 1 - AUTHENTIFICATION JWT RS256"
 # ----------------------------------------------------------------
@@ -168,7 +178,8 @@ Step "Chargement des certificats PEM (cles publiques des noeuds)..."
 foreach ($n in $NODES) {
     $certPath = ".\certs\$($n.cert)\node.crt"
     if (Test-Path $certPath) {
-        $n["public_key"] = Get-Content $certPath -Raw
+        # Stocker le chemin absolu — Node.js lira le PEM lui-même (évite le bug ConvertTo-Json PS5.1)
+        $n["public_key_file"] = (Resolve-Path $certPath).Path
         Ok "Certificat charge : $($n.cert)/node.crt"
     } else {
         Fail "Certificat manquant : $certPath"
@@ -185,9 +196,9 @@ foreach ($n in $NODES) {
             tier                        = $n.tier
             country_code                = "DZ"
             api_endpoint_url            = "https://localhost:$($n.port)/api/v1"
-            public_key                  = $n.public_key
+            public_key_file             = $n.public_key_file
             max_scrubbing_capacity_gbps = $n.capacity
-            current_load_percent        = 20
+            current_load_percent        = 0
         }
         $resp = Api $n "POST" "/simulation/node/init" $body
         Ok "$($n.name) - Capacite: $($n.capacity) Gbps | Charge initiale: 20%"
@@ -210,7 +221,7 @@ foreach ($target in $NODES) {
                 tier                        = $peer.tier
                 country_code                = "DZ"
                 api_endpoint_url            = "https://node-$($peer.cert):8443/api/v1"
-                public_key                  = $peer.public_key
+                public_key_file             = $peer.public_key_file
                 max_scrubbing_capacity_gbps = $peer.capacity
                 declared_available_gbps     = $peer.capacity * 0.8
             }
@@ -419,17 +430,9 @@ Step "Metriques globales du noeud Universite..."
 try {
     $metrics = Api $UNIV "GET" "/metrics"
 
-    $peersCount = if ($metrics.peers_registered) { $metrics.peers_registered }
-                  elseif ($metrics.peers -and $metrics.peers.total) { $metrics.peers.total }
-                  else { $metrics.peers }
-
-    $sessCount  = if ($metrics.sessions -and $metrics.sessions.total) { $metrics.sessions.total }
-                  elseif ($metrics.help_sessions) { $metrics.help_sessions }
-                  else { "N/A" }
-
-    $atkCount   = if ($metrics.attacks -and $metrics.attacks.total) { $metrics.attacks.total }
-                  elseif ($metrics.attacks_handled) { $metrics.attacks_handled }
-                  else { "N/A" }
+    $peersCount = $metrics.connected_peers
+    $sessCount  = $metrics.active_sessions
+    $atkCount   = $metrics.total_attacks
 
     Ok "Pairs enregistres  : $peersCount"
     Ok "Sessions totales   : $sessCount"
