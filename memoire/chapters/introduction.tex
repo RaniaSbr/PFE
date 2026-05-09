@@ -1,0 +1,111 @@
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+\markboth{Introduction générale}{Introduction générale}
+
+% -------------------------------------------------------
+% Accroche et contexte général
+% -------------------------------------------------------
+
+La transformation numérique massive des organisations, l'essor du cloud et de l'Internet des objets (\gls{iot}) ont profondément renforcé la dépendance aux infrastructures réseau et aux systèmes d'information. La disponibilité continue des services numériques est devenue une exigence fondamentale, tant pour les acteurs économiques que pour les institutions et les utilisateurs. Dans cet environnement fortement interconnecté, toute interruption de service peut engendrer des conséquences opérationnelles, financières et réputationnelles significatives.
+
+Les attaques par déni de service distribué (\gls{ddos}) constituent aujourd'hui l'une des principales menaces affectant la disponibilité des services numériques. Ces attaques consistent à générer un volume massif de trafic malveillant, distribué à partir de multiples sources, dans le but de saturer les ressources d'une cible et d'entraîner une indisponibilité partielle ou totale du service. Leur simplicité conceptuelle contraste avec leur efficacité opérationnelle, notamment lorsqu'elles exploitent des infrastructures distribuées à grande échelle et des botnets composés de milliers, voire de millions de dispositifs compromis.
+
+Selon le rapport Cloudflare sur les menaces \gls{ddos} au premier trimestre 2025, 20,5~millions d'attaques ont été identifiées, soit une augmentation de 358\,\% par rapport à l'année précédente \cite{cloudflare2025}. Certains incidents récents ont atteint des volumes dépassant plusieurs térabits par seconde, illustrant la capacité des attaquants à mobiliser des botnets massifs et des infrastructures distribuées à grande échelle.
+
+Les secteurs les plus ciblés incluent notamment la finance, les télécommunications, les services en ligne à forte disponibilité, ainsi que les infrastructures publiques et les plateformes de commerce électronique. Les attaques multi-vecteurs, combinant saturation volumétrique, exploitation de protocoles réseau et ciblage applicatif (couche~7), représentent désormais une part significative des incidents observés, rendant les mécanismes de défense traditionnels plus difficiles à maintenir efficaces.
+
+Les solutions actuelles reposent majoritairement sur des architectures centralisées, telles que les \textit{scrubbing centers} ou les services de mitigation cloud. Bien que ces solutions offrent une capacité de traitement élevée, elles présentent des limites structurelles~: dépendance à un point unique de décision, latence due à la redirection du trafic, coûts élevés et absence de coordination dynamique entre acteurs indépendants.
+
+Face à ces limites, une nouvelle approche émerge~: la \textbf{défense collaborative distribuée}. Plutôt que de traiter les attaques de manière isolée, plusieurs entités autonomes peuvent coopérer afin de partager des informations, synchroniser leurs actions et renforcer leur résilience collective. C'est dans ce cadre que s'inscrit ce projet de fin d'études \textbf{}, visant à concevoir une infrastructure de coordination inter-n\oe{}uds pour la défense collaborative contre les attaques \gls{ddos}.
+
+% -------------------------------------------------------
+% Contexte
+% -------------------------------------------------------
+
+\section*{Contexte}
+\addcontentsline{toc}{section}{Contexte}
+
+Les solutions classiques de mitigation \gls{ddos} reposent majoritairement sur des architectures centralisées, telles que des centres de nettoyage du trafic (\textit{scrubbing centers}) ou des services cloud spécialisés. Ces approches permettent d'absorber de forts volumes de trafic malveillant et d'appliquer des mécanismes de filtrage avancés. Toutefois, elles présentent plusieurs limites structurelles.
+
+D'une part, la centralisation introduit des points de concentration critiques, susceptibles de devenir eux-mêmes des goulots d'étranglement ou des cibles d'attaque. D'autre part, les coûts associés à ces services peuvent être significatifs, ce qui limite leur accessibilité pour certaines organisations, notamment les PME et les collectivités. Enfin, la latence induite par la redirection du trafic vers des infrastructures distantes peut impacter la qualité de service.
+
+Parallèlement, l'évolution des menaces complexifie la détection et la coordination des réponses. Les attaques modernes exploitent des botnets massifs, des vulnérabilités applicatives et des techniques d'évasion sophistiquées. Elles peuvent évoluer dynamiquement en fonction des contre-mesures mises en place. Face à ces attaques adaptatives, une simple réaction locale et isolée montre rapidement ses limites.
+
+Dans ce cadre, l'idée d'une défense collaborative et distribuée --- reposant sur la coordination entre plusieurs n\oe{}uds de protection capables d'échanger des informations en temps réel et de mutualiser leurs ressources --- apparaît comme une piste pertinente et innovante.
+
+% -------------------------------------------------------
+% Problématique
+% -------------------------------------------------------
+
+\section*{Problématique}
+\addcontentsline{toc}{section}{Problématique}
+
+Les attaques \gls{ddos} atteignent aujourd'hui des volumes et une complexité qui dépassent les capacités de mitigation d'infrastructures isolées. Face à cette menace, les organisations utilisent principalement des solutions centralisées~: \textit{scrubbing centers} ou services cloud de mitigation.
+
+Ces architectures présentent plusieurs limitations techniques~:
+\begin{itemize}
+    \item dépendance aux prestataires externes~;
+    \item coûts élevés pour les PME et collectivités~;
+    \item latence due à la redirection du trafic~;
+    \item points uniques de défaillance (\gls{spof})~;
+    \item absence de mutualisation des ressources de défense.
+\end{itemize}
+
+De plus, la défense reste individuelle. Les mécanismes actuels se limitent au partage d'informations, sans mutualisation opérationnelle des capacités de mitigation ni coordination des contre-mesures. En cas d'attaque distribuée touchant plusieurs cibles simultanément, chaque organisation réagit de son côté, ce qui réduit l'efficacité globale.
+
+% -------------------------------------------------------
+% Objectifs
+% -------------------------------------------------------
+
+\section*{Objectifs}
+\addcontentsline{toc}{section}{Objectifs}
+
+L'objectif principal de ce projet est de concevoir et d'implémenter un mécanisme de coordination inter-n\oe{}uds destiné à renforcer la défense collaborative contre les attaques \gls{ddos}.
+
+Pour atteindre cet objectif, le travail consiste à~:
+\begin{enumerate}
+    \item Réaliser une étude approfondie des attaques \gls{ddos}, des mécanismes de mitigation existants et des approches collaboratives en environnement distribué.
+
+    \item Analyser les limites des solutions centralisées actuelles et identifier les besoins en matière de coordination et de partage de ressources entre n\oe{}uds autonomes.
+
+    \item Définir les principaux cas d'usage de coordination entre n\oe{}uds de protection, notamment l'alerte, l'entraide et la redirection de trafic.
+
+    \item Concevoir un protocole distribué d'échange inter-n\oe{}uds précisant les règles de communication et de prise de décision.
+
+    \item Développer un prototype permettant l'échange sécurisé de métadonnées d'attaque et la synchronisation des actions de mitigation entre plusieurs n\oe{}uds.
+
+    \item Mettre en place un environnement de test simulant un réseau de n\oe{}uds coopérants afin d'évaluer la robustesse, la latence et la cohérence des mécanismes proposés.
+
+    \item Réaliser une documentation technique détaillant l'architecture et le fonctionnement du système développé.
+\end{enumerate}
+
+% -------------------------------------------------------
+% Organisation du rapport
+% -------------------------------------------------------
+
+\section*{Organisation du rapport}
+\addcontentsline{toc}{section}{Organisation du rapport}
+
+Le présent mémoire est structuré comme suit~:
+
+\begin{itemize}
+    \item \textbf{Chapitre~1~: Contexte et concepts fondamentaux.}
+    Ce chapitre présente les fondements théoriques des attaques \gls{ddos}, la taxonomie des vecteurs d'attaque et les mécanismes de mitigation existants (\textit{scrubbing centers}, techniques de redirection, pipeline de filtrage), ainsi que les principes des architectures pair-à-pair applicables à la coordination inter-n\oe{}uds.
+
+    \item \textbf{Chapitre~2~: État de l'art.}
+    Ce chapitre propose un état de l'art des approches collaboratives et distribuées en matière de défense contre les \gls{ddos}. Cinq systèmes représentatifs sont analysés en profondeur~: \gls{dots}, DDoS Clearing House, NaWas/NBIP et DefCOM. Une synthèse comparative identifie les lacunes motivant notre contribution.
+
+    \item \textbf{Chapitre~3~: Modélisation du système.}
+    Ce chapitre décrit le modèle du système  et formalise les hypothèses retenues, les cas d'usage de coordination et les exigences fonctionnelles et non fonctionnelles.
+
+    \item \textbf{Chapitre~4~: Conception.}
+    Ce chapitre détaille la conception du protocole distribué de coordination inter-n\oe{}uds et de l'architecture d'API sécurisée pour l'échange de métadonnées d'attaque.
+
+    \item \textbf{Chapitre~5~: Implémentation.}
+    Ce chapitre présente l'implémentation du prototype  et l'environnement expérimental mis en place pour la validation.
+
+    \item \textbf{Chapitre~6~: Résultats et évaluation.}
+    Ce chapitre expose les résultats expérimentaux obtenus et leur analyse en termes de temps de réponse, de passage à l'échelle et de résilience.
+\end{itemize}
+
+Enfin, une \textbf{conclusion générale} synthétise les contributions du travail et propose des perspectives d'évolution.

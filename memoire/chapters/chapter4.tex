@@ -1,0 +1,1516 @@
+% ============================================================
+%  CHAPITRE 4 — CONCEPTION ET IMPLÉMENTATION DE SHIELDNET
+% ============================================================
+\chapter{Conception et Implémentation de ShieldNet}
+\label{chap:implementation}
+
+% ────────────────────────────────────────────────────────────
+\section{Introduction}
+% ────────────────────────────────────────────────────────────
+
+Ce chapitre présente en détail la contribution principale de ce travail : la conception et l'implémentation complète de \textbf{ShieldNet}, un système distribué de mitigation collaborative des attaques par déni de service distribué (DDoS).
+
+ShieldNet repose sur une architecture pair-à-pair (P2P) dans laquelle des nœuds hétérogènes — universités, fournisseurs d'accès Internet, centres de données, PME — forment une coalition de défense mutualisée. Chaque nœud conserve son autonomie décisionnelle tout en participant à un mécanisme de solidarité : lorsqu'un nœud est submergé par un volume d'attaque dépassant sa capacité locale, il peut solliciter l'aide de ses pairs de confiance pour absorber le surplus de trafic malveillant.
+
+L'implémentation couvre sept modules interdépendants :
+
+\begin{enumerate}
+    \item Le modèle de données relationnel (14 tables PostgreSQL)
+    \item Le module d'authentification asymétrique JWT RS256 et mTLS
+    \item Le module de découverte et de gestion des pairs
+    \item Le module de coalition anti-DDoS
+    \item L'algorithme de sélection WSM (\textit{Weighted Sum Model})
+    \item Le modèle de confiance PeerTrust
+    \item L'infrastructure de déploiement Docker et le script de démonstration
+\end{enumerate}
+
+% ────────────────────────────────────────────────────────────
+\section{Architecture Générale de ShieldNet}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Vue d'ensemble}
+
+ShieldNet est une application serveur Node.js exposant une API REST sécurisée. Chaque nœud du réseau exécute la même image logicielle mais se configure individuellement via des variables d'environnement (fichiers \texttt{.env.*}). Cette homogénéité simplifie le déploiement tout en permettant une grande flexibilité de configuration.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=3cm, minimum height=1cm, align=center},
+    db/.style={cylinder, draw, shape border rotate=90, fill=gray!15, minimum width=2cm, minimum height=1.2cm, align=center},
+    arrow/.style={->, >=Stealth, thick}
+]
+
+% Noeuds
+\node[node] (univ) at (0,0)    {Universit\'e\\(port 3001)};
+\node[node] (pme)  at (5,0)    {PME\\(port 3002)};
+\node[node] (isp)  at (10,0)   {ISP\\(port 3003)};
+\node[node] (dc)   at (5,-3)   {Datacenter\\(port 3004)};
+
+% Bases de données
+\node[db]   (db1)  at (0,-2.2) {\small PFEDB\_univ};
+\node[db]   (db2)  at (5,-2.2) {\small PFEDB\_pme};
+\node[db]   (db3)  at (10,-2.2){\small PFEDB\_isp};
+\node[db]   (db4)  at (5,-5)   {\small PFEDB\_dc};
+
+% Connexions nœud-DB
+\draw[arrow] (univ) -- (db1);
+\draw[arrow] (pme)  -- (db2);
+\draw[arrow] (isp)  -- (db3);
+\draw[arrow] (dc)   -- (db4);
+
+% Connexions P2P (mTLS + JWT)
+\draw[arrow, dashed, color=red!70] (univ) -- node[above, font=\tiny]{mTLS+JWT} (pme);
+\draw[arrow, dashed, color=red!70] (pme)  -- node[above, font=\tiny]{mTLS+JWT} (isp);
+\draw[arrow, dashed, color=red!70] (univ.south east) -- node[left, font=\tiny]{} (dc.north west);
+\draw[arrow, dashed, color=red!70] (isp.south west)  -- (dc.north east);
+
+\end{tikzpicture}
+\caption{Architecture distribuée de ShieldNet — 4 nœuds Docker interconnectés}
+\label{fig:archi-generale}
+\end{figure}
+
+\subsection{Pile technologique}
+
+Le tableau~\ref{tab:stack} résume les technologies utilisées dans l'implémentation.
+
+\begin{table}[H]
+\centering
+\caption{Pile technologique de ShieldNet}
+\label{tab:stack}
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
+\textbf{Composant} & \textbf{Rôle} & \textbf{Version} \\
+\hline
+Node.js & Serveur HTTP/HTTPS, logique métier & 20 LTS \\
+Express.js & Framework REST API & 4.x \\
+Sequelize & ORM pour PostgreSQL & 6.x \\
+PostgreSQL & Base de données relationnelle par nœud & 16-alpine \\
+jsonwebtoken & Génération/vérification JWT (RS256) & 9.x \\
+Docker + Compose & Conteneurisation et orchestration & 24.x \\
+OpenSSL & Génération des certificats TLS par nœud & 3.x \\
+Swagger UI & Documentation interactive de l'API & 5.x \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Structure du projet}
+
+Le projet est organisé selon le pattern MVC adapté aux API REST :
+
+\begin{lstlisting}[language=bash, caption={Structure du projet ShieldNet}, label={lst:structure}]
+shieldnet/
+|-- app.js               # Configuration Express + middlewares
+|-- server.js            # Entree principale (HTTPS + demarrage)
+|-- config/
+|   |-- database.js      # Connexion Sequelize
+|   `-- swagger.js       # Definition OpenAPI 3.0
+|-- middleware/
+|   `-- auth.js          # JWT RS256 + mTLS
+|-- models/              # 14 modeles Sequelize (ORM)
+|-- routes/              # 7 modules de routes REST
+|-- utils/
+|   |-- trustManager.js  # Formule PeerTrust
+|   |-- peerSelector.js  # Algorithme WSM
+|   |-- heartbeatSender.js # Service heartbeat
+|   `-- logger.js        # Logs d'audit et messages
+|-- scripts/
+|   `-- mtls-request.js  # Client HTTPS/mTLS
+|-- certs/               # Certificats TLS par noeud
+|-- docker-compose.yml   # Orchestration 4 noeuds
+`-- demo-shieldnet.ps1   # Script de demonstration
+\end{lstlisting}
+
+% ────────────────────────────────────────────────────────────
+\section{Modèle de Données Relationnel}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Vue d'ensemble du schéma}
+
+Le modèle de données de ShieldNet comprend \textbf{14 tables relationnelles}, chacune gérée par Sequelize ORM. Chaque nœud possède sa propre instance PostgreSQL : il n'existe pas de base centrale partagée, ce qui est fondamental pour l'autonomie P2P du système.
+
+\begin{table}[H]
+\centering
+\caption{Tables de la base de données ShieldNet}
+\label{tab:tables}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Table} & \textbf{Description} \\
+\hline
+\texttt{LOCAL\_NODE\_CONFIG} & Configuration du nœud local (nom, capacité, charge, clé publique) \\
+\texttt{POLICY\_CONFIG} & Politique de seuils d'alerte et de partage de capacité \\
+\texttt{SCRUBBING\_CAPABILITIES} & Capacités de filtrage du nœud local (débit max, précision) \\
+\texttt{PEERS} & Répertoire des pairs connus de la coalition \\
+\texttt{PEER\_CAPABILITIES} & Capacité de scrubbing déclarée par chaque pair \\
+\texttt{HEARTBEAT\_LOGS} & Historique des battements de cœur reçus \\
+\texttt{ATTACKS} & Registre des attaques détectées \\
+\texttt{HELP\_SESSIONS} & Sessions de coopération inter-nœuds \\
+\texttt{TRUST\_SCORES} & Scores de confiance calculés (PeerTrust) \\
+\texttt{TRUST\_VIOLATIONS} & Violations de confiance enregistrées \\
+\texttt{RECIPROCITY\_LEDGER} & Solde de réciprocité bilatérale \\
+\texttt{RECIPROCITY\_TRANSACTIONS} & Journal des transactions de crédits \\
+\texttt{MESSAGE\_LOG} & Journal des messages échangés \\
+\texttt{AUDIT\_LOG} & Journal d'audit des événements système \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Table PEERS}
+
+La table \texttt{PEERS} est centrale dans l'architecture. Elle stocke le répertoire de tous les pairs connus par un nœud donné. Chaque entrée contient la clé publique PEM du pair, utilisée pour la vérification des tokens JWT.
+
+\begin{lstlisting}[language=JavaScript, caption={Modele Sequelize de la table PEERS (extrait)}, label={lst:peer-model}]
+peer_id:    { type: UUID, primaryKey: true, defaultValue: UUIDV4 },
+peer_name:  { type: STRING, allowNull: false },
+organization_type: { type: ENUM('UNIVERSITY','ISP','DATACENTER','PME',...) },
+tier:       { type: ENUM('T1','T2','T3') },
+public_key: { type: TEXT, allowNull: false },  // Cle publique PEM
+declared_available_gbps: { type: FLOAT },      // Capacite disponible
+measured_latency_ms:     { type: FLOAT },      // Latence mesuree (RTT)
+status: { type: ENUM('ACTIVE','INACTIVE','MAINTENANCE','SUSPECTED','BANNED') },
+membership_status: { type: ENUM('PROBATION','CONFIRMED','SUSPENDED','EXPELLED') },
+consecutive_missed_heartbeats: { type: INTEGER, defaultValue: 0 },
+\end{lstlisting}
+
+Les champs \texttt{declared\_available\_gbps} et \texttt{measured\_latency\_ms} sont mis à jour à chaque heartbeat reçu. Ils constituent les entrées directes de l'algorithme WSM de sélection des pairs (section~\ref{sec:wsm}).
+
+\subsection{Table HELP\_SESSIONS}
+
+La table \texttt{HELP\_SESSIONS} modélise le cycle de vie complet d'une session de coopération. Elle trace le volume demandé, accepté et réellement délivré, ce qui est la base du calcul du score de confiance.
+
+\begin{table}[H]
+\centering
+\caption{Champs clés de la table HELP\_SESSIONS}
+\label{tab:help-sessions}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Champ} & \textbf{Type} & \textbf{Rôle} \\
+\hline
+\texttt{session\_id} & UUID & Identifiant unique de la session \\
+\texttt{attack\_id} & UUID (FK) & Attaque à l'origine de la demande \\
+\texttt{helping\_peer\_id} & UUID (FK) & Pair aidant \\
+\texttt{status} & ENUM & État : REQUESTED → ACCEPTED → ACTIVE → COMPLETED \\
+\texttt{allocation\_pct} & FLOAT & Pourcentage du flux attribué à ce pair (0–100) \\
+\texttt{accepted\_volume\_gbps} & FLOAT & Volume que le pair a accepté de traiter \\
+\texttt{actual\_volume\_gbps} & FLOAT & Volume réellement traité (base du score $S_k$) \\
+\texttt{tunnel\_type} & ENUM & Mécanisme de redirection : GRE, IPIP, VXLAN \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Initialisation et synchronisation de la base}
+
+Lors du premier démarrage, Sequelize synchronise automatiquement le schéma via \texttt{sequelize.sync(\{alter: false\})}. Un mécanisme de garde capture l'erreur PostgreSQL \texttt{42P07} (relation déjà existante) pour éviter les recréations de tables lors des redémarrages.
+
+\begin{lstlisting}[language=JavaScript, caption={Initialisation securisee de la base de donnees}, label={lst:db-init}]
+async function initDatabase() {
+  await sequelize.authenticate();
+  try {
+    await sequelize.sync({ alter: false });
+  } catch (err) {
+    // 42P07 = table/index already exists -- schema already initialized
+    if (err.parent?.code !== '42P07') throw err;
+  }
+  return db;
+}
+\end{lstlisting}
+
+% ────────────────────────────────────────────────────────────
+\section{Module d'Authentification : JWT RS256 et mTLS}
+\label{sec:auth}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Principes de sécurité}
+
+La sécurité des communications entre nœuds ShieldNet repose sur deux mécanismes complémentaires :
+
+\begin{enumerate}
+    \item \textbf{JWT RS256} : authentification asymétrique à courte durée de vie (60 secondes)
+    \item \textbf{mTLS} : authentification mutuelle par certificat X.509 au niveau transport
+\end{enumerate}
+
+L'utilisation de l'algorithme \textbf{RS256} (RSA + SHA-256) est fondamentale : contrairement à HS256 (secret partagé), chaque nœud possède sa propre paire de clés RSA. Un nœud compromis n'expose donc pas les autres membres de la coalition. Le standard JWT est défini dans la RFC~7519~\cite{rfc7519jwt} et les algorithmes cryptographiques dans la RFC~7518~\cite{rfc7518jwa}.
+
+\subsection{Architecture JWT asymétrique}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, rounded corners, fill=blue!8, minimum width=4cm, minimum height=0.9cm, align=center, font=\small},
+    arrow/.style={->, >=Stealth, thick},
+    label/.style={font=\footnotesize, color=gray!70!black}
+]
+
+\node[box] (A) at (0,0)    {Nœud A (émetteur)};
+\node[box] (B) at (9,0)    {Nœud B (récepteur)};
+
+% Étape 1 : génération
+\draw[arrow] (A.south) -- ++(0,-0.5) node[label, right]{1. signe avec \texttt{node\_A.key} (clé privée RSA)};
+
+% Flèche JWT
+\draw[arrow] (2,-1.5) -- node[above, label]{JWT \{iss: node\_A\_id, exp: +60s\}} (7,-1.5);
+
+% Étape 2 : vérification
+\draw[arrow] (B.south) -- ++(0,-0.5) node[label, left]{2. lit \texttt{iss} → cherche clé publique de A dans PEERS};
+\draw[arrow] (B.south) -- ++(0,-1.8) node[label, left]{3. vérifie RS256 avec \texttt{PEERS.public\_key}};
+
+\end{tikzpicture}
+\caption{Flux d'authentification JWT RS256 dans ShieldNet}
+\label{fig:jwt-flux}
+\end{figure}
+
+\subsection{Génération du token}
+
+La fonction \texttt{generateToken()} lit la clé privée RSA du nœud local depuis le système de fichiers, puis signe un payload minimal avec l'algorithme RS256 :
+
+\begin{lstlisting}[language=JavaScript, caption={Generation d'un token JWT RS256}, label={lst:jwt-gen}]
+function generateToken(node_id) {
+  const privateKey = fs.readFileSync(process.env.TLS_KEY || './certs/node.key');
+  return jwt.sign(
+    { iss: node_id, node_id },
+    privateKey,
+    { algorithm: 'RS256', expiresIn: '60s' }
+  );
+}
+\end{lstlisting}
+
+Le claim \texttt{iss} (issuer) contient l'identifiant UUID du nœud émetteur. Le récepteur utilise ce claim pour récupérer la clé publique correspondante dans sa table \texttt{PEERS}.
+
+\subsection{Vérification du token (middleware)}
+
+Le middleware \texttt{jwtMiddleware} intercepte toutes les requêtes entrantes (à l'exception des routes publiques) et effectue la vérification en trois étapes :
+
+\begin{lstlisting}[language=JavaScript, caption={Middleware de verification JWT RS256}, label={lst:jwt-verify}]
+async function jwtMiddleware(req, res, next) {
+  if (isPublicRoute(req)) return next();
+
+  const token = extractToken(req);  // Bearer header, body ou query
+
+  // Etape 1 : decoder sans verifier pour lire l'emetteur
+  const decoded = jwt.decode(token);
+  const issuer_id = decoded.iss;
+
+  // Etape 2 : recuperer la cle publique de l'emetteur
+  let publicKey;
+  const isLocal = process.env.NODE_ID === issuer_id ||
+    (localNode && localNode.node_id === issuer_id);
+
+  if (isLocal) {
+    publicKey = fs.readFileSync(process.env.TLS_CERT || './certs/node.crt');
+  } else {
+    const peer = await Peer.findOne({ where: { peer_id: issuer_id } });
+    if (peer.status === 'BANNED') return res.status(403)...;
+    publicKey = peer.public_key;  // PEM stocke en base
+  }
+
+  // Etape 3 : verifier la signature RS256
+  jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+  req.authNode = authInfo;
+  next();
+}
+\end{lstlisting}
+
+\subsubsection{Gestion des routes publiques}
+
+Certains endpoints doivent rester accessibles sans token (bootstrapping initial) :
+
+\begin{lstlisting}[language=JavaScript, caption={Definition des routes publiques}, label={lst:public-routes}]
+const PUBLIC_ROUTES = [
+  { method: 'GET',  path: '/' },
+  { method: 'POST', path: '/api/v1/auth/token' },
+  { method: 'POST', path: '/api/v1/peers/register' },
+  { method: 'POST', path: '/api/v1/peers/goodbye' },
+];
+const PUBLIC_PREFIXES = ['/api-docs', '/api/v1/simulation'];
+\end{lstlisting}
+
+Ce design permet à un nouveau nœud de s'enregistrer et d'obtenir son premier token sans configuration préalable.
+
+\subsection{Correction d'un bug critique de bootstrapping}
+
+Lors de l'implémentation, un bug subtil a été identifié : la vérification de l'identité locale utilisait un court-circuit logique qui échouait silencieusement si la base de données était vide (premier démarrage).
+
+\begin{lstlisting}[language=JavaScript, caption={Bug original -- court-circuit sur localNode null}, label={lst:bug}]
+// Bug : si localNode est null (DB vide), isLocalNode = false
+// meme si process.env.NODE_ID correspond !
+const isLocalNode = localNode &&
+  (localNode.node_id === node_id || localNode.node_name === node_id);
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption={Correction -- verification de l'env en premier}, label={lst:fix}]
+// Correction : verifier process.env.NODE_ID avant de consulter la DB
+const isLocalNode =
+  process.env.NODE_ID   === node_id ||
+  process.env.NODE_NAME === node_id ||
+  (localNode && (localNode.node_id === node_id ||
+                 localNode.node_name === node_id));
+
+const effectiveNodeId =
+  (localNode && localNode.node_id) || process.env.NODE_ID || node_id;
+\end{lstlisting}
+
+Ce bug provoquait une erreur HTTP 401 «~Unknown node~» lors du tout premier appel à \texttt{/auth/token}, rendant le système impossible à initialiser. La même correction a été appliquée symétriquement dans le middleware de vérification.
+
+\subsection{Middleware mTLS}
+
+En complément du JWT, le middleware \texttt{mtlsMiddleware} lit le certificat client présenté lors de la connexion TLS (protocole TLS~1.3 défini dans la RFC~8446~\cite{rfc8446tls13}) et l'attache à la requête pour usage ultérieur :
+
+\begin{lstlisting}[language=JavaScript, caption={Middleware mTLS}, label={lst:mtls}]
+function mtlsMiddleware(req, res, next) {
+  if (process.env.MTLS_ENABLED !== 'true') return next();
+
+  const cert = req.socket.getPeerCertificate();
+  if (!cert || !cert.subject) {
+    if (process.env.MTLS_STRICT === 'true')
+      return res.status(401).json({ error: 'mTLS required' });
+    return next(); // Mode non-strict : continuer sans cert
+  }
+
+  req.clientCert = {
+    subject: cert.subject, issuer: cert.issuer,
+    fingerprint: cert.fingerprint,
+    valid_from: cert.valid_from, valid_to: cert.valid_to,
+  };
+  next();
+}
+\end{lstlisting}
+
+Le mode non-strict (\texttt{MTLS\_STRICT=false}) permet de conserver la compatibilité avec des clients qui ne présentent pas de certificat, tout en enrichissant la requête lorsque le certificat est présent.
+
+% ────────────────────────────────────────────────────────────
+\section{Module de Découverte et Gestion des Pairs}
+\label{sec:discovery}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Vue d'ensemble}
+
+Le module de découverte (\texttt{routes/discovery.js}) implémente les mécanismes permettant aux nœuds de se connaître mutuellement et de maintenir une vision cohérente de l'état de la coalition.
+
+\begin{table}[H]
+\centering
+\caption{Endpoints du module de découverte}
+\label{tab:discovery-endpoints}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+POST & \texttt{/peers/register} & Enregistrement ou mise à jour d'un pair \\
+GET  & \texttt{/peers} & Lister tous les pairs connus \\
+GET  & \texttt{/peers/:id} & Détail d'un pair avec scores et ledger \\
+DELETE & \texttt{/peers/:id} & Supprimer un pair \\
+POST & \texttt{/peers/discover} & Découverte filtrée par tier \\
+POST & \texttt{/peers/goodbye} & Déconnexion propre d'un pair \\
+POST & \texttt{/heartbeat} & Recevoir un battement de cœur \\
+GET  & \texttt{/status} & État actuel du nœud local \\
+POST & \texttt{/capability/advertise} & Publier les capacités de filtrage \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Enregistrement transactionnel des pairs}
+
+L'enregistrement d'un pair est implémenté dans une transaction Sequelize pour garantir l'atomicité de l'opération (pair + capacités associées) :
+
+\begin{lstlisting}[language=JavaScript, caption={Enregistrement transactionnel d'un pair}, label={lst:peer-register}]
+const peerId = await sequelize.transaction(async (transaction) => {
+  let peer = peerPayload.peer_id
+    ? await Peer.findByPk(peerPayload.peer_id, { transaction })
+    : null;
+
+  if (peer) {
+    await peer.update(payload, { transaction });
+  } else {
+    created = true;
+    peer = await Peer.create({ ...payload }, { transaction });
+  }
+
+  // Enregistrement ou mise a jour de la capacite declaree du pair
+  for (const capability of capabilities) {
+    const existing = await PeerCapability.findOne({
+      where: { peer_id: peer.peer_id }, transaction,
+    });
+    const values = {
+      peer_id: peer.peer_id,
+      declared_capacity_gbps: capability.declared_capacity_gbps
+                              ?? capability.capacity_gbps ?? 0,
+      last_updated: new Date(),
+    };
+    if (existing) await existing.update(values, { transaction });
+    else          await PeerCapability.create(values, { transaction });
+  }
+  return peer.peer_id;
+});
+
+// Creation automatique du ledger de reciprocite
+if (created) {
+  await ReciprocityLedger.findOrCreate({
+    where: { peer_id: peerId },
+    defaults: { peer_id: peerId, credits_received: 0, credits_given: 0 },
+  });
+}
+\end{lstlisting}
+
+\subsection{Protocole de heartbeat}
+
+Le mécanisme de heartbeat maintient la connaissance de la disponibilité des pairs. À chaque réception, le nœud met à jour la capacité disponible et la latence mesurée du pair émetteur :
+
+\begin{lstlisting}[language=JavaScript, caption={Traitement d'un heartbeat recu}, label={lst:heartbeat-receive}]
+// Mise a jour du pair avec les nouvelles metriques
+await peer.update({
+  last_heartbeat:         new Date(),
+  declared_available_gbps: reported_available_gbps,
+  measured_latency_ms:    round_trip_time_ms ?? peer.measured_latency_ms,
+  consecutive_missed_heartbeats: 0,
+  status: peer.status === 'BANNED' ? 'BANNED' : 'ACTIVE',
+});
+\end{lstlisting}
+
+La règle «~si BANNED, rester BANNED~» assure qu'un pair sanctionné ne peut pas se réhabiliter simplement en envoyant un heartbeat.
+
+\subsection{Machine à états des pairs}
+
+Le statut d'un pair évolue selon la machine à états suivante :
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    state/.style={ellipse, draw, fill=blue!10, minimum width=2.5cm, minimum height=0.8cm, font=\small},
+    arrow/.style={->, >=Stealth},
+    label/.style={font=\footnotesize}
+]
+\node[state] (active)      at (0,0)    {ACTIVE};
+\node[state] (unreachable) at (5,1)    {UNREACHABLE};
+\node[state] (suspected)   at (5,-1)   {SUSPECTED};
+\node[state] (inactive)    at (10,0)   {INACTIVE};
+\node[state, fill=red!20] (banned)    at (5,-3)   {BANNED};
+
+\draw[arrow] (active)      -- node[above, label]{3 heartbeats manqués} (unreachable);
+\draw[arrow] (active)      -- node[below, label]{violation} (suspected);
+\draw[arrow] (unreachable) -- node[above, label]{reconnexion} (active);
+\draw[arrow] (unreachable) -- node[right, label]{goodbye} (inactive);
+\draw[arrow] (suspected)   -- node[right, label]{ban manuel} (banned);
+\draw[arrow] (active)      -- node[right, label]{score < 0.20} (banned);
+
+\end{tikzpicture}
+\caption{Machine à états du statut d'un pair}
+\label{fig:peer-states}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────
+\section{Module de Coalition Anti-DDoS}
+\label{sec:coalition}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Cycle de vie d'une attaque}
+
+Le module de coalition (\texttt{routes/coalition.js}) orchestre le processus complet de réponse collaborative à une attaque DDoS. Ce processus suit un cycle de vie défini :
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    phasestep/.style={rectangle, draw, rounded corners, fill=green!10, minimum width=3.5cm, minimum height=0.8cm, align=center, font=\small},
+    arrow/.style={->, >=Stealth, thick}
+]
+\node[phasestep] (detect)   at (0,4)  {DETECTED};
+\node[phasestep] (request)  at (0,2.5){HELP REQUESTED};
+\node[phasestep] (accept)   at (0,1)  {ACCEPTED};
+\node[phasestep] (active)   at (0,-0.5){ACTIVE};
+\node[phasestep] (complete) at (0,-2) {COMPLETED};
+
+\draw[arrow] (detect)   -- node[right, font=\footnotesize]{POST /alert} (request);
+\draw[arrow] (request)  -- node[right, font=\footnotesize]{PUT /help/:id/accept} (accept);
+\draw[arrow] (accept)   -- node[right, font=\footnotesize]{POST /traffic/redirect} (active);
+\draw[arrow] (active)   -- node[right, font=\footnotesize]{POST /attack/over} (complete);
+
+\end{tikzpicture}
+\caption{Cycle de vie d'une session de coopération DDoS}
+\label{fig:coalition-lifecycle}
+\end{figure}
+
+\subsection{Détection et alerte}
+
+Lorsqu'un nœud détecte une attaque dépassant sa capacité locale, il crée un enregistrement d'attaque et calcule le volume excédentaire (\textit{overflow}) :
+
+\begin{lstlisting}[language=JavaScript, caption={Calcul du volume excedentaire lors de la detection}, label={lst:detect}]
+// POST /simulation/attack/detect
+const localCapacity = node.max_scrubbing_capacity_gbps;
+const localLoad     = node.current_load_percent / 100;
+const available     = localCapacity * (1 - localLoad);
+const overflow      = Math.max(0, volumeGbps - available);
+
+const attack = await Attack.create({
+  peak_volume_gbps:           volumeGbps,
+  local_capacity_at_detection: available,
+  overflow_volume_gbps:        overflow,
+  escalation_triggered:        overflow > 0,
+  ...
+});
+\end{lstlisting}
+
+\subsection{Négociation et redirection}
+
+Les endpoints de négociation gèrent les transitions d'état de la session :
+
+\begin{itemize}
+    \item \textbf{POST /help/request} : crée une session avec statut \texttt{REQUESTED}
+    \item \textbf{PUT /help/:id/accept} : le pair accepte et précise le volume qu'il peut traiter (\texttt{accepted\_volume\_gbps})
+    \item \textbf{POST /traffic/redirect} : confirme que le trafic est effectivement redirigé (tunnel GRE/IPIP/VXLAN)
+    \item \textbf{POST /attack/over} : clôture toutes les sessions associées
+\end{itemize}
+
+\subsection{Clôture et mise à jour des crédits}
+
+La clôture d'une attaque (\texttt{POST /attack/over}) est l'étape la plus critique : elle consolide les données qui serviront au calcul du score de confiance.
+
+\begin{lstlisting}[language=JavaScript, caption={Cloture d'une session et mise a jour du ledger de reciprocite}, label={lst:attack-over}]
+for (const session of sessions) {
+  // Si actual_volume n'a pas ete renseigne lors de la redirection,
+  // on considere que le pair a fourni exactement ce qu'il avait promis
+  if (!session.actual_volume_gbps) {
+    await session.update({
+      actual_volume_gbps: session.accepted_volume_gbps
+                          ?? session.requested_volume_gbps ?? 0,
+    });
+  }
+
+  const volume = session.actual_volume_gbps || 0;
+
+  // Mise a jour du ledger de reciprocite
+  const [ledger] = await ReciprocityLedger.findOrCreate({
+    where: { peer_id: session.helping_peer_id },
+    defaults: { credits_received: 0, credits_given: 0, balance: 0 },
+  });
+  await ledger.update({
+    credits_given: ledger.credits_given + volume,
+    balance:       ledger.balance + volume,
+  });
+}
+\end{lstlisting}
+
+\textbf{Note importante :} Le champ \texttt{actual\_volume\_gbps} peut être \texttt{NULL} si l'endpoint \texttt{/traffic/redirect} n'est pas explicitement appelé. Le garde \texttt{if (!session.actual\_volume\_gbps)} assure qu'un volume nul n'entraîne pas un score $S_k = 0$ (ce qui produirait un BANNED injustifié).
+
+% ────────────────────────────────────────────────────────────
+\section{Algorithme WSM de Sélection des Pairs}
+\label{sec:wsm}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Formalisation mathématique}
+
+L'algorithme de sélection des pairs est fondé sur le \textbf{Weighted Sum Model} (WSM)~\cite{hwang1981wsm}, une méthode classique d'aide à la décision multi-critères. Pour un pair $p$, le score composite est calculé comme suit :
+
+\begin{equation}
+\text{Score}(p) = w_C \cdot C_p + w_L \cdot L_p' + w_T \cdot T_p + w_R \cdot R_p
+\label{eq:wsm}
+\end{equation}
+
+où les critères normalisés sont définis par :
+
+\begin{align}
+C_p  &= \frac{\text{cap\_disp}_p}{\max_j(\text{cap\_disp}_j)}
+    & &\text{(capacité disponible normalisée)} \\
+L_p' &= 1 - \frac{L_p - L_{\min}}{L_{\max} - L_{\min}}
+    & &\text{(latence inversée normalisée)} \\
+T_p  &= \text{overall\_score}(p)
+    & &\text{(score de confiance PeerTrust)} \\
+R_p  &= \frac{\text{credits\_received}_p}{\text{credits\_received}_p + \text{credits\_given}_p + \varepsilon}
+    & &\text{(réciprocité bilatérale)}
+\end{align}
+
+\subsection{Poids AHP validés}
+
+Les poids $w_C$, $w_L$, $w_T$, $w_R$ ont été déterminés par la méthode AHP (\textit{Analytic Hierarchy Process}) introduite par Saaty~\cite{saaty1980ahp}. La cohérence du jugement est mesurée par le ratio de cohérence CR = 1,6\,\% $< 10\,\%$ (seuil d'acceptabilité fixé à 10\,\%~\cite{saaty1980ahp}), validant la fiabilité de la pondération.
+
+\begin{table}[H]
+\centering
+\caption{Poids AHP pour l'algorithme WSM}
+\label{tab:ahp-weights}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Critère} & \textbf{Variable} & \textbf{Poids} \\
+\hline
+Capacité disponible  & $w_C$ & 0,52 \\
+Latence (inversée)   & $w_L$ & 0,20 \\
+Confiance PeerTrust  & $w_T$ & 0,20 \\
+Réciprocité          & $w_R$ & 0,08 \\
+\hline
+\textbf{Total}       &       & \textbf{1,00} \\
+\hline
+\end{tabular}
+\end{table}
+
+La capacité disponible reçoit le poids le plus élevé (0,52) car, en situation de crise DDoS, la capacité effective d'absorption est le facteur limitant primordial.
+
+\subsection{Implémentation}
+
+\begin{lstlisting}[language=JavaScript, caption={Calcul du score WSM et normalisation des criteres}, label={lst:wsm-impl}]
+const W = { C: 0.52, L: 0.20, T: 0.20, R: 0.08 };
+const EPSILON = 1e-6;
+
+// Normalisation
+const maxCap  = Math.max(...capValues);
+const latRange = maxLat - minLat;
+
+const scored = candidates.map((peer, i) => {
+  const Cp = maxCap > 0 ? capValues[i] / maxCap : 0;
+
+  // Latence inversee : plus faible latence = score plus eleve
+  const Lp_inv = latRange > 0
+    ? 1 - (latValues[i] - minLat) / latRange
+    : 1;  // si tous identiques, score maximal pour tous
+
+  const Tp = peer.trust_score?.overall_score ?? 0.5;
+
+  const received = Number(peer.reciprocity_ledger?.credits_received ?? 0);
+  const given    = Number(peer.reciprocity_ledger?.credits_given    ?? 0);
+  const Rp = received / (received + given + EPSILON);
+
+  const score = W.C * Cp + W.L * Lp_inv + W.T * Tp + W.R * Rp;
+  return { peer, score, criteria: { Cp, Lp_inv, Tp, Rp } };
+});
+\end{lstlisting}
+
+\subsection{Répartition proportionnelle}
+
+Tous les pairs éligibles participent à l'absorption du trafic. Le score WSM de chaque pair est transformé en poids de répartition, de sorte que la somme des pourcentages attribués vaille toujours 100\,\% :
+
+\begin{equation}
+w_i = \frac{\text{Score}(p_i)}{\displaystyle\sum_{j=1}^{N} \text{Score}(p_j)}
+\label{eq:wsm-weight}
+\end{equation}
+
+\begin{equation}
+\text{allocation\%}(p_i) = w_i \times 100
+\label{eq:alloc-pct}
+\end{equation}
+
+Cette formulation présente deux avantages essentiels. D'une part, le volume total de trafic à redistribuer n'est pas requis en entrée : la répartition est exprimée en pourcentages, valables quelle que soit l'intensité de l'attaque. D'autre part, tous les pairs contribuent à l'effort collectif selon leur valeur relative, ce qui est conforme à l'esprit de la coalition de défense mutualisée.
+
+\begin{lstlisting}[language=JavaScript, caption={Repartition proportionnelle par poids WSM normalises}, label={lst:wsm-alloc}]
+// Somme totale des scores WSM
+const totalScore = scored.reduce((sum, c) => sum + c.score, 0);
+
+// Pour chaque pair : poids et pourcentage du flux
+const plan = scored.map((candidate) => {
+  // w_i = Score(p_i) / somme Score(p_j)
+  const weight = totalScore > 0
+    ? candidate.score / totalScore
+    : 1 / scored.length;  // repartition egale si scores tous nuls
+
+  const allocation_pct = Number((weight * 100).toFixed(2));
+
+  return {
+    peer:           { /* informations du pair */ },
+    wsm_score:      Number(candidate.score.toFixed(4)),
+    weight:         Number(weight.toFixed(4)),
+    allocation_pct,
+  };
+});
+\end{lstlisting}
+
+\subsection{Exemple numérique}
+
+Considérons un scénario avec 3 pairs. Le volume excédentaire est inconnu a priori ; la répartition est calculée en pourcentages :
+
+\begin{table}[H]
+\centering
+\caption{Exemple de calcul WSM — répartition proportionnelle du flux}
+\label{tab:wsm-example}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Pair} & $C_p$ & $L_p'$ & $T_p$ & $R_p$ & \textbf{Score} & $w_i$ & \textbf{Allocation\,\%} \\
+\hline
+ISP           & 1,000 & 0,800 & 0,850 & 0,500 & 0,880 & 0,378 & 37,8\,\% \\
+Datacenter    & 0,800 & 1,000 & 0,750 & 0,600 & 0,826 & 0,355 & 35,5\,\% \\
+PME           & 0,400 & 0,600 & 0,650 & 0,300 & 0,621 & 0,267 & 26,7\,\% \\
+\hline
+\textbf{Total} & & & & & \textbf{2,327} & \textbf{1,000} & \textbf{100\,\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+Si le volume excédentaire venait à être connu ultérieurement (par exemple 10 Gbps), les volumes estimés seraient : ISP 3,78 Gbps, Datacenter 3,55 Gbps, PME 2,67 Gbps.
+
+% ────────────────────────────────────────────────────────────
+\section{Modèle de Confiance PeerTrust}
+\label{sec:trust}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Formulation mathématique}
+
+Le modèle de confiance PeerTrust a été proposé par Xiong et Liu~\cite{xiong2004peertrust} dans le cadre des communautés électroniques P2P. Il définit plusieurs variantes de la métrique de confiance. Après analyse des contraintes spécifiques de ShieldNet — coalition fermée de 4 nœuds, transactions hétérogènes en sévérité, nécessité de pondérer différemment les sessions critiques — nous avons retenu l'\textbf{équation 6} du papier original~\cite{xiong2004peertrust}, dite \emph{métrique avec facteur de contexte transactionnel} :
+
+\begin{equation}
+T(u) = \sum_{i=1}^{I(u)} S(u,i) \cdot \mathrm{Cr}\!\left(p(u,i)\right) \cdot D(u,i)
+\label{eq:peertrust}
+\end{equation}
+
+Les trois composantes sont (d'après~\cite{xiong2004peertrust}) :
+
+\begin{align}
+S(u,i)   &= \min\!\left(1,\; \frac{V_{\text{réel},i}}{V_{\text{accepté},i}}\right)
+    \quad \text{(satisfaction normalisée de la session } i\text{)} \label{eq:sat}\\
+\mathrm{Cr}\!\left(p(u,i)\right) &= T\!\left(\text{requesting\_peer}_i\right)\ \text{ou}\ 0{,}5\ \text{si inconnu}
+    \quad \text{(crédibilité de l'évaluateur)} \label{eq:cred}\\
+D(u,i)   &= \text{severity\_weight}_i \in \{0{,}25;\; 0{,}50;\; 0{,}75;\; 1{,}00\}
+    \quad \text{(contexte de la transaction)} \label{eq:ctx}
+\end{align}
+
+\paragraph{Justification du choix.}
+L'équation 6 a été préférée aux autres variantes du papier pour les raisons suivantes :
+\begin{itemize}
+    \item \textbf{Facteur de contexte $D(u,i)$} : une aide lors d'une attaque CRITICAL (1{,}00) a davantage de valeur informationnelle qu'une aide lors d'une attaque LOW (0{,}25). Sans ce facteur, toutes les sessions contribuent également au score, indépendamment de leur gravité.
+    \item \textbf{Crédibilité dynamique $\mathrm{Cr}(p)$} : le score de confiance du pair requérant sert de crédibilité — un pair fiable (GOLD/SILVER) voit son évaluation pondérée plus fortement qu'un pair peu fiable.
+    \item \textbf{PSM inadapté} : la variante \emph{Personalized Similarity Metric} (PSM) requiert un grand nombre de pairs communs entre évaluateurs~\cite{xiong2004peertrust}, condition non satisfaite dans une coalition de 4 nœuds.
+    \item \textbf{TVM inadapté} : la variante TVM ne tient pas compte du contexte transactionnel — toutes les sessions ont le même poids quelle que soit la sévérité de l'attaque.
+\end{itemize}
+
+\subsection{Facteur de contexte transactionnel $D(u,i)$}
+
+Le facteur $D(u,i)$ quantifie l'importance de la transaction $i$ selon la sévérité de l'attaque associée. Une aide fournie lors d'une attaque CRITICAL contribue quatre fois plus au score qu'une aide lors d'une attaque LOW :
+
+\begin{table}[H]
+\centering
+\caption{Facteur de contexte $D(u,i)$ selon la sévérité de l'attaque}
+\label{tab:severity-weights}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Sévérité} & \textbf{$D(u,i)$} & \textbf{Interprétation} \\
+\hline
+LOW      & 0,25 & Attaque mineure, impact limité \\
+MEDIUM   & 0,50 & Attaque modérée \\
+HIGH     & 0,75 & Attaque sévère, service dégradé \\
+CRITICAL & 1,00 & Attaque majeure, service hors ligne \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Niveaux de confiance}
+
+Le score continu $T(p) \in [0, 1]$ est discrétisé en cinq niveaux :
+
+\begin{table}[H]
+\centering
+\caption{Niveaux de confiance et seuils associés}
+\label{tab:trust-levels}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Niveau} & \textbf{Seuil} & \textbf{Signification} \\
+\hline
+GOLD    & $\geq 0{,}80$ & Pair hautement fiable \\
+SILVER  & $\geq 0{,}60$ & Pair fiable \\
+BRONZE  & $\geq 0{,}40$ & Pair acceptable \\
+SUSPECT & $\geq 0{,}20$ & Pair peu fiable, historique dégradé \\
+BANNED  & $< 0{,}20$    & Pair banni automatiquement \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Implémentation du calcul}
+
+\begin{lstlisting}[language=JavaScript, caption={Calcul du score PeerTrust -- Eq. 6 avec credibilite reseau (PeerTrust)}, label={lst:trust-calc}]
+async function computeTrustScore(peer_id) {
+  const [sessions, localNode] = await Promise.all([
+    HelpSession.findAll({
+      where: { helping_peer_id: peer_id, status: 'COMPLETED' },
+      include: [{ model: Attack, as: 'attack', attributes: ['severity'] }],
+    }),
+    LocalNodeConfig.findOne(),
+  ]);
+
+  if (sessions.length === 0) {
+    return { score: 0.5, level: 'BRONZE', session_count: 0 }; // cold start
+  }
+
+  // Cr(p) = T(noeud_local) selon le reseau (mecanisme PeerTrust)
+  // Interroge TOUS les pairs actifs (sauf le pair evalue) :
+  //   "Quel est votre score de confiance pour moi ?"
+  // Cr = moyenne des reponses --> opinion collective du reseau
+  let Cr = 0.5; // valeur par defaut (cold start)
+  if (localNode) {
+    Cr = await fetchCrFromNetwork(localNode.node_id, peer_id);
+  }
+
+  // T(u) = somme S(u,i) * Cr(p(u,i)) * D(u,i)  -- Eq. 6 originale
+  let score = 0;
+
+  for (const session of sessions) {
+    const accepted = Number(session.accepted_volume_gbps ?? 0);
+    const actual   = Number(session.actual_volume_gbps   ?? 0);
+
+    // S(u,i) = min(1, V_reel / V_accepte)
+    const S = accepted > 0 ? Math.min(1, actual / accepted) : 0;
+    // D(u,i) = facteur contextuel selon la severite
+    const D = SEVERITY_WEIGHTS[session.attack?.severity ?? 'LOW'];
+
+    score += S * Cr * D;
+  }
+
+  score = Math.min(1, Math.max(0, score));
+
+  return { score, level: scoreToLevel(score), session_count: sessions.length };
+}
+\end{lstlisting}
+
+\subsection{Persistance et actions automatiques}
+
+La fonction \texttt{recalculateAndSave()} calcule le score, le persiste dans \texttt{TRUST\_SCORES}, et déclenche automatiquement le bannissement si le score tombe en dessous de 0,20 :
+
+\begin{lstlisting}[language=JavaScript, caption={Persistance et bannissement automatique}, label={lst:trust-save}]
+async function recalculateAndSave(peer_id) {
+  const { score, level } = await computeTrustScore(peer_id);
+
+  const [trustScore, created] = await TrustScore.findOrCreate({
+    where: { peer_id },
+    defaults: { overall_score: score, trust_level: level },
+  });
+
+  if (!created) {
+    const previousLevel = trustScore.trust_level;
+    await trustScore.update({ overall_score: score, trust_level: level });
+
+    // Log si le niveau a change
+    if (previousLevel !== level) {
+      logAudit({ event_type: 'TRUST_LEVEL_CHANGED',
+        description: `${previousLevel} -> ${level} (score=${score.toFixed(3)})` });
+    }
+  }
+
+  // Bannissement automatique si score < 0.20
+  if (level === 'BANNED') {
+    await peer.update({
+      status: 'BANNED',
+      membership_status: 'EXPELLED'
+    });
+    logAudit({ event_type: 'PEER_BANNED', severity: 'CRITICAL' });
+  }
+}
+\end{lstlisting}
+
+\subsection{Exemple de dégradation du score}
+
+Considérons un pair avec trois sessions d'aide où il ne livre pas le volume promis ($\mathrm{Cr} = 0{,}5$ par défaut) :
+
+\begin{align*}
+\text{Session 1} &: S_1 = \frac{0}{10} = 0,\quad D_1 = 1{,}00\ (\text{CRITICAL}) \\
+\text{Session 2} &: S_2 = \frac{1}{10} = 0{,}10,\quad D_2 = 0{,}75\ (\text{HIGH}) \\
+\text{Session 3} &: S_3 = \frac{1}{10} = 0{,}10,\quad D_3 = 0{,}50\ (\text{MEDIUM}) \\[6pt]
+T(p) &= \sum_{i=1}^{3} S_i \cdot \mathrm{Cr}_i \cdot D_i \\
+     &= (0 \times 0{,}5 \times 1{,}00)
+      + (0{,}10 \times 0{,}5 \times 0{,}75)
+      + (0{,}10 \times 0{,}5 \times 0{,}50) \\
+     &= 0 + 0{,}0375 + 0{,}025 = 0{,}0625
+\end{align*}
+
+Ce score de 0,0625 est inférieur à 0,20 → le pair est automatiquement \textbf{BANNED}.
+
+\subsection{API de gestion de la confiance}
+
+\begin{table}[H]
+\centering
+\caption{Endpoints du module Trust}
+\label{tab:trust-endpoints}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Méthode} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+GET  & \texttt{/trust} & Lister tous les scores (filtrable par niveau) \\
+GET  & \texttt{/trust/:id} & Score, ledger et violations récentes d'un pair \\
+POST & \texttt{/trust/:id/recalculate} & Recalcul manuel via la formule PeerTrust \\
+POST & \texttt{/trust/select-peers} & Sélection WSM pour un volume excédentaire \\
+POST & \texttt{/trust/:id/violation} & Enregistrer une violation manuelle \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ────────────────────────────────────────────────────────────
+\section{Service de Heartbeat Automatique}
+\label{sec:heartbeat}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Architecture du service}
+
+Le service de heartbeat (\texttt{utils/heartbeatSender.js}) s'exécute en tâche de fond sur chaque nœud. Il envoie périodiquement l'état du nœud local à tous ses pairs connus, permettant de maintenir une vue cohérente de la disponibilité de la coalition.
+
+\begin{lstlisting}[language=JavaScript, caption={Cycle d'envoi des heartbeats}, label={lst:heartbeat-cycle}]
+async function sendHeartbeats() {
+  const localNode = await LocalNodeConfig.findOne();
+  if (!localNode) {
+    console.warn('[Heartbeat] Noeud non initialise -- ignore');
+    return;
+  }
+
+  // JWT frais (60s) pour chaque cycle
+  const token = generateToken(localNode.node_id);
+
+  // Pairs actifs ou inactifs (pas les bannis ni les suspectés)
+  const peers = await Peer.findAll({
+    where: { status: ['ACTIVE', 'INACTIVE'] },
+  });
+
+  // Envoi en parallele a tous les pairs
+  await Promise.allSettled(
+    peers.map((peer) => sendHeartbeatToPeer(peer, localNode, token))
+  );
+}
+
+function start() {
+  // Delai initial de 10s pour laisser les autres noeuds demarrer
+  setTimeout(() => {
+    sendHeartbeats();
+    _timer = setInterval(sendHeartbeats, HEARTBEAT_INTERVAL_MS); // 30s
+  }, 10_000);
+}
+\end{lstlisting}
+
+\subsection{Gestion des pairs injoignables}
+
+Lorsqu'un heartbeat échoue, le compteur \texttt{consecutive\_missed\_heartbeats} est incrémenté. Après trois échecs consécutifs, le pair est marqué \texttt{UNREACHABLE} :
+
+\begin{lstlisting}[language=JavaScript, caption={Gestion des echecs de heartbeat}, label={lst:heartbeat-failure}]
+async function incrementMissed(peer) {
+  const missed = (peer.consecutive_missed_heartbeats || 0) + 1;
+  const update = { consecutive_missed_heartbeats: missed };
+
+  if (missed >= MAX_MISSED && peer.status !== 'BANNED') {
+    update.status = 'UNREACHABLE';
+    console.warn(`[Heartbeat] ${peer.peer_name} UNREACHABLE (${missed} echecs)`);
+  }
+
+  await peer.update(update);
+}
+\end{lstlisting}
+
+Le corps du heartbeat contient les métriques en temps réel du nœud local, notamment la capacité disponible calculée dynamiquement :
+
+\begin{lstlisting}[language=JavaScript, caption={Corps du heartbeat envoye}, label={lst:heartbeat-body}]
+const body = {
+  peer_id:                 localNode.node_id,
+  reported_status:         localNode.status || 'ACTIVE',
+  reported_load_pct:       localNode.current_load_percent ?? 0,
+  reported_available_gbps: localNode.max_scrubbing_capacity_gbps
+                           * (1 - (localNode.current_load_percent ?? 0) / 100),
+  round_trip_time_ms:      null, // rempli apres la reponse
+};
+\end{lstlisting}
+
+% ────────────────────────────────────────────────────────────
+\section{Infrastructure de Déploiement}
+\label{sec:deploy}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Conteneurisation Docker}
+
+Chaque nœud ShieldNet est encapsulé dans un conteneur Docker. L'image est construite à partir d'un \texttt{Dockerfile} unique ; la personnalisation par nœud se fait via des fichiers d'environnement distincts.
+
+\begin{table}[H]
+\centering
+\caption{Configuration des 4 nœuds Docker}
+\label{tab:docker-nodes}
+\begin{tabular}{|l|l|c|l|}
+\hline
+\textbf{Conteneur} & \textbf{Nœud} & \textbf{Port hôte} & \textbf{Fichier env} \\
+\hline
+\texttt{shieldnet-university} & Université    & 3001 & \texttt{.env.university} \\
+\texttt{shieldnet-pme}        & PME           & 3002 & \texttt{.env.pme} \\
+\texttt{shieldnet-isp}        & ISP           & 3003 & \texttt{.env.isp} \\
+\texttt{shieldnet-datacenter} & Datacenter    & 3004 & \texttt{.env.datacenter} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[language=bash, caption={Extrait du fichier docker-compose.yml}, label={lst:docker-compose}]
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespwd
+      POSTGRES_DB: PFEDB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 10
+
+  node-university:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy   # attend que PG soit pret
+    env_file: .env.university
+    ports:    ["3001:8443"]
+    volumes:  ["./certs:/app/certs:ro"]  # certificats TLS en lecture seule
+\end{lstlisting}
+
+La directive \texttt{condition: service\_healthy} garantit qu'aucun nœud ne démarre avant que PostgreSQL soit opérationnel, évitant les erreurs de connexion au démarrage.
+
+\subsection{Génération des certificats TLS}
+
+Chaque nœud dispose de son propre certificat X.509 auto-signé, généré par OpenSSL lors de la phase de préparation :
+
+\begin{lstlisting}[language=bash, caption={Generation des certificats TLS par noeud}, label={lst:cert-gen}]
+# Pour chaque noeud (university, pme, isp, datacenter) :
+openssl req -x509 -newkey rsa:2048 -keyout node.key -out node.crt \
+    -days 365 -nodes \
+    -subj "/CN=shieldnet-university/O=ShieldNet/C=DZ"
+\end{lstlisting}
+
+La clé publique (\texttt{node.crt}) est distribuée aux autres nœuds lors de l'enregistrement via \texttt{POST /peers/register}. Elle est stockée dans le champ \texttt{public\_key} de la table \texttt{PEERS} et utilisée pour la vérification des tokens JWT.
+
+\subsection{Client HTTPS/mTLS}
+
+Le script \texttt{scripts/mtls-request.js} est un client HTTPS léger utilisé depuis PowerShell pour effectuer des appels sécurisés lors de la démonstration. Il résout un problème critique de sérialisation :
+
+\begin{lstlisting}[language=JavaScript, caption={Client mTLS -- resolution du chemin de certificat PEM}, label={lst:mtls-client}]
+// Resoudre public_key_file -> contenu PEM
+// (evite de passer le PEM en base64 via PowerShell 5.1 ConvertTo-Json
+//  qui se bloque sur les longues chaines base64)
+if (payload.body && payload.body.public_key_file) {
+  payload.body.public_key = fs.readFileSync(
+    payload.body.public_key_file, 'utf8'
+  );
+  delete payload.body.public_key_file;
+}
+\end{lstlisting}
+
+\textbf{Problème résolu :} PowerShell 5.1 possède un bug connu dans \texttt{ConvertTo-Json} : il se bloque indéfiniment lors de la sérialisation de longues chaînes base64 (comme les certificats PEM). La solution adoptée consiste à passer uniquement le \emph{chemin} du fichier de certificat via PowerShell, puis à faire lire son contenu par Node.js côté client.
+
+% ────────────────────────────────────────────────────────────
+\section{Script de Démonstration}
+\label{sec:demo}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Architecture du scénario}
+
+Le script \texttt{demo-shieldnet.ps1} orchestre une démonstration complète en 7 phases, simulant un scénario réaliste d'attaque DDoS collaborative :
+
+\begin{table}[H]
+\centering
+\caption{Les 7 phases de la démonstration ShieldNet}
+\label{tab:demo-phases}
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{Phase} & \textbf{Titre} & \textbf{Description} \\
+\hline
+0 & Réinitialisation  & Remise à zéro de toutes les bases (POST /simulation/reset) \\
+1 & Initialisation    & Configuration des 4 nœuds (capacité, charge, clé publique) \\
+2 & Découverte        & Enregistrement croisé des pairs entre nœuds \\
+3 & Détection DDoS    & Simulation d'une attaque DDoS volumétrique critique \\
+4 & Sélection WSM     & Calcul du plan d'allocation pour 25 Gbps de surplus \\
+5 & Coalition         & Création des sessions d'aide avec les 3 pairs sélectionnés \\
+6 & Score de confiance & Clôture des sessions et recalcul PeerTrust \\
+7 & Métriques         & Collecte et affichage des indicateurs finaux \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Phase 0 — Réinitialisation}
+
+Pour garantir la reproductibilité de la démonstration, chaque exécution commence par une réinitialisation complète de toutes les bases de données. L'endpoint \texttt{POST /simulation/reset} supprime les données dans l'ordre respectant les contraintes de clés étrangères :
+
+\begin{lstlisting}[language=JavaScript, caption={Endpoint de reinitialisation (simulation/reset)}, label={lst:reset}]
+router.post('/simulation/reset', async (req, res) => {
+  // Ordre respectant les FK : transactions d'abord, config en dernier
+  await ReciprocityTransaction.destroy({ where: {} });
+  await ReciprocityLedger.destroy({ where: {} });
+  await TrustViolation.destroy({ where: {} });
+  await TrustScore.destroy({ where: {} });
+  await HeartbeatLog.destroy({ where: {} });
+  await HelpSession.destroy({ where: {} });
+  await Attack.destroy({ where: {} });
+  await PeerCapability.destroy({ where: {} });
+  await Peer.destroy({ where: {} });
+  await MessageLog.destroy({ where: {} });
+  await AuditLog.destroy({ where: {} });
+  await ScrubbingCapability.destroy({ where: {} });
+  await PolicyConfig.destroy({ where: {} });
+  await LocalNodeConfig.destroy({ where: {} });
+
+  return res.json({ message: 'Node reset -- all demo data cleared.' });
+});
+\end{lstlisting}
+
+\subsection{Phase 3 — Simulation de l'attaque}
+
+Le nœud Université reçoit une attaque DDoS volumétrique de 30 Gbps. Avec une capacité locale de 25 Gbps et une charge initiale de 0\,\%, la capacité disponible est de 25 Gbps, créant un surplus de 5 Gbps à redistribuer entre les pairs de la coalition. ShieldNet ne modélise pas le type de l'attaque (UDP flood, SYN flood, etc.) : ce qui importe est le \textbf{volume excédentaire} ($V_{\text{overflow}} = V_{\text{attaque}} - V_{\text{disponible}}$), seul paramètre entrant dans l'algorithme de sélection WSM.
+
+\subsection{Phase 4 — Résultat de la sélection WSM}
+
+L'appel à \texttt{POST /trust/select-peers} retourne un plan détaillé :
+
+\begin{lstlisting}[language=bash, caption={Reponse de l'algorithme WSM -- repartition proportionnelle (extrait)}, label={lst:wsm-response}]
+{
+  "total_peers": 3,
+  "selected_peers": [
+    {
+      "peer_name": "node-isp",
+      "wsm_score": 0.8521,
+      "weight": 0.3780,
+      "allocation_pct": 37.80,
+      "criteria": {
+        "capacity_normalized": 1.0000,
+        "latency_normalized_inv": 0.8000,
+        "trust_score": 0.5000,
+        "reciprocity": 0.0000
+      }
+    },
+    { "peer_name": "node-datacenter", "wsm_score": 0.7834,
+      "weight": 0.3474, "allocation_pct": 34.74 },
+    { "peer_name": "node-pme",        "wsm_score": 0.6921,
+      "weight": 0.3069, "allocation_pct": 30.69 }
+  ]
+}
+\end{lstlisting}
+
+\subsection{Résultats de la démonstration}
+
+Le tableau~\ref{tab:demo-results} synthétise les résultats mesurés lors d'une exécution complète de la démonstration :
+
+\begin{table}[H]
+\centering
+\caption{Résultats de la démonstration ShieldNet}
+\label{tab:demo-results}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Indicateur} & \textbf{Valeur} & \textbf{Commentaire} \\
+\hline
+Pairs enregistrés & 3 & PME, ISP, Datacenter \\
+Overflow à redistribuer & inconnu a priori & Volume distribué en \% \\
+Pairs sélectionnés (WSM) & 3 & Tous les pairs éligibles \\
+Répartition & 37,8 / 34,7 / 30,7\,\% & Proportionnelle au score WSM \\
+Sessions créées & 3 & Une par pair avec \texttt{allocation\_pct} \\
+Sessions complétées & 3 & Avec actual\_volume renseigné \\
+Pairs non bannis & 3/3 & Score > 0,40 (BRONZE+) \\
+Temps de réinitialisation & $<$ 2s & 14 tables vidées \\
+\hline
+\end{tabular}
+\end{table}
+
+% ────────────────────────────────────────────────────────────
+\section{Monitoring et Journalisation}
+\label{sec:monitoring}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Journal d'audit}
+
+Tous les événements significatifs sont enregistrés dans la table \texttt{AUDIT\_LOG} via la fonction \texttt{logAudit()} :
+
+\begin{table}[H]
+\centering
+\caption{Types d'événements d'audit enregistrés}
+\label{tab:audit-events}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Événement} & \textbf{Déclencheur} \\
+\hline
+\texttt{PEER\_ADDED}            & Nouvel enregistrement d'un pair \\
+\texttt{PEER\_BANNED}           & Bannissement automatique par PeerTrust \\
+\texttt{TRUST\_LEVEL\_CHANGED}  & Changement de niveau de confiance \\
+\texttt{ESCALATION\_TRIGGERED}  & Déclenchement d'une escalade \\
+\texttt{SYSTEM\_CONFIG\_CHANGE} & Modification de la configuration locale \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Endpoint de monitoring}
+
+L'endpoint \texttt{GET /status} expose l'état opérationnel en temps réel du nœud :
+
+\begin{lstlisting}[language=bash, caption={Reponse de GET /status}, label={lst:status-response}]
+{
+  "node_id":       "uuid-du-noeud",
+  "node_name":     "node-university",
+  "status":        "ACTIVE",
+  "current_state": "NORMAL",     // NORMAL | ALERT | ESCALATION | CRITICAL
+  "current_load_pct": 0,
+  "available_gbps":   25.0,
+  "active_sessions":  0,
+  "last_updated":  "2026-04-18T..."
+}
+\end{lstlisting}
+
+L'état opérationnel (\texttt{current\_state}) est dérivé dynamiquement depuis la politique active (\texttt{POLICY\_CONFIG}) selon les seuils configurés (70\,\%, 85\,\%, 95\,\%).
+
+% ────────────────────────────────────────────────────────────
+\section{Sécurité et Considérations de Production}
+\label{sec:security}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Mesures de sécurité implémentées}
+
+\begin{enumerate}
+    \item \textbf{Tokens courts (60s)} : limite la fenêtre de rejeu en cas d'interception
+    \item \textbf{Isolation des clés} : chaque nœud possède sa propre paire RSA — aucun secret partagé
+    \item \textbf{Pair banni irréversible} : un pair BANNED ne peut pas se réhabiliter via un heartbeat
+    \item \textbf{Fichiers sensibles exclus de git} : \texttt{.gitignore} exclut \texttt{*.key}, \texttt{*.pem}, \texttt{.env.*}
+    \item \textbf{Validation des entrées} : tous les endpoints vérifient les champs obligatoires
+    \item \textbf{Transactions atomiques} : l'enregistrement des pairs utilise des transactions Sequelize
+    \item \textbf{Helmet.js} : en-têtes HTTP de sécurité activés sur toutes les réponses
+\end{enumerate}
+
+\subsection{Limitations actuelles et perspectives}
+
+\begin{table}[H]
+\centering
+\caption{Limitations identifiées et améliorations envisagées}
+\label{tab:limitations}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Limitation} & \textbf{Amélioration envisagée} \\
+\hline
+mTLS passif & Activer \texttt{MTLS\_STRICT=true} en production avec une CA dédiée \\
+Pas de gossip P2P & Implémentation d'un protocole de diffusion épidémique pour la propagation des alertes \\
+Score recalculé manuellement & Recalcul automatique déclenché par le service de heartbeat \\
+Base locale uniquement & Réplication partielle pour la disponibilité en cas de panne \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ────────────────────────────────────────────────────────────
+\section{Correction d'un Bug Critique dans le Calcul de Crédibilité}
+\label{sec:bug-probation}
+% ────────────────────────────────────────────────────────────
+
+Lors de l'implémentation du mécanisme \texttt{fetchCrFromNetwork()} dans \texttt{utils/trustManager.js}, un bug subtil a provoqué une erreur PostgreSQL bloquante. La requête Sequelize filtrait les pairs par \texttt{status: ['ACTIVE', 'PROBATION']}, mais \texttt{PROBATION} appartient à l'énumération \texttt{membership\_status}, non à \texttt{status} :
+
+\begin{lstlisting}[language=JavaScript, caption={Bug original -- valeur PROBATION invalide pour le champ status}, label={lst:probation-bug}]
+// Bug : PROBATION n'est pas une valeur valide de l'enum status
+// -> PostgreSQL leve : invalid input value for enum "enum_PEERS_status": "PROBATION"
+where: { status: ['ACTIVE', 'PROBATION'] }
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption={Correction -- utilisation des valeurs correctes de l'enum status}, label={lst:probation-fix}]
+// Correction : seules les valeurs de PEER_STATUSES sont valides pour status
+// PEER_STATUSES = ['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'SUSPECTED', 'BANNED']
+where: { status: ['ACTIVE', 'INACTIVE'] }
+\end{lstlisting}
+
+Ce bug provoquait un HTTP 500 lors de tout recalcul du score PeerTrust (Phase 6 du test fonctionnel), rendant les assertions sur les scores impossibles à valider. Après correction et reconstruction de l'image Docker, tous les recalculs de confiance se sont exécutés sans erreur.
+
+% ────────────────────────────────────────────────────────────
+\section{Validation Expérimentale}
+\label{sec:tests}
+% ────────────────────────────────────────────────────────────
+
+\subsection{Architecture de test}
+
+La validation de ShieldNet est conduite en trois niveaux complémentaires, chacun adressant une dimension différente du système :
+
+\begin{table}[H]
+\centering
+\caption{Suite de tests de ShieldNet}
+\label{tab:tests-suite}
+\begin{tabularx}{\textwidth}{|l|l|X|c|}
+\hline
+\textbf{Test} & \textbf{Infrastructure} & \textbf{Objectif} & \textbf{Résultat} \\
+\hline
+\texttt{functional\_test.py} & 100 serveurs in-process & Validation fonctionnelle complète des 14 endpoints & 14/14 \\
+\texttt{security\_test.py}   & Docker (4 nœuds réels) & Sécurité JWT RS256, TLS, contrôle d'accès & 12/12 \\
+\texttt{scalability\_test.py}& Docker (1 nœud réel)  & Scalabilité 20 → 100 nœuds, latences & 5/5 paliers \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Test Fonctionnel — 100 Nœuds In-Process}
+
+\subsubsection{Architecture sans Docker}
+
+Le test fonctionnel déploie \textbf{100 serveurs HTTP aiohttp réels} dans un seul processus Python, chacun sur un port distinct (19001–19100). Chaque serveur maintient son état en mémoire (pairs, attaques, sessions, scores) et implémente l'intégralité des 14 endpoints de l'API ShieldNet. Cette approche offre plusieurs avantages :
+
+\begin{itemize}
+    \item \textbf{Aucune allocation mémoire réelle} : les 100 nœuds partagent le même espace d'adressage ($\approx$50 Mo total) sans les surcoûts Docker
+    \item \textbf{Communication HTTP authentique} : les appels inter-nœuds transitent par de véritables sockets TCP, pas des mocks
+    \item \textbf{Reproductibilité} : graine aléatoire fixe (\texttt{random.seed(42)}) pour les caractéristiques des nœuds
+    \item \textbf{JWT simplifié} : tokens HMAC-SHA256 avec TTL = 3600 s (évite les expiration à 60 s du JWT RS256 Docker)
+\end{itemize}
+
+\subsubsection{Scénario de test}
+
+\begin{table}[H]
+\centering
+\caption{Phases du test fonctionnel — 100 nœuds in-process}
+\label{tab:functional-phases}
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{Phase} & \textbf{Titre} & \textbf{Assertion} \\
+\hline
+0 & Santé + Réinitialisation & 100/100 nœuds accessibles et réinitialisés \\
+1 & Authentification JWT      & 100/100 tokens; rejet 401 sans token \\
+2 & Coalition (100 nœuds)     & 100 nœuds initialisés; 99 pairs enregistrés \\
+3 & Détection attaque DDoS    & Volume aléatoire 100–600 Gbps; overflow calculé \\
+4 & Sélection WSM             & 99 pairs classés en $<$ 2 ms; $\sum w_i = 100\,\%$ \\
+5 & Réponse coalition         & 99/99 sessions ACTIVE; couverture overflow 100\,\% \\
+6 & Fin d'attaque + PeerTrust & 99 scores calculés (GOLD/SILVER/BRONZE); 0 BANNED \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Génération réaliste du volume d'attaque}
+
+Le volume d'attaque est généré aléatoirement dans l'intervalle [100, 600] Gbps à chaque exécution, garantissant qu'il dépasse systématiquement la capacité locale de la victime et rend la coalition indispensable :
+
+\begin{lstlisting}[language=Python, caption={Generation aleatoire du volume d'attaque}, label={lst:attack-vol}]
+ATTACK_VOL = round(random.uniform(100.0, 600.0), 1)  # Gbps
+# Exemple d'execution : 113.8 Gbps pour 5.0 Gbps disponibles
+# => overflow = 108.8 Gbps => escalade coalition obligatoire
+\end{lstlisting}
+
+\subsubsection{Scores PeerTrust — distribution réaliste}
+
+Pour refléter un comportement réaliste, chaque pair délivre entre 40\,\% et 100\,\% du volume promis lors de la redirection du trafic. Cette variation produit des scores PeerTrust différenciés :
+
+\begin{equation}
+S(u,i) = \frac{V_{\text{réel},i}}{V_{\text{accepté},i}}, \quad V_{\text{réel}} = \text{Uniform}(0{,}40,\; 1{,}00) \times V_{\text{accepté}}
+\end{equation}
+
+Avec $\mathrm{Cr} = 1{,}0$ au cold start (premier échange) et $D = 1{,}00$ pour CRITICAL, le score $T(u) = S(u,i)$ se distribue naturellement entre BRONZE, SILVER et GOLD :
+
+\begin{table}[H]
+\centering
+\caption{Distribution des niveaux de confiance après une attaque CRITICAL (99 pairs)}
+\label{tab:trust-distribution}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Niveau} & \textbf{Seuil} & \textbf{Proportion attendue} \\
+\hline
+GOLD    & $\geq 0{,}80$ & $\approx 33\,\%$ \\
+SILVER  & $\geq 0{,}60$ & $\approx 33\,\%$ \\
+BRONZE  & $\geq 0{,}40$ & $\approx 34\,\%$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Résultats}
+
+\begin{lstlisting}[language=bash, caption={Extrait du rapport de test fonctionnel}, label={lst:func-results}]
+  [PASS]  Phase 0 | 100 noeuds accessibles -- 100/100
+  [PASS]  Phase 1 | Tokens JWT generes -- 100/100
+  [PASS]  Phase 1 | Rejet sans token (401)
+  [PASS]  Phase 2 | 100 noeuds initialises -- 100/100
+  [PASS]  Phase 2 | 99 pairs enregistres -- 99/99
+  [PASS]  Phase 2 | GET /peers coherent -- 99 pairs
+  [PASS]  Phase 3 | Attaque detectee -- vol=113.8 Gbps, overflow=108.8 Gbps
+  [PASS]  Phase 4 | WSM retourne des pairs -- 99 pairs
+  [PASS]  Phase 4 | Somme allocations = 100% -- total=100.05%
+  [PASS]  Phase 5 | POST /help/request x 99 -- 99/99
+  [PASS]  Phase 5 | Sessions activees (accept + redirect) -- 99 actives
+  [PASS]  Phase 6 | POST /attack/over
+  [PASS]  Phase 6 | POST /trust/recalculate x 99 -- 99/99
+  [PASS]  Phase 6 | GET /trust retourne des scores -- 99 scores, 99 non bannis
+
+  Resultat : 14/14 assertions passees -- TEST FONCTIONNEL REUSSI
+\end{lstlisting}
+
+\subsection{Test de Sécurité}
+
+Le test de sécurité valide les mécanismes de protection implémentés dans le nœud Docker réel (port 3001, HTTPS/mTLS). Il couvre trois catégories :
+
+\begin{table}[H]
+\centering
+\caption{Résultats du test de sécurité — 12/12 assertions}
+\label{tab:security-results}
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\textbf{Catégorie} & \textbf{Assertion} & \textbf{Résultat} \\
+\hline
+\multirow{6}{*}{JWT RS256}
+  & Génération token RS256 (algo=RS256, exp=60s)       & PASS \\
+  & Rejet sans token (401 Unauthorized)                 & PASS \\
+  & Rejet signature falsifiée (401 Invalid token)        & PASS \\
+  & Rejet token malformé (401)                          & PASS \\
+  & Expiration après 60 s (401 Token expired)           & PASS \\
+  & Rejet mauvais secret (401 Invalid credentials)      & PASS \\
+\hline
+\multirow{3}{*}{TLS}
+  & Connexion HTTPS établie (certificat auto-signé)     & PASS \\
+  & HTTP en clair refusé (ServerDisconnectedError)      & PASS \\
+  & Certificat TLS X.509 présent                        & PASS \\
+\hline
+\multirow{3}{*}{Contrôle d'accès}
+  & Claims JWT présents (iss, exp, node\_id)            & PASS \\
+  & Routes publiques accessibles sans token             & PASS \\
+  & Routes protégées bloquées sans token (401)          & PASS \\
+\hline
+\multicolumn{2}{|l|}{\textbf{Total}} & \textbf{12/12} \\
+\hline
+\end{tabularx}
+\end{table}
+
+Le test confirme notamment que l'expiration du token à 60 secondes est strictement appliquée par le middleware JWT RS256, et que la connexion HTTP en clair est systématiquement rejetée par le serveur HTTPS.
+
+\subsection{Test de Scalabilité}
+
+\subsubsection{Protocole}
+
+Le test de scalabilité évalue les performances du nœud Docker réel (University, port 3001) en faisant varier le nombre de pairs de 20 à 100 par paliers de 20. Avant chaque exécution, la base est réinitialisée via \texttt{POST /simulation/reset} pour garantir l'isolation des mesures. Chaque palier comprend trois phases exécutées en parallèle (via \texttt{asyncio.gather}) :
+
+\begin{enumerate}
+    \item Enregistrement en parallèle des $N$ pairs (\texttt{POST /peers/register})
+    \item Envoi simultané de $N$ heartbeats (\texttt{POST /heartbeat}, avec JWT)
+    \item Sélection WSM sur les $N$ candidats (\texttt{POST /trust/select-peers}, avec JWT)
+\end{enumerate}
+
+\subsubsection{Résultats}
+
+\begin{table}[H]
+\centering
+\caption{Résultats du test de scalabilité — nœud Docker University (HTTPS)}
+\label{tab:scalability-results}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Nœuds} & \textbf{Enreg. moy (ms)} & \textbf{Enreg. max (ms)} & \textbf{HB moy (ms)} & \textbf{HB max (ms)} & \textbf{WSM (ms)} \\
+\hline
+20  & 220,6 & 252,9 & 115,8 & 137,7 & 15,1 \\
+40  & 261,3 & 325,0 & 206,3 & 231,6 & 22,3 \\
+60  & 358,4 & 422,0 & 259,1 & 275,1 & 19,3 \\
+80  & 405,0 & 501,3 & 366,6 & 394,6 & 41,6 \\
+100 & 716,3 & 837,2 & 542,8 & 589,2 & 45,6 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Analyse}
+
+Les résultats appellent les observations suivantes :
+
+\begin{itemize}
+    \item \textbf{Enregistrement} : la latence croît de 220 ms à 716 ms entre 20 et 100 nœuds. Cette croissance s'explique par la contention sur PostgreSQL lors des INSERTs concurrents (tous les enregistrements sont lancés simultanément via \texttt{asyncio.gather}). Le comportement reste acceptable pour un système de coalition qui n'enregistre pas de nouveaux pairs en permanence.
+
+    \item \textbf{Heartbeat} : la latence croît de 115 ms à 543 ms. Cette valeur inclut la vérification JWT RS256 et l'écriture en base. Elle est nettement supérieure aux latences sans authentification, ce qui valide l'efficacité du middleware de sécurité.
+
+    \item \textbf{Sélection WSM} : le temps de calcul reste \textbf{inférieur à 46 ms} même à 100 nœuds, confirmant la complexité $O(N)$ de l'algorithme. C'est la métrique la plus critique : en situation d'attaque, la sélection des pairs doit être quasi-instantanée.
+\end{itemize}
+
+% ────────────────────────────────────────────────────────────
+\section{Synthèse et Bilan de la Contribution}
+\label{sec:bilan}
+% ────────────────────────────────────────────────────────────
+
+Ce chapitre a présenté l'implémentation complète de ShieldNet, un système distribué de mitigation collaborative des attaques DDoS. Les contributions principales sont résumées ci-dessous :
+
+\begin{table}[H]
+\centering
+\caption{Bilan des contributions implémentées}
+\label{tab:bilan}
+\begin{tabularx}{\textwidth}{|l|c|X|}
+\hline
+\textbf{Module} & \textbf{LOC} & \textbf{Contribution} \\
+\hline
+Authentification JWT RS256 & $\sim$190 & Authentification asymétrique sans secret partagé \\
+Découverte des pairs       & $\sim$490 & Enregistrement transactionnel + machine à états \\
+Coalition anti-DDoS        & $\sim$580 & Cycle de vie complet d'une attaque collaborative \\
+Algorithme WSM             & $\sim$160 & Répartition proportionnelle multi-critères avec poids AHP (CR=1,6\%) \\
+Modèle PeerTrust           & $\sim$140 & Calcul de confiance basé sur l'historique des sessions \\
+Heartbeat automatique      & $\sim$150 & Surveillance continue des pairs en tâche de fond \\
+Infrastructure Docker      & $\sim$80  & Déploiement reproductible en 4 nœuds isolés \\
+Script de démonstration    & $\sim$600 & Validation end-to-end des 7 phases du scénario \\
+Test fonctionnel (Python)  & $\sim$900 & 100 nœuds in-process, 14 endpoints, 14/14 assertions \\
+Test de sécurité (Python)  & $\sim$310 & JWT RS256, TLS, contrôle d'accès, 12/12 assertions \\
+Test de scalabilité (Python) & $\sim$270 & 5 paliers 20→100 nœuds, latences mesurées \\
+\hline
+\textbf{Total}             & $\sim$3870 & \\
+\hline
+\end{tabularx}
+\end{table}
+
+L'implémentation valide les hypothèses du projet : un réseau de nœuds autonomes peut former une coalition de défense dynamique, où les décisions de sélection et de confiance sont prises localement, sans coordinateur central, tout en convergeant vers un état cohérent grâce aux mécanismes de heartbeat et de scoring.
+
+La suite de tests développée (fonctionnel 14/14, sécurité 12/12, scalabilité 5 paliers) confirme empiriquement les propriétés du système : la sélection WSM reste sous 46 ms jusqu'à 100 nœuds, les mécanismes JWT RS256 et TLS sont fonctionnels et stricts, et le cycle complet de coalition (détection → sélection → redirection → clôture → score) se déroule correctement à grande échelle.

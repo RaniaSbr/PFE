@@ -226,26 +226,25 @@ router.post("/trust/select-peers", async (req, res) => {
   try {
     const { overflow_gbps, min_trust_score, ignore_trust } = req.body;
 
-    if (overflow_gbps === undefined || overflow_gbps <= 0) {
-      return res.status(400).json({ error: "overflow_gbps must be a positive number" });
-    }
-
-    const result = await selectPeers(overflow_gbps, {
-      minTrustScore: min_trust_score ?? 0.0,
-      ignoreTrust: ignore_trust ?? false,
+    // overflow_gbps est optionnel : si fourni, les Gbps estimés par pair sont calculés
+    const result = await selectPeers({
+      overflowGbps:   overflow_gbps   ?? undefined,
+      minTrustScore:  min_trust_score ?? 0.0,
+      ignoreTrust:    ignore_trust    ?? false,
     });
 
-    // Mapper plan → selected_peers avec les champs attendus par le script de démo
     const selected_peers = result.plan.map((p) => ({
-      peer_id:               p.peer.peer_id,
-      peer_name:             p.peer.peer_name,
-      organization_name:     p.peer.organization_name,
-      api_endpoint_url:      p.peer.api_endpoint_url,
+      peer_id:                 p.peer.peer_id,
+      peer_name:               p.peer.peer_name,
+      organization_name:       p.peer.organization_name,
+      api_endpoint_url:        p.peer.api_endpoint_url,
       declared_available_gbps: p.peer.declared_available_gbps,
-      trust_level:           p.peer.trust_level,
-      wsm_score:             p.score,
-      allocated_gbps:        p.allocated_gbps,
-      criteria:              p.criteria,
+      trust_level:             p.peer.trust_level,
+      wsm_score:               p.wsm_score,
+      weight:                  p.weight,
+      allocation_pct:          p.allocation_pct,
+      ...(p.estimated_gbps !== undefined && { estimated_gbps: p.estimated_gbps }),
+      criteria:                p.criteria,
     }));
 
     return res.json({ ...result, selected_peers });

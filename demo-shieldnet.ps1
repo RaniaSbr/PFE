@@ -252,13 +252,12 @@ Title "PHASE 3 - DETECTION D'UNE ATTAQUE DDOS CRITIQUE"
 $ATTACK_VOLUME = 35.0   # Gbps total de l'attaque
 $LOCAL_CAP     = $UNIV.capacity  # 10 Gbps
 
-Step "Scenario : attaque UDP_FLOOD CRITIQUE sur l'Universite d'Alger"
+Step "Scenario : attaque DDoS CRITIQUE sur l'Universite d'Alger"
 Info "Volume de l'attaque  : $ATTACK_VOLUME Gbps"
 Info "Capacite locale      : $LOCAL_CAP Gbps"
 Info "Overflow a absorber  : $($ATTACK_VOLUME - $LOCAL_CAP) Gbps -> COALITION REQUISE"
 
 $attackBody = @{
-    attack_type    = "UDP_FLOOD"
     volume_gbps    = $ATTACK_VOLUME
     target_ip_range = "193.194.100.0/24"
     target_service  = "DNS"

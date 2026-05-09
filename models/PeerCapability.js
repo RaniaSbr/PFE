@@ -1,5 +1,3 @@
-const { CAPABILITY_ATTACK_TYPES } = require("./enums");
-
 module.exports = (sequelize, DataTypes) => {
   const PeerCapability = sequelize.define(
     "PeerCapability",
@@ -18,10 +16,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
-      },
-      attack_type: {
-        type: DataTypes.ENUM(...CAPABILITY_ATTACK_TYPES),
-        allowNull: false,
       },
       declared_capacity_gbps: {
         type: DataTypes.FLOAT,
@@ -53,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ["peer_id", "attack_type"],
+          fields: ["peer_id"],
         },
       ],
     },

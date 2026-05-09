@@ -57,11 +57,11 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [attack_id, helping_peer_id, requested_volume_gbps]
+ *             required: [attack_id, helping_peer_id]
  *             properties:
  *               attack_id: { type: string, format: uuid }
  *               helping_peer_id: { type: string, format: uuid }
- *               requested_volume_gbps: { type: number }
+ *               allocation_pct: { type: number, description: "Pourcentage du flux attribué à ce pair (0-100)" }
  *     responses:
  *       201:
  *         description: Session créée
@@ -188,12 +188,7 @@ async function getLocalNodeId() {
 // POST /alert
 router.post("/alert", async (req, res) => {
   try {
-    if (!req.body.attack_type) {
-      return res.status(400).json({ error: "attack_type is required" });
-    }
-
     const payload = {
-      attack_type: req.body.attack_type,
       detected_at: req.body.detected_at || new Date(),
       status: req.body.status || "DETECTED",
       peak_volume_gbps: req.body.volume_gbps ?? req.body.peak_volume_gbps ?? 0,
@@ -229,7 +224,7 @@ router.post("/alert", async (req, res) => {
         severity: "WARNING",
         actor: "system",
         target: attack.attack_id,
-        description: `Escalation triggered for attack ${attack.attack_id} (${attack.attack_type})`,
+        description: `Escalation triggered for attack ${attack.attack_id}`,
       });
     }
 
@@ -247,7 +242,7 @@ router.get("/attacks", async (req, res) => {
     const where = {};
 
     if (req.query.status) where.status = req.query.status;
-    if (req.query.attack_type) where.attack_type = req.query.attack_type;
+
     if (req.query.severity) where.severity = req.query.severity;
 
     const { count, rows } = await Attack.findAndCountAll({
@@ -322,7 +317,7 @@ router.post("/help/request", async (req, res) => {
       helping_peer_id: req.body.helping_peer_id,
       direction: req.body.direction || "OUTBOUND_REQUEST",
       status: req.body.status || "REQUESTED",
-      requested_volume_gbps: req.body.requested_volume_gbps ?? 0,
+      allocation_pct: req.body.allocation_pct ?? null,
       accepted_volume_gbps: req.body.accepted_volume_gbps ?? null,
       actual_volume_gbps: req.body.actual_volume_gbps ?? null,
       requested_at: req.body.requested_at || new Date(),
@@ -374,7 +369,7 @@ router.post("/help/offer", async (req, res) => {
       helping_peer_id: req.body.helping_peer_id,
       direction: req.body.direction || "INBOUND_OFFER",
       status: req.body.status || "OFFERED",
-      requested_volume_gbps: req.body.requested_volume_gbps ?? 0,
+      allocation_pct: req.body.allocation_pct ?? null,
       accepted_volume_gbps: req.body.accepted_volume_gbps ?? null,
       actual_volume_gbps: req.body.actual_volume_gbps ?? null,
       requested_at: req.body.requested_at || new Date(),
@@ -553,11 +548,11 @@ router.post("/attack/over", async (req, res) => {
         // (le pair a fourni ce qu'il avait promis)
         if (!session.actual_volume_gbps) {
           await session.update({
-            actual_volume_gbps: session.accepted_volume_gbps ?? session.requested_volume_gbps ?? 0,
+            actual_volume_gbps: session.accepted_volume_gbps ?? 0,
           });
         }
 
-        const volume = session.actual_volume_gbps || session.accepted_volume_gbps || session.requested_volume_gbps || 0;
+        const volume = session.actual_volume_gbps || session.accepted_volume_gbps || 0;
         const [ledger] = await ReciprocityLedger.findOrCreate({
           where: { peer_id: session.helping_peer_id },
           defaults: { peer_id: session.helping_peer_id, credits_received: 0, credits_given: 0, balance: 0 },

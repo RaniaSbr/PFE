@@ -1,0 +1,194 @@
+\documentclass[a4paper, 12pt, oneside]{report}
+
+% =============================================
+% PACKAGES
+% =============================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{csquotes}
+\usepackage{lmodern}
+\usepackage{tabularx}
+\usepackage{geometry}
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm,
+    headheight=15.5pt 
+}
+
+% Graphiques et figures
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{subcaption}
+
+% Tableaux
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Mathématiques
+\usepackage{amsmath, amssymb, amsfonts}
+
+% Couleurs et liens
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% En-têtes et pieds de page
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Bibliographie
+\usepackage[backend=biber, style=ieee, sorting=nyt]{biblatex}
+\addbibresource{references.bib}
+
+% Espacement
+\usepackage{setspace}
+\onehalfspacing
+
+% Listings (code source)
+\usepackage{listings}
+
+% Définition du langage JavaScript pour listings
+\lstdefinelanguage{JavaScript}{
+  keywords={break,case,catch,continue,debugger,default,delete,do,else,
+    finally,for,function,if,in,instanceof,new,return,switch,this,throw,
+    try,typeof,var,void,while,with,let,const,async,await,of,class,
+    extends,import,export,from,require,module},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={true,false,null,undefined,NaN,Infinity},
+  ndkeywordstyle=\color{teal},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{orange!80!black},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`
+}
+
+\usepackage{color}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{orange}{rgb}{1,0.5,0}
+\definecolor{teal}{rgb}{0,0.5,0.5}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    breakatwhitespace=false,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    tabsize=2
+}
+
+% TikZ
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, arrows.meta,decorations.pathreplacing, calc}
+
+
+% Pifont (pour \ding)
+\usepackage{pifont}
+
+% Glossaire / Acronymes
+\usepackage[acronym, toc]{glossaries}
+\makeglossaries
+
+% Profondeur de la table des matières
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% =============================================
+% ACRONYMES
+% =============================================
+\newacronym{ddos}{DDoS}{Distributed Denial of Service}
+\newacronym{dos}{DoS}{Denial of Service}
+\newacronym{bgp}{BGP}{Border Gateway Protocol}
+\newacronym{coap}{CoAP}{Constrained Application Protocol}
+\newacronym{dtls}{DTLS}{Datagram Transport Layer Security}
+\newacronym{dots}{DOTS}{DDoS Open Threat Signaling}
+\newacronym{p2p}{P2P}{Pair-à-Pair}
+\newacronym{dht}{DHT}{Distributed Hash Table}
+\newacronym{spof}{SPOF}{Single Point of Failure}
+\newacronym{dpi}{DPI}{Deep Packet Inspection}
+\newacronym{gre}{GRE}{Generic Routing Encapsulation}
+\newacronym{iot}{IoT}{Internet of Things}
+\newacronym{fai}{FAI}{Fournisseur d'Accès Internet}
+\newacronym{waf}{WAF}{Web Application Firewall}
+\newacronym{acl}{ACL}{Access Control List}
+\newacronym{cbor}{CBOR}{Concise Binary Object Representation}
+\newacronym{nlri}{NLRI}{Network Layer Reachability Information}
+\newacronym{as}{AS}{Autonomous System}
+\newacronym{jwt}{JWT}{JSON Web Token}
+\newacronym{tls}{TLS}{Transport Layer Security}
+\newacronym{mtls}{mTLS}{Mutual Transport Layer Security}
+\newacronym{wsm}{WSM}{Weighted Sum Model}
+\newacronym{ahp}{AHP}{Analytic Hierarchy Process}
+\newacronym{orm}{ORM}{Object-Relational Mapping}
+\newacronym{rsa}{RSA}{Rivest-Shamir-Adleman}
+\newacronym{api}{API}{Application Programming Interface}
+\newacronym{rest}{REST}{Representational State Transfer}
+\newacronym{uuid}{UUID}{Universally Unique Identifier}
+\newacronym{rtt}{RTT}{Round-Trip Time}
+
+% =============================================
+% DEBUT DU DOCUMENT
+% =============================================
+\begin{document}
+
+% ----- Pages préliminaires -----
+\pagenumbering{roman}
+
+\input{chapters/abstract}
+
+\tableofcontents
+\newpage
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+\newpage
+
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+\newpage
+
+\printglossary[type=\acronymtype, title=Liste des acronymes]
+\newpage
+
+% ----- Corps du mémoire -----
+\pagenumbering{arabic}
+
+\input{chapters/introduction}
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+\input{chapters/chapter4}
+\input{chapters/conclusion}
+
+% ----- Bibliographie -----
+\printbibliography[heading=bibintoc, title=Bibliographie]
+
+% ----- Annexes -----
+\appendix
+\input{chapters/appendix}
+
+\end{document}

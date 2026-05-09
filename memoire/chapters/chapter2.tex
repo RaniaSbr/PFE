@@ -1,0 +1,330 @@
+% =============================================
+% CHAPITRE 2 : État de l'art
+% =============================================
+\chapter{État de l'art}
+\label{chap:etat_art}
+
+\section{Introduction}
+
+La défense collaborative contre les attaques \gls{ddos} a donné lieu à une littérature académique riche ainsi qu'à plusieurs déploiements institutionnels et industriels. Ce chapitre analyse quatre contributions majeures, sélectionnées pour leur représentativité des différentes approches existantes~:
+\begin{itemize}
+    \item un standard de signalisation inter-domaines (\gls{dots}),
+    \item une coalition nationale de partage de métadonnées (DDoS Clearing House),
+    \item une mutualisation opérationnelle de \textit{scrubbing centers} (NaWas/NBIP),
+    \item un overlay coopératif distribué (DefCOM).
+\end{itemize}
+
+Pour chaque travail, nous décrivons le contexte de sa conception, son architecture technique détaillée, ses mécanismes protocolaires et ses limites identifiées. Une synthèse comparative clôt le chapitre et identifie les lacunes que notre contribution vise à combler.
+
+% --------------------------------------------------
+\section{DOTS --- DDoS Open Threat Signaling}
+\label{sec:dots}
+
+\subsection{Contexte et motivation}
+
+L'IETF a initié le groupe de travail \gls{dots} (\textit{DDoS Open Threat Signaling}) pour définir un protocole standardisé permettant à une entité attaquée de notifier automatiquement un prestataire de mitigation. Les exigences sont formalisées dans la RFC~8612 \cite{mortensen2019dots} et le canal de signalisation dans la RFC~8782 \cite{reddy2020dots}.
+
+\subsection{Architecture et fonctionnement}
+
+\gls{dots} repose sur une architecture client--serveur asymétrique comprenant un \textbf{DOTS client} (l'entité sous attaque) et un \textbf{DOTS server} (le prestataire de mitigation).
+
+Le protocole s'appuie sur une pile technologique légère adaptée aux environnements contraints et congestionnés, divisée en deux canaux distincts (voir Figure~\ref{fig:dots_archi})~:
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics [height=0.45\textwidth]{do.png}
+
+\caption{Architecture de référence du protocole \gls{dots} : séparation entre le canal de signalisation (CoAP/DTLS/UDP) et le canal de données (RESTCONF/HTTPS/TCP).}
+
+\label{fig:dots_archi}
+\end{figure}
+
+
+\subsubsection{Canal de signalisation (\textit{Signal Channel})}
+
+Ce canal utilise le protocole \gls{coap} (\textit{Constrained Application Protocol}, RFC~7252) sécurisé par \gls{dtls}~1.2 (RFC~6347) sur UDP. Ce choix est stratégique~: contrairement à TCP, UDP évite les délais de retransmission et le blocage de tête de ligne (\textit{Head-of-Line blocking}) fréquents lors d'une saturation de lien.
+
+Concrètement, le client émet une requête CoAP \texttt{PUT} sur l'URI~:
+\begin{center}
+    \texttt{/dots/signal/\{cuid\}/\{mid\}}
+\end{center}
+contenant un objet \gls{cbor} (\textit{Concise Binary Object Representation}, RFC~8949) qui spécifie~:
+\begin{itemize}
+    \item les préfixes IP à protéger (\texttt{target-prefix}),
+    \item les numéros de port (\texttt{target-port-range}),
+    \item le protocole (\texttt{target-protocol}),
+    \item la durée de mitigation souhaitée (\texttt{lifetime}).
+\end{itemize}
+Le serveur répond avec un code \texttt{2.01 Created} et un identifiant de mitigation (\texttt{mid}).
+
+Ce canal gère le cycle de vie de la mitigation via une \textbf{machine à états à quatre transitions}~:
+\[
+\textit{idle} \longrightarrow \textit{mitigation\text{-}requested} \longrightarrow \textit{attack\text{-}mitigation\text{-}in\text{-}progress} \longrightarrow \textit{terminated}
+\]
+
+Un mécanisme de \textit{heartbeat} (messages CoAP \texttt{GET} périodiques, intervalle configurable via \texttt{heartbeat-interval}) vérifie la connectivité entre client et serveur. En l'absence de réponse après un nombre configurable de tentatives (\texttt{missing-hb-allowed}), le client déclenche une procédure de reprise (\textit{failover}).
+
+\subsubsection{Canal de données (\textit{Data Channel})}
+
+Basé sur \textbf{RESTCONF} (RFC~8040) via HTTPS (TLS~1.2+, TCP), il permet l'échange de configurations complexes et moins urgentes. Les données sont modélisées en YANG (RFC~7950). Ce canal sert à~:
+\begin{itemize}
+    \item Définir des \textbf{alias} (\textit{dots-alias}) regroupant plusieurs préfixes IP, ports et protocoles sous un identifiant unique, réduisant la taille des messages de signalisation en période d'attaque.
+    \item Pré-configurer des \textbf{\glspl{acl}} en amont, modélisées selon le module YANG \texttt{ietf-dots-data-channel} (RFC~8783). Ces \glspl{acl} spécifient des règles de filtrage au format \texttt{ietf-access-control-list} incluant les critères de correspondance (5-tuple~: IP source/destination, port source/destination, protocole) et les actions (\texttt{permit}, \texttt{deny}, \texttt{rate-limit}).
+    \item Récupérer les \textbf{télémétries} d'attaque (RFC~9244)~: bande passante entrante, nombre de paquets par seconde, distribution des protocoles d'attaque, \textit{top talkers} (sources les plus actives).
+\end{itemize}
+
+
+
+
+\subsection{Limites identifiées}
+
+\begin{itemize}
+    \item \textbf{Modèle hiérarchique strict~:} \gls{dots} est fondamentalement asymétrique (client $\rightarrow$ serveur). Il ne prévoit pas de coordination \textbf{horizontale} entre clients --- un client \gls{dots} ne peut pas signaler une attaque à un \textit{pair} \gls{dots} ni partager des métadonnées d'attaque avec d'autres victimes potentielles. Le protocole ne définit pas de mécanisme de \textit{peering} entre serveurs \gls{dots} de différents opérateurs.
+
+    \item \textbf{Absence de mutualisation de capacité~:} \gls{dots} signale le \textit{besoin} de mitigation mais ne spécifie pas comment répartir la charge entre plusieurs mitigateurs. Si le serveur \gls{dots} est lui-même saturé, aucun mécanisme de délégation ou d'équilibrage n'est prévu par le standard.
+
+    \item \textbf{Confiance limitée aux relations bilatérales~:} L'authentification repose sur des certificats X.509 ou PSK (\textit{Pre-Shared Key}) pré-provisionnés. Il n'existe pas de mécanisme dynamique pour évaluer la fiabilité d'un pair inconnu \cite{mortensen2019dots}, ce qui limite le déploiement à des relations contractuelles préétablies.
+
+    \item \textbf{Pas de partage d'intelligence~:} \gls{dots} transmet des \textit{demandes} de mitigation, non des \textit{signatures} d'attaque. Un serveur \gls{dots} ne redistribue pas les caractéristiques techniques de l'attaque (vecteurs, TTL, taille de paquets) aux autres entités du réseau pour une protection proactive.
+\end{itemize}
+
+% --------------------------------------------------
+\section{DDoS Clearing House --- Partage collaboratif de \textit{fingerprints}}
+\label{sec:clearinghouse}
+
+\subsection{Contexte et motivation}
+
+Le projet DDoS Clearing House, développé par SIDN Labs dans le cadre du projet européen CONCORDIA (H2020), vise à briser le cloisonnement des informations sur les attaques \gls{ddos} entre opérateurs. Il permet le partage automatisé de \textit{fingerprints} (empreintes) d'attaques entre membres d'une coalition nationale \cite{sidnlabs2021clearinghouse}.
+
+\subsection{Architecture et fonctionnement}
+
+\subsubsection{Le \textit{DDoS Fingerprint}~: structure et contenu}
+
+Le c\oe{}ur du système repose sur le \textbf{DDoS Fingerprint}, une structure de données standardisée décrivant les caractéristiques techniques observées d'une attaque, \textit{sans inclure de données personnelles identifiables} (PII). Chaque fingerprint contient~:
+\begin{itemize}
+    \item \textbf{Vecteur d'attaque~:} type identifié (ex.~: \texttt{DNS\_AMPLIFICATION}, \texttt{NTP\_AMPLIFICATION}, \texttt{SYN\_FLOOD}, \texttt{UDP\_FLOOD}).
+    \item \textbf{Caractéristiques réseau~:} protocole de transport (TCP/UDP/ICMP), port(s) source et destination observés, préfixes source agrégés (anonymisés en /24 ou /16 pour préserver la vie privée).
+    \item \textbf{Caractéristiques des paquets~:} taille moyenne et distribution des paquets, valeur TTL observée (indicateur de distance réseau des sources), flags TCP (pour les SYN floods), présence ou absence de fragmentation IP.
+    \item \textbf{Métriques volumétriques~:} débit crête observé (pps et bps), durée de l'attaque, nombre estimé de sources uniques.
+    \item \textbf{Horodatage~:} timestamp UTC de début et fin de l'attaque.
+\end{itemize}
+
+Les fingerprints sont sérialisés au format \textbf{JSON} et échangés via une \textbf{API REST} (HTTPS) entre les composants du système.
+
+\subsubsection{Architecture logicielle}
+
+Le système suit une architecture à trois composants (voir Figure~\ref{fig:clearinghouse_cycle})~:
+
+\begin{enumerate}
+    \item \textbf{Module local de génération (\textit{DDoS DB local})~:} Déployé chez chaque membre participant, ce module se connecte aux outils de détection existants (NetFlow/IPFIX collectors, IDS type Suricata/Snort, ou plateformes \gls{ddos} dédiées). Il capture les métadonnées du trafic d'attaque via \textbf{DissecTor}, un outil d'analyse de captures PCAP développé par SIDN Labs, qui extrait automatiquement les champs du fingerprint à partir du trafic brut. Le module applique ensuite une \textbf{anonymisation} des adresses IP sources (troncature à /24) et supprime tout payload applicatif avant transmission.
+
+    \item \textbf{Clearing House central (\textit{Hub})~:} Un serveur central reçoit les fingerprints via l'API REST, les \textbf{déduplique} (en identifiant les attaques observées par plusieurs membres simultanément grâce à la corrélation temporelle et aux vecteurs communs), les \textbf{enrichit} (ajout de métadonnées de réputation des préfixes sources via des bases comme Shodan ou Spamhaus) et les stocke dans une base de données centralisée. Le hub expose une API de consultation permettant aux membres d'interroger l'historique par vecteur d'attaque, période ou préfixe cible.
+
+    \item \textbf{Module de consommation (\textit{Converter})~:} Chaque membre récupère les fingerprints pertinents et un module de conversion les traduit automatiquement en \textbf{règles de filtrage} opérationnelles adaptées à l'infrastructure locale~:
+    \begin{itemize}
+        \item Règles \texttt{iptables}/\texttt{nftables} pour le filtrage Linux.
+        \item Règles \textbf{BGP Flowspec} (RFC~5575) pour distribution aux routeurs de bordure.
+        \item Politiques pour \textit{scrubbing appliances} (ex.~: Arbor Sightline/TMS, A10 Thunder TPS).
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=1\textwidth]{clearing_house.png}
+
+
+\caption{Architecture du \textit{DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}
+
+\label{fig:ddos_clearing_house}
+
+\end{figure}
+
+\subsection{Limites identifiées}
+
+\begin{itemize}
+    \item \textbf{Partage passif sans orchestration~:} Le système se limite au partage d'\textbf{intelligence} (\textit{Threat Intel}) sans orchestrer de réponse active. Il n'y a pas de mécanisme pour qu'un membre demande une mitigation distribuée aux autres --- chaque membre applique indépendamment les règles dérivées des fingerprints reçus.
+
+    \item \textbf{Architecture centralisée (\gls{spof})~:} Le hub central constitue un point de défaillance unique~: s'il est indisponible (panne, attaque ciblée), la dissémination des fingerprints est interrompue. La déduplique et l'enrichissement dépendent entièrement de ce composant.
+
+    \item \textbf{Partage \textit{a posteriori}~:} La génération d'un fingerprint nécessite l'analyse du trafic d'attaque \textit{après} sa détection. Le temps de traitement (capture PCAP $\rightarrow$ extraction DissecTor $\rightarrow$ upload API $\rightarrow$ déduplique $\rightarrow$ download par les membres $\rightarrow$ conversion en règles) introduit un \textbf{délai incompressible de l'ordre de plusieurs minutes} \cite{sidnlabs2021clearinghouse}, rendant le système inefficace contre les attaques éphémères (\textit{hit-and-run}, durée $<$~5~min).
+
+    \item \textbf{Confiance implicite~:} Le système ne définit pas de mécanisme formel de vérification de la véracité d'un fingerprint soumis. Un membre compromis ou malveillant pourrait théoriquement injecter de faux fingerprints pour provoquer le blocage de trafic légitime chez les autres membres (\textit{poisoning attack}).
+\end{itemize}
+
+% --------------------------------------------------
+\section{NaWas / NBIP --- Centre national de \textit{scrubbing} mutualisé}
+\label{sec:nawas}
+
+\subsection{Contexte et architecture}
+
+NaWas (\textit{National Wasstraat}, littéralement \og station de lavage nationale \fg{}) est une initiative néerlandaise opérée par le NBIP (\textit{Nationale Beheersorganisatie Internet Providers}), un consortium à but non lucratif regroupant des \glspl{fai} néerlandais. Elle offre une infrastructure de \textit{scrubbing} mutualisée aux membres participants \cite{nbip2023nawas}.
+
+\subsubsection{Mécanisme de redirection BGP}
+
+L'activation de la protection NaWas repose sur le principe de l'\textbf{injection de routes plus spécifiques} via \gls{bgp}. En cas d'attaque (voir Figure~\ref{fig:nawas_bgp})~:
+
+\begin{enumerate}
+    \item Le membre annonce le préfixe IP attaqué (ex.~: \texttt{203.0.113.0/24}) à la plateforme NaWas via une session eBGP dédiée, en y attachant une \textbf{communauté BGP spécifique} (ex.~: \texttt{AS:666} ou une communauté étendue propriétaire) qui indique la demande de scrubbing.
+
+    \item NaWas \textbf{réannonce} ce préfixe vers ses fournisseurs de transit (\textit{upstream providers}) avec un \textit{AS-path} plus court, attirant ainsi le trafic destiné au préfixe attaqué (\textit{traffic attraction} par spécificité de préfixe).
+
+    \item Le trafic entrant est traité par des \textbf{\textit{scrubbing lanes}} (lignes de nettoyage) composées d'appliances matérielles et logicielles qui appliquent~:
+    \begin{itemize}
+        \item Un \textbf{filtrage basé sur signatures} (\gls{dpi}) pour les vecteurs d'attaque connus.
+        \item Un \textbf{\textit{rate limiting}} adaptatif par source IP et par protocole.
+        \item Une \textbf{analyse comportementale} (détection d'anomalies statistiques sur la distribution des tailles de paquets, TTL, flags TCP).
+        \item Un \textbf{challenge cryptographique} (SYN cookies, JavaScript challenge pour HTTP) pour valider les connexions légitimes.
+    \end{itemize}
+
+    \item Le trafic nettoyé (\textit{clean traffic}) est renvoyé au membre via un \textbf{tunnel \gls{gre}} (RFC~2784) ou un \textbf{VLAN dédié} sur une interconnexion privée, contournant ainsi la saturation des liens publics du membre. Le routage de retour utilise un chemin distinct (\textit{clean-return path}) pour éviter les boucles de routage.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{nawas.png}
+
+\caption{Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}
+
+\label{fig:nawas_bgp}
+\end{figure}
+
+\subsection{Limites identifiées}
+
+\begin{itemize}
+    \item \textbf{Architecture semi-centralisée~:} Bien que mutualisée, l'infrastructure physique de NaWas est centralisée aux Pays-Bas (quelques PoP sur des IXP néerlandais --- AMS-IX, NL-ix). Un membre éloigné géographiquement subit une latence de redirection significative. Le \textit{scrubbing center} lui-même peut devenir un \gls{spof} en cas d'attaque ciblant directement l'infrastructure NaWas.
+
+    \item \textbf{Activation semi-manuelle~:} L'injection de la route \gls{bgp} avec la communauté de scrubbing nécessite typiquement une \textbf{intervention de l'opérateur} du membre (commande CLI sur le routeur de bordure ou via un portail web). Il n'y a pas de mécanisme de détection et d'activation entièrement automatisé intégré au protocole --- l'automatisation dépend de l'intégration locale chez chaque membre.
+
+    \item \textbf{Absence de coordination horizontale inter-membres~:} Les membres NaWas n'échangent pas de métadonnées d'attaque entre eux ni ne coordonnent leurs actions de filtrage. Chaque membre interagit uniquement avec la plateforme centrale. Il n'y a pas de partage d'intelligence comparable au Clearing House.
+
+    \item \textbf{Capacité finie~:} La capacité totale de scrubbing est dimensionnée pour le volume agrégé moyen des attaques ciblant les membres. En cas d'attaque volumétrique massive ($>$~1~Tbps) ciblant un seul membre, la capacité mutualisée peut être insuffisante sans mécanisme de débordement (\textit{overflow}) vers des tiers.
+\end{itemize}
+
+% --------------------------------------------------
+\section{DefCOM --- \textit{Distributed Cooperative Overlay Defense}}
+\label{sec:defcom}
+
+\subsection{Contexte et architecture}
+
+Proposé par Mirkovic et al. \cite{mirkovic2003defcom}, DefCOM est un système de défense coopérative qui structure les n\oe{}uds de défense en un \textbf{réseau overlay logique} pour éviter les goulots d'étranglement centraux. C'est l'une des premières propositions académiques de défense \gls{ddos} véritablement distribuée.
+
+\subsubsection{Topologie et rôles des n\oe{}uds}
+
+DefCOM définit trois rôles fonctionnels pour les n\oe{}uds participants~:
+\begin{itemize}
+    \item \textbf{N\oe{}uds \textit{Victim-end} (V-nodes)~:} Déployés dans le réseau de la victime, ils \textbf{détectent} l'attaque en observant la surcharge locale (taux d'utilisation CPU, bande passante saturée, taux de paquets rejetés) et \textbf{initient} la réponse coopérative en classifiant les flux entrants comme légitimes (\textit{good}) ou suspects (\textit{bad}) à l'aide de statistiques locales et de listes blanches préétablies.
+
+    \item \textbf{N\oe{}uds \textit{Core} (C-nodes)~:} Positionnés dans les réseaux intermédiaires (\glspl{fai} de transit), ils relayent les informations de contrôle et appliquent le \textbf{\textit{rate limiting}} sur les flux signalés comme suspects. Chaque C-node maintient un \textbf{classifieur de paquets} qui marque les paquets traversants via un champ de l'en-tête IP pour distinguer le trafic légitime du trafic suspect en aval.
+
+    \item \textbf{N\oe{}uds \textit{Source-end} (S-nodes)~:} Déployés au plus proche des sources d'attaque, ils appliquent le filtrage le plus agressif sur les flux identifiés comme malveillants, en utilisant les informations reçues des V-nodes et C-nodes. Leur objectif est de \textbf{supprimer le trafic d'attaque au plus tôt} dans le chemin réseau, préservant ainsi la bande passante des liens intermédiaires.
+\end{itemize}
+
+\subsubsection{Mécanisme de \textit{Rate Limiting} coopératif}
+
+L'architecture met en \oe{}uvre un mécanisme de \textbf{\textit{Rate Limiting} coopératif hiérarchique} (voir Figure~\ref{fig:defcom_tree}). Le protocole fonctionne comme suit~:
+
+\begin{enumerate}
+    \item Le V-node détecte une surcharge et calcule un \textbf{débit maximal acceptable} ($R_{max}$) pour le trafic entrant sur le préfixe attaqué.
+
+    \item Il envoie un message de type \texttt{RATE\_LIMIT\_REQUEST} à ses C-nodes voisins dans l'overlay, contenant~: le préfixe cible, le débit maximal $R_{max}$, et une liste de préfixes sources classés comme suspects.
+
+    \item Chaque C-node recevant ce message \textbf{répartit} la limite de débit $R_{max}$ proportionnellement entre ses liens amont~:
+    \begin{equation}
+        R_i = R_{max} \times w_i
+        \label{eq:rate_limit}
+    \end{equation}
+    où $w_i$ est le poids du lien $i$ basé sur le volume de trafic observé, puis propage la demande vers les n\oe{}uds plus en amont.
+
+    \item Ce processus forme un \textbf{arbre de limitation de débit} (\textit{rate-limiting tree}) où la contrainte se propage de la victime vers les sources, chaque n\oe{}ud intermédiaire appliquant sa part du budget de débit.
+
+    \item Les S-nodes, en bout de chaîne, appliquent le \textbf{filtrage terminal}~: les flux dépassant leur budget alloué $R_i$ sont soit rejetés (\textit{drop}), soit soumis à un marquage probabiliste (\textit{probabilistic drop}) privilégiant les sources connues comme légitimes.
+\end{enumerate}
+
+\subsubsection{Protocole de communication overlay}
+
+La communication entre les n\oe{}uds se fait via un \textbf{protocole de type \textit{gossip}} (épidémique). Chaque n\oe{}ud maintient une \textbf{table de voisinage} (liste de pairs connus) et diffuse périodiquement ses informations d'état (charge actuelle, débit traité, alertes actives) à un sous-ensemble aléatoire de ses voisins. Ce mécanisme assure~:
+\begin{itemize}
+    \item Une \textbf{convergence rapide}~: l'information atteint tous les n\oe{}uds en $O(\log N)$ rounds de gossip pour $N$ participants.
+    \item Une \textbf{tolérance aux pannes}~: la perte d'un n\oe{}ud intermédiaire n'empêche pas la propagation, grâce à la redondance des chemins de diffusion.
+\end{itemize}
+
+La construction de l'overlay suit un mécanisme de \textbf{découverte initiale par traceroute}~: chaque n\oe{}ud participant exécute des \texttt{traceroute} vers les autres n\oe{}uds connus pour reconstruire la topologie Internet sous-jacente et positionner correctement les C-nodes sur le chemin entre sources et victimes.
+
+\begin{figure}[htbp]
+    \centering
+     \includegraphics[width=0.75\textwidth]{defcom.png}
+ 
+    \caption{Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}
+    \label{fig:defcom_tree}
+\end{figure}
+
+\subsection{Limites identifiées}
+
+\begin{itemize}
+    \item \textbf{Contribution purement académique~:} DefCOM est resté au stade de prototype évalué en simulation (ns-2). Aucun déploiement opérationnel à grande échelle n'a été documenté. Les évaluations publiées portent sur des topologies simulées de quelques dizaines de n\oe{}uds, loin des conditions réelles de l'Internet.
+
+    \item \textbf{Absence de standards d'interopérabilité~:} Le protocole de communication overlay (format des messages, encodage, machine à états) n'est défini que dans les publications académiques, sans spécification formelle (pas de RFC, pas de schéma YANG, pas d'API standardisée). Cela rend l'interopérabilité entre implémentations différentes impossible en pratique.
+
+    \item \textbf{Vulnérabilité aux n\oe{}uds compromis~:} Le modèle de confiance de DefCOM est \textbf{implicite}~: tout n\oe{}ud participant est considéré comme honnête. Un n\oe{}ud compromis pourrait~:
+    \begin{itemize}
+        \item Générer de \textbf{fausses alertes} (\texttt{RATE\_LIMIT\_REQUEST} avec des préfixes légitimes comme cibles) pour provoquer le blocage de trafic légitime (\textit{blackholing} offensif).
+        \item \textbf{Ignorer} les demandes de \textit{rate limiting} reçues (\textit{free-riding}).
+        \item \textbf{Manipuler} les poids de répartition pour rediriger le trafic légitime vers des liens saturés.
+    \end{itemize}
+    Aucun mécanisme de \textbf{réputation}, de \textbf{vérification cryptographique des messages}, ou de \textbf{détection de comportement byzantin} n'est intégré.
+
+    \item \textbf{Hypothèse de déploiement incrémental~:} DefCOM suppose un \textbf{déploiement coopératif} par des \glspl{as} multiples, incluant des \glspl{fai} de transit. En pratique, l'incitation économique pour un \gls{fai} de transit à déployer un n\oe{}ud DefCOM (qui consomme des ressources pour protéger les clients d'un autre \gls{as}) est faible, posant un problème classique d'\textbf{externalité} en économie des réseaux.
+
+    \item \textbf{Scalabilité de la découverte par traceroute~:} La reconstruction de la topologie overlay via \texttt{traceroute} génère un volume de trafic de sondage quadratique ($O(N^2)$ pour $N$ n\oe{}uds) et les résultats sont instables (asymétrie de routage, filtrage ICMP, load balancing).
+\end{itemize}
+
+% --------------------------------------------------
+\section{Synthèse comparative}
+\label{sec:synthese}
+
+Le Tableau~\ref{tab:comparaison} compare les travaux analysés selon les critères clés de la coordination distribuée anti-\gls{ddos}.
+
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|c|c|c|c|}
+\hline
+\textbf{Système} & \textbf{Architecture} & \textbf{P2P} & \textbf{Partage méta.} & \textbf{Sync. actions} & \textbf{Mutualisation} \\
+\hline
+\gls{dots} (RFC~8612) & Client-serveur & $\times$ & $\checkmark$ (partiel) & $\checkmark$ & $\times$ \\
+\hline
+DDoS Clearing House & Centralisée & $\times$ & $\checkmark$ & $\times$ & $\times$ \\
+\hline
+NaWas / NBIP & Semi-centralisée & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+\hline
+DefCOM & P2P overlay & $\checkmark$ & $\checkmark$ (partiel) & $\checkmark$ (partiel) & $\times$ \\
+\hline
+\end{tabular}
+}
+
+\caption{Comparaison des systèmes de défense collaborative contre les attaques DDoS.}
+\label{tab:comparaison}
+
+\end{table}
+
+L'analyse révèle qu'aucun système existant ne combine simultanément~:
+\begin{enumerate}
+    \item Une architecture \textbf{véritablement décentralisée} (\gls{p2p}) éliminant tout \gls{spof}.
+    \item Un mécanisme de \textbf{partage de métadonnées d'attaque en temps réel} (et non \textit{a posteriori}).
+    \item Une \textbf{orchestration coordonnée des actions de mitigation} entre les n\oe{}uds participants.
+    \item Un \textbf{modèle de confiance dynamique} permettant de vérifier la fiabilité des pairs sans relation préétablie.
+    \item Une \textbf{mutualisation effective des capacités} de scrubbing entre n\oe{}uds.
+\end{enumerate}
+
+% --------------------------------------------------
+\section{Conclusion}
+
+L'état de l'art révèle une progression vers la défense collaborative~: \gls{dots} standardise la signalisation inter-domaines mais reste hiérarchique~; le Clearing House partage l'intelligence d'attaque mais sans orchestration active et avec un délai inhérent~; NaWas mutualise les ressources physiques mais sans coordination horizontale entre membres~; DefCOM propose une architecture overlay distribuée mais manque de mécanismes de confiance et d'interopérabilité.
+
+\textbf{Aucun système ne combine pleinement} une architecture décentralisée (\gls{p2p}), une coordination d'actions en temps réel, un partage d'intelligence proactif et des mécanismes de confiance robustes. C'est précisément dans cet espace que s'inscrit la contribution présentée dans les chapitres suivants de ce mémoire.

@@ -1,5 +1,3 @@
-const { CAPABILITY_ATTACK_TYPES } = require("./enums");
-
 module.exports = (sequelize, DataTypes) => {
   const ScrubbingCapability = sequelize.define(
     "ScrubbingCapability",
@@ -18,10 +16,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
-      },
-      attack_type_supported: {
-        type: DataTypes.ENUM(...CAPABILITY_ATTACK_TYPES),
-        allowNull: false,
       },
       max_capacity_gbps: {
         type: DataTypes.FLOAT,
@@ -53,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ["node_id", "attack_type_supported"],
+          fields: ["node_id"],
         },
       ],
     },

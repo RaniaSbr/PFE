@@ -259,16 +259,13 @@ router.post("/peers/register", async (req, res) => {
       }
 
       for (const capability of capabilities) {
-        if (!capability.attack_type) continue;
-
         const existingCapability = await PeerCapability.findOne({
-          where: { peer_id: peer.peer_id, attack_type: capability.attack_type },
+          where: { peer_id: peer.peer_id },
           transaction,
         });
 
         const capabilityValues = {
           peer_id: peer.peer_id,
-          attack_type: capability.attack_type,
           declared_capacity_gbps: capability.declared_capacity_gbps ?? capability.capacity_gbps ?? 0,
           verified: capability.verified ?? false,
           verified_at: capability.verified_at ?? null,
@@ -450,16 +447,13 @@ router.post("/capability/advertise", async (req, res) => {
 
     await sequelize.transaction(async (transaction) => {
       for (const capability of capabilities) {
-        if (!capability.attack_type) continue;
-
         const existingCapability = await PeerCapability.findOne({
-          where: { peer_id, attack_type: capability.attack_type },
+          where: { peer_id },
           transaction,
         });
 
         const values = {
           peer_id,
-          attack_type: capability.attack_type,
           declared_capacity_gbps: capability.capacity_gbps ?? capability.declared_capacity_gbps ?? 0,
           verified: capability.verified ?? false,
           verified_at: capability.verified_at ?? null,

@@ -1,0 +1,501 @@
+% =============================================
+% CHAPITRE 1 : Contexte et concepts fondamentaux
+% =============================================
+\chapter{Contexte et concepts fondamentaux}
+\label{chap:fondamentaux}
+
+\section{Introduction}
+
+La sécurité des infrastructures réseau est aujourd'hui l'un des enjeux majeurs de l'informatique moderne. Parmi les menaces les plus dévastatrices, les attaques par déni de service distribué (\gls{ddos}) occupent une place prépondérante, en raison de leur capacité à paralyser des services critiques en saturant les ressources d'un ou plusieurs systèmes cibles.
+
+Face à l'augmentation en volume et en sophistication de ces attaques, les approches de mitigation centralisées montrent rapidement leurs limites. Il devient alors indispensable d'envisager des mécanismes de défense collaborative et distribuée, où plusieurs n\oe{}uds de protection --- notamment des \textit{scrubbing centers} --- coordonnent leurs actions en temps réel pour détecter, analyser et contrer ces menaces de manière collective.
+
+Ce chapitre a pour objectif de poser les bases conceptuelles nécessaires à la compréhension du travail présenté dans ce mémoire. Nous abordons successivement la nature et la classification des attaques \gls{ddos}, les mécanismes d'infrastructure de mitigation existants, puis les principes des systèmes distribués appliqués à la coordination inter-n\oe{}uds.
+
+% --------------------------------------------------
+\section{Les attaques par déni de service distribué (DDoS)}
+\label{sec:ddos}
+
+\subsection{Définition }
+
+Une attaque par déni de service (\gls{dos}) désigne toute action malveillante visant à rendre un service informatique indisponible pour ses utilisateurs légitimes, en épuisant les ressources du système cible (bande passante, mémoire, CPU, connexions). Lorsque cette attaque est menée simultanément depuis un grand nombre de machines distribuées, on parle d'attaque \gls{ddos} \cite{mirkovic2004taxonomy}.
+
+Mirkovic et Reiher définissent une attaque \gls{ddos} comme~: \og une tentative explicite d'un attaquant de nier aux utilisateurs légitimes l'utilisation d'un service réseau, en submergeant la cible ou son infrastructure intermédiaire avec du trafic illégitime \fg{} \cite{mirkovic2005dward}.
+
+
+\subsection{Architecture d'une attaque DDoS}
+
+Une attaque \gls{ddos} repose sur une architecture à plusieurs niveaux impliquant différents acteurs (voir Figure~\ref{fig:ddos_archi})~:
+\begin{itemize}
+    \item \textbf{L'attaquant (\textit{handler})~:} l'entité malveillante qui orchestre l'attaque depuis une machine maîtresse.
+    \item \textbf{Le réseau de commande et contrôle (C\&C)~:} infrastructure permettant à l'attaquant de coordonner les agents d'attaque à distance, souvent dissimulée via des protocoles légitimes (IRC, HTTP, \gls{p2p}).
+    \item \textbf{Les agents (\textit{zombies} / \textit{bots})~:} machines compromises (ordinateurs, serveurs, objets connectés \gls{iot}) qui exécutent les instructions reçues du C\&C et génèrent le trafic malveillant.
+    \item \textbf{La cible (victime)~:} le système dont on cherche à épuiser les ressources --- serveur web, infrastructure DNS, routeurs de transit, etc.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm and 1.6cm,
+    box/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        minimum width=2.2cm,
+        minimum height=1cm,
+        align=center,
+        font=\small
+    },
+    arr/.style={-{Stealth[length=3mm]}, thick},
+    lab/.style={font=\scriptsize}
+]
+
+\node[box, fill=red!10]    (att)  {Attaquant\\(\textit{handler})};
+\node[box, fill=gray!15,   right=of att]  (cc)   {Serveur C\&C};
+\node[box, fill=orange!15, right=1.8cm of cc]   (bots) {Botnet\\(zombies)};
+\node[box, fill=blue!15,   right=1.8cm of bots] (vic)  {Victime\\(serveur cible)};
+
+\draw[arr] (att) -- node[lab, above]{ordres} (cc);
+\draw[arr] (cc)  -- node[lab, above]{contrôle} (bots);
+\draw[arr, red!70!black] (bots) -- node[lab, above]{trafic} node[lab, below]{malveillant} (vic);
+
+\end{tikzpicture}
+\caption{Architecture générale d'une attaque DDoS.}
+\label{fig:ddos_archi}
+\end{figure}
+
+Specht et Lee \cite{specht2004ddos} soulignent que la compromission de milliers voire de millions de machines forme des botnets dont la puissance agrégée dépasse largement la capacité de réponse d'un seul n\oe{}ud de défense, justifiant ainsi l'intérêt d'une défense distribuée et collaborative.
+
+\subsection{Classification des attaques DDoS}
+\label{subsec:classif_ddos}
+
+La littérature propose plusieurs taxonomies des attaques \gls{ddos} \cite{mirkovic2004taxonomy, zargar2013survey}. Nous adoptons ici la classification en trois grandes catégories, largement répandue dans les travaux académiques et industriels. Le Tableau~\ref{tab:classif_ddos} en offre une synthèse comparative.
+
+\subsubsection{Attaques volumétriques}
+
+Ces attaques visent à saturer la bande passante du lien réseau de la victime ou de son \gls{fai}. Elles constituent la catégorie la plus répandue et la plus facile à générer avec un botnet. On distingue notamment~:
+\begin{itemize}
+    \item \textbf{UDP Flood~:} envoi massif de paquets UDP vers des ports aléatoires de la cible. L'effet principal réside dans la saturation de la bande passante par le volume brut du trafic entrant \cite{mirkovic2004taxonomy}.
+    \item \textbf{ICMP Flood (\textit{Ping Flood})~:} saturation par des requêtes ICMP Echo Request en volume.
+    \item \textbf{Attaques par amplification/réflexion~:} exploitation de serveurs tiers (DNS, NTP, memcached) pour amplifier le volume du trafic. L'attaquant envoie des requêtes à adresse source \textit{spoofée} (celle de la victime) vers des serveurs ouverts, qui répondent avec des paquets de taille bien supérieure. Selon Rossow \cite{rossow2014amplification}, le facteur d'amplification DNS peut atteindre 28$\times$ à 54$\times$, et celui de NTP jusqu'à 556$\times$. Les attaques via memcached ont démontré des facteurs dépassant 50\,000$\times$ \cite{chua2018memcrashed}.
+\end{itemize}
+
+\subsubsection{Attaques sur les protocoles réseau}
+
+Ces attaques exploitent des faiblesses dans les protocoles de communication (TCP, ICMP) pour épuiser les ressources de traitement des équipements réseau intermédiaires.
+\begin{itemize}
+    \item \textbf{SYN Flood~:} exploitation du mécanisme de \textit{handshake} TCP en trois voies. L'attaquant envoie des paquets SYN avec adresses source \textit{spoofées}, forçant le serveur à maintenir en mémoire des connexions semi-ouvertes jusqu'à épuisement de la table d'état (\textit{backlog}). Eddy \cite{eddy2007syn} décrit en détail les vulnérabilités du protocole TCP exploitées par ce type d'attaque.
+    \item \textbf{Smurf Attack~:} envoi de requêtes ICMP \textit{broadcast} avec adresse source \textit{spoofée} (celle de la victime), générant une avalanche de réponses vers la cible.
+\end{itemize}
+
+\noindent\textit{Note historique~:} Le \textit{Ping of Death}, qui consistait à envoyer des paquets ICMP de taille supérieure au maximum autorisé, a constitué une menace dans les années 1990 mais est aujourd'hui corrigé.
+
+\subsubsection{Attaques applicatives (couche~7)}
+
+Ces attaques ciblent la couche application du modèle OSI et sont particulièrement difficiles à distinguer du trafic légitime, car elles utilisent des requêtes HTTP, HTTPS, DNS valides du point de vue syntaxique \cite{zargar2013survey}.
+\begin{itemize}
+    \item \textbf{HTTP Flood~:} envoi massif de requêtes HTTP GET ou POST vers un serveur web, saturant sa capacité de traitement sans nécessiter un volume de trafic important.
+    \item \textbf{Slowloris~:} maintien d'un maximum de connexions HTTP ouvertes vers le serveur cible en envoyant des en-têtes partiels à faible débit, empêchant le serveur d'accepter de nouvelles connexions légitimes.
+    \item \textbf{DNS Query Flood~:} envoi massif de requêtes DNS valides pour épuiser les ressources des serveurs de noms.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Synthèse comparative des catégories d'attaques DDoS.}
+\label{tab:classif_ddos}
+\small
+
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|l|X|X|X|}
+\hline
+\textbf{Caractéristique} & \textbf{Volumétrique} & \textbf{Protocole} & \textbf{Applicative (L7)} \\
+\hline
+
+Couche OSI ciblée & 3--4 (Réseau~/Transport) & 3--4 (Réseau~/Transport) & 7 (Application) \\
+\hline
+
+Objectif principal & Saturer la bande passante & Épuiser les tables d'état & Épuiser les ressources applicatives \\
+\hline
+
+Volume requis & Très élevé (Gbps--Tbps) & Modéré & Faible à modéré \\
+\hline
+
+Difficulté de détection & Faible (anomalie volumétrique) & Moyenne & Élevée (trafic légitime en apparence) \\
+\hline
+
+Exemples & UDP Flood, Amplification & SYN Flood, Smurf & HTTP Flood, Slowloris \\
+\hline
+
+Mitigation typique & Filtrage, \textit{blackholing} & SYN cookies, \textit{rate limiting} & Analyse comportementale, \gls{waf} \\
+\hline
+
+\end{tabularx}
+\end{table}
+
+\subsection{Impact et données statistiques}
+
+Les attaques \gls{ddos} engendrent des pertes économiques considérables. Selon le rapport NETSCOUT Threat Intelligence Report 2023, plus de 7,9~millions d'attaques \gls{ddos} ont été enregistrées sur la seule première moitié de l'année 2023, soit une moyenne de plus de 44\,000 attaques par jour \cite{netscout2023}. Zargar et al. \cite{zargar2013survey} estiment que le coût moyen d'une attaque \gls{ddos} pour une entreprise peut dépasser 50\,000~dollars par heure d'interruption de service, incluant les pertes commerciales directes, les coûts de mitigation et les dommages réputationnels.
+
+% --------------------------------------------------
+\section{Infrastructure de mitigation DDoS}
+\label{sec:mitigation}
+
+La mitigation des attaques \gls{ddos} repose sur un ensemble d'infrastructures et de techniques déployées à différents niveaux du réseau. Cette section présente les principales solutions existantes, leurs mécanismes de fonctionnement et leurs limites respectives.
+
+\subsection{Les \textit{scrubbing centers}~: définition et rôle}
+
+Un \textit{scrubbing center} (ou centre de nettoyage du trafic) est une infrastructure spécialisée dont la mission est d'analyser le trafic réseau entrant, de filtrer les paquets malveillants, puis de renvoyer uniquement le trafic légitime vers la destination finale. Ce mécanisme est souvent désigné sous le terme de \og \textit{clean pipe} \fg{} \cite{mahajan2002controlling}.
+
+Le processus de mitigation via \textit{scrubbing center} se déroule en plusieurs étapes distinctes (voir Figure~\ref{fig:scrubbing})~:
+\begin{enumerate}
+    \item \textbf{Détection~:} une anomalie dans le trafic déclenche une alerte (analyse NetFlow/sFlow, seuils de bande passante, corrélation multi-sources).
+    \item \textbf{Redirection~:} le trafic destiné à la victime est redirigé vers le \textit{scrubbing center} via des mécanismes de routage (\gls{bgp}, DNS).
+    \item \textbf{Analyse et filtrage~:} le centre analyse le trafic en appliquant un pipeline de traitement multi-couches (empreintes, comportement, limitation de débit).
+    \item \textbf{Réinjection~:} le trafic nettoyé est retransmis à la victime via un tunnel \gls{gre} ou MPLS pour éviter les boucles de routage.
+\end{enumerate}
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    stp/.style={
+        rectangle, draw, rounded corners,
+        minimum width=2.4cm,
+        minimum height=1.1cm,
+        align=center, font=\small
+    },
+    arr/.style={-{Stealth[length=3mm]}, thick}
+]
+
+\node[stp, fill=blue!10]   (det) {1. Détection\\Anomalie};
+\node[stp, fill=orange!15, right=of det] (red) {2. Redirection\\BGP / DNS};
+\node[stp, fill=red!10,    right=of red] (fil) {3. Filtrage\\DPI, Rate limit};
+\node[stp, fill=green!15,  right=of fil] (rei) {4. Réinjection\\GRE / MPLS};
+
+\draw[arr] (det) -- (red);
+\draw[arr] (red) -- (fil);
+\draw[arr] (fil) -- (rei);
+
+\draw[arr, red!70, dashed] ($(det.west)+(-1.5,0)$) -- (det.west)
+    node[midway, above, font=\scriptsize] {Trafic}
+    node[midway, below, font=\scriptsize] {entrant};
+
+\draw[arr, green!60!black, dashed] (rei.east) -- ++(1.5,0)
+    node[midway, above, font=\scriptsize] {Trafic}
+    node[midway, below, font=\scriptsize] {légitime};
+
+\end{tikzpicture}
+\caption{Processus de mitigation via un \textit{scrubbing center}.}
+\label{fig:scrubbing}
+\end{figure}
+
+Parmi les principaux fournisseurs de \textit{scrubbing centers}, on trouve des acteurs comme Arbor Networks (Sightline/TMS), Akamai (Prolexic), Radware (DefensePro) et A10 Networks (Thunder TPS). Ces solutions offrent des capacités de traitement allant de quelques dizaines de Gbps à plusieurs Tbps selon l'infrastructure déployée.
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Les réseaux de diffusion de contenu (CDN) comme bouclier anti-DDoS}
+
+Les \textbf{CDN} (\textit{Content Delivery Networks}) tels que Cloudflare, Akamai et AWS CloudFront constituent une autre ligne de défense majeure contre les attaques \gls{ddos}. Leur principe repose sur la \textbf{distribution géographique} du contenu et du traitement du trafic à travers un réseau mondial de points de présence (PoP).
+
+Le mécanisme de protection d'un CDN fonctionne comme suit~:
+\begin{enumerate}
+    \item \textbf{Interception par DNS~:} les enregistrements DNS de la victime sont modifiés pour pointer vers les serveurs du CDN. Tout le trafic entrant transite donc par le réseau du CDN avant d'atteindre le serveur d'origine.
+    \item \textbf{Absorption volumétrique~:} grâce à la technique \textbf{Anycast}, le même préfixe IP est annoncé depuis des centaines de PoP répartis mondialement. Le trafic est automatiquement dirigé vers le PoP le plus proche géographiquement, ce qui \textbf{distribue naturellement} la charge d'une attaque volumétrique sur l'ensemble du réseau.
+    \item \textbf{Filtrage en bordure~:} chaque PoP applique des règles de filtrage (limitation de débit, \gls{waf}, challenges JavaScript/CAPTCHA) pour bloquer le trafic malveillant avant qu'il n'atteigne le serveur d'origine.
+    \item \textbf{Transmission du trafic légitime~:} seul le trafic validé est transmis au serveur d'origine via un canal sécurisé (HTTPS).
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm and 2cm,
+    box/.style={
+        rectangle, draw, rounded corners,
+        minimum width=2cm,
+        minimum height=0.8cm,
+        align=center, font=\small
+    },
+    arr/.style={-{Stealth[length=3mm]}, thick}
+]
+    \node[box, fill=red!15]    (att) {Attaquants};
+    \node[box, fill=gray!10,   right=of att] (dns) {DNS\\Anycast};
+    \node[box, fill=orange!15, right=of dns, yshift=0.8cm]  (pop1) {PoP Europe};
+    \node[box, fill=orange!15, right=of dns]                (pop2) {PoP Asie};
+    \node[box, fill=orange!15, right=of dns, yshift=-0.8cm] (pop3) {PoP USA};
+    \node[box, fill=blue!15,   right=2.5cm of pop2] (origin) {Serveur\\d'origine};
+
+    \draw[arr, red] (att) -- (dns);
+    \draw[arr] (dns) -- (pop1);
+    \draw[arr] (dns) -- (pop2);
+    \draw[arr] (dns) -- (pop3);
+    \draw[arr, green!60!black] (pop1) -- (origin);
+    \draw[arr, green!60!black] (pop2) -- (origin);
+    \draw[arr, green!60!black] (pop3) -- (origin);
+
+    \node[font=\scriptsize\itshape, text=red!60, below=0.3cm of dns] {Trafic distribué};
+    \node[font=\scriptsize\itshape, text=green!50!black, above=0.1cm of origin] {Trafic propre};
+\end{tikzpicture}
+\caption{Principe de protection anti-DDoS par un CDN avec Anycast.}
+\label{fig:cdn_protection}
+\end{figure}
+
+Cependant, les CDN présentent des limites~:
+\begin{itemize}
+    \item \textbf{Protection limitée à la couche applicative (HTTP/HTTPS)~:} les CDN protègent principalement les services web. Les attaques ciblant d'autres protocoles (DNS autoritaire, VoIP, jeux en ligne, VPN) ne bénéficient pas de cette protection.
+    \item \textbf{Dépendance à un fournisseur tiers~:} l'ensemble du trafic transite par l'infrastructure du CDN, créant une dépendance forte et un risque de confidentialité.
+    \item \textbf{Coûts variables~:} la tarification au volume peut devenir prohibitive lors d'attaques massives prolongées.
+\end{itemize}
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Les pare-feu et systèmes de prévention d'intrusion (IPS)}
+
+Les \textbf{pare-feu} (\textit{firewalls}) et les \textbf{systèmes de prévention d'intrusion} (\textit{Intrusion Prevention Systems} --- IPS) constituent la première ligne de défense déployée en périphérie du réseau de l'organisation.
+
+\subsubsection{Pare-feu traditionnels et nouvelle génération (NGFW)}
+
+Les pare-feu filtrent le trafic réseau en fonction de règles prédéfinies basées sur les adresses IP, les ports et les protocoles. Les \textbf{pare-feu de nouvelle génération} (NGFW --- \textit{Next-Generation Firewall}) ajoutent des capacités d'inspection applicative~:
+\begin{itemize}
+    \item \textbf{Inspection à états (\textit{stateful inspection})~:} suivi des connexions TCP pour détecter les anomalies (SYN Flood, connexions incomplètes).
+    \item \textbf{Inspection applicative (couche~7)~:} analyse du contenu des paquets pour identifier les requêtes malveillantes (injections SQL, requêtes HTTP anormales).
+    \item \textbf{Limitation de débit (\textit{rate limiting})~:} restriction du nombre de connexions par source IP et par unité de temps.
+\end{itemize}
+
+\subsubsection{Systèmes de prévention d'intrusion (IPS)}
+
+Les IPS analysent le trafic en temps réel pour détecter et bloquer les comportements malveillants en se basant sur~:
+\begin{itemize}
+    \item \textbf{Signatures~:} correspondance avec une base de signatures d'attaques connues (similaire aux antivirus).
+    \item \textbf{Anomalies~:} détection de déviations par rapport à un profil de trafic normal (\textit{baseline}).
+    \item \textbf{Heuristiques~:} analyse comportementale combinant plusieurs indicateurs pour détecter des attaques inconnues (\textit{zero-day}).
+\end{itemize}
+
+\textbf{Limites face aux attaques DDoS~:} les pare-feu et IPS sont dimensionnés pour le volume de trafic \textit{normal} de l'organisation. Lors d'une attaque volumétrique, le pare-feu lui-même devient un goulot d'étranglement~: sa capacité de traitement (mesurée en paquets par seconde --- pps) est rapidement dépassée, ce qui peut provoquer l'effondrement de l'ensemble du périmètre de sécurité. De plus, les pare-feu à états consomment de la mémoire pour chaque connexion suivie, les rendant particulièrement vulnérables aux attaques d'épuisement de tables d'état (SYN Flood, TCP connection exhaustion).
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Le \textit{blackholing} et le RTBH (\textit{Remote Triggered Black Hole})}
+
+Le \textbf{\textit{blackholing}} est une technique de dernier recours qui consiste à rediriger l'intégralité du trafic destiné à une adresse IP attaquée vers une route nulle (\texttt{null0} / \textit{bit bucket}), supprimant ainsi tout le trafic --- légitime et malveillant --- vers cette destination.
+
+Le mécanisme \textbf{RTBH} (\textit{Remote Triggered Black Hole}, RFC~5635 \cite{kumari2009rtbh}) permet d'automatiser ce processus via \gls{bgp}~:
+\begin{enumerate}
+    \item Le réseau victime annonce le préfixe attaqué avec une \textbf{communauté BGP spéciale} (ex.~: \texttt{AS:666}) à ses fournisseurs de transit.
+    \item Les routeurs des fournisseurs de transit, configurés pour reconnaître cette communauté, redirigent le trafic vers \texttt{null0}.
+    \item Le trafic d'attaque est ainsi éliminé \textit{en amont}, avant qu'il ne sature les liens du réseau victime.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm and 2.8cm,
+    box/.style={
+        rectangle, draw, rounded corners,
+        minimum width=2.5cm, minimum height=1cm,
+        align=center, font=\small
+    },
+    arr/.style={-{Stealth[length=3mm]}, thick},
+    lab/.style={font=\scriptsize}
+]
+
+% --- Nœuds ---
+\node[box, fill=red!10]   (att)     {Attaquants};
+\node[box, fill=gray!10,  right=of att]     (transit) {FAI Transit};
+\node[box, fill=blue!10,  right=of transit] (victim)  {Victime};
+\node[box, fill=black!10, below=2.5cm of transit] (null)
+    {\texttt{null0}\\(Black hole)};
+
+% 1. Trafic d'attaque → FAI Transit
+\draw[arr, red] (att) -- 
+    node[lab, above] {trafic d'attaque} (transit);
+
+% 2. Acheminement normal sans RTBH (chemin supérieur)
+\draw[arr, red, dashed] (transit.15) -- 
+    node[lab, above] {sans RTBH} (victim.165);
+
+% 3. Avec RTBH : drop vers null0
+\draw[arr, orange] (transit.south) -- 
+    node[lab, left, align=center] {avec RTBH\\drop} (null.north);
+
+% 4. Signalisation BGP : victime → transit (chemin inférieur)
+\draw[arr, blue, dashed] (victim.-165) -- 
+    node[lab, below, align=center, inner sep=2pt] 
+    {Annonce BGP\\communauté RTBH (\texttt{AS:666})} 
+    (transit.-15);
+
+\end{tikzpicture}
+\caption{Mécanisme de RTBH via BGP~: la victime annonce un préfixe 
+avec une communauté RTBH, et le FAI redirige le trafic correspondant 
+vers \texttt{null0}.}
+\label{fig:rtbh}
+\end{figure}
+
+\textbf{Avantage~:} le \textit{blackholing} est extrêmement efficace pour protéger l'infrastructure réseau (les liens ne sont plus saturés).
+
+\textbf{Inconvénient majeur~:} il constitue une \textbf{victoire de l'attaquant}. En supprimant tout le trafic vers la cible --- y compris le trafic légitime ---, le \textit{blackholing} produit exactement le résultat recherché par l'attaque~: le déni de service. C'est pourquoi cette technique n'est utilisée qu'en dernier recours, lorsque le sacrifice d'un service est préférable à l'effondrement de l'infrastructure complète.
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Les services de mitigation cloud (\textit{Cloud-based DDoS Protection})}
+
+Les \textbf{services de mitigation cloud} sont proposés par des fournisseurs spécialisés (Cloudflare, AWS Shield, Azure DDoS Protection, Google Cloud Armor) qui disposent d'une infrastructure mondiale massive pour absorber les attaques \gls{ddos}.
+
+Le fonctionnement repose sur le même principe que les \textit{scrubbing centers}, mais avec deux différences majeures~:
+\begin{itemize}
+    \item \textbf{Capacité élastique~:} les fournisseurs cloud disposent de capacités de traitement pouvant dépasser 100~Tbps en cumulé sur l'ensemble de leurs PoP, ce qui leur permet d'absorber les attaques les plus volumétriques.
+    \item \textbf{Modèle \textit{as-a-Service}~:} la mitigation est proposée sous forme d'abonnement, évitant à l'organisation d'investir dans une infrastructure physique dédiée.
+\end{itemize}
+
+Le Tableau~\ref{tab:services_cloud} compare les principaux services de mitigation cloud disponibles sur le marché.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparaison des principaux services de mitigation cloud.}
+\label{tab:services_cloud}
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|l|X|X|X|}
+\hline
+\textbf{Service} & \textbf{Capacité} & \textbf{Couches protégées} & \textbf{Activation} \\
+\hline
+Cloudflare       & 348~Tbps (réseau global) & L3/L4 + L7 (WAF intégré) & Always-on (automatique) \\
+\hline
+AWS Shield Advanced & Élastique (infra AWS) & L3/L4 + L7 (avec WAF) & Always-on + sur demande \\
+\hline
+Azure DDoS Protection & Élastique (infra Azure) & L3/L4 & Always-on \\
+\hline
+Google Cloud Armor & Élastique (infra Google) & L7 (HTTP/HTTPS) & Always-on \\
+\hline
+Akamai Prolexic  & 20+ Tbps (scrubbing dédié) & L3/L4 + L7 & On-demand (BGP redirect) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{Limites des services cloud~:}
+\begin{itemize}
+    \item \textbf{Dépendance au fournisseur~:} l'organisation confie l'intégralité de son trafic à un tiers, ce qui soulève des questions de confidentialité, de souveraineté des données et de \textit{vendor lock-in}.
+    \item \textbf{Coûts récurrents~:} les abonnements premium (ex.~: AWS Shield Advanced à 3\,000~\$/mois + coûts de transfert de données) peuvent être prohibitifs pour les petites structures.
+    \item \textbf{Latence additionnelle~:} le reroutage du trafic via le réseau du fournisseur ajoute une latence (typiquement 5 à 30~ms selon la distance au PoP le plus proche).
+    \item \textbf{Absence de coordination inter-fournisseurs~:} chaque service opère de manière isolée. Il n'existe pas de mécanisme standardisé pour que Cloudflare, AWS et Akamai coordonnent leurs actions face à une attaque ciblant simultanément plusieurs de leurs clients.
+\end{itemize}
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Techniques de redirection du trafic}
+
+La redirection du trafic vers une infrastructure de mitigation (qu'il s'agisse d'un \textit{scrubbing center}, d'un CDN ou d'un service cloud) est une opération critique. Plusieurs techniques sont utilisées en pratique~:
+\begin{itemize}
+    \item \textbf{\gls{bgp} Blackholing et BGP Flowspec~:} Le protocole \gls{bgp} (RFC~4271 \cite{rekhter2006bgp}) permet d'annoncer des préfixes IP pour rediriger le trafic. Le BGP Flowspec (RFC~5575 \cite{marques2009flowspec}) étend cette capacité en distribuant des règles de filtrage fin (correspondance sur les champs source/destination IP, port, protocole, taille de paquet, fragment) sous forme de \gls{nlri} multi-champs, permettant aux routeurs de bordure d'appliquer des actions (\texttt{discard}, \texttt{rate-limit}, \texttt{redirect} vers VRF) sans intervention manuelle.
+    \item \textbf{DNS Redirection~:} Modification des enregistrements DNS de la victime pour pointer vers l'infrastructure de mitigation. Technique utilisée par les CDN (Cloudflare, Akamai) et les services cloud.
+    \item \textbf{Anycast~:} Déploiement du même préfixe IP sur plusieurs n\oe{}uds distribués géographiquement, permettant une absorption distribuée naturelle. Le trafic est dirigé vers le n\oe{}ud le plus proche selon la topologie \gls{bgp}.
+    \item \textbf{Tunnel GRE/MPLS~:} Encapsulation du trafic nettoyé pour le renvoyer à la victime via un chemin distinct (\textit{clean-return path}), évitant les boucles de routage.
+\end{itemize}
+
+% ----- NOUVELLE SOUS-SECTION -----
+\subsection{Synthèse et comparaison des infrastructures de mitigation}
+
+Le Tableau~\ref{tab:comparaison_infra} compare les différentes infrastructures de mitigation présentées dans cette section selon plusieurs critères clés.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparaison des infrastructures de mitigation DDoS.}
+\label{tab:comparaison_infra}
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|}
+\hline
+\textbf{Solution} & \textbf{Couches} & \textbf{Capacité} & \textbf{Avantage principal} & \textbf{Limite principale} \\
+\hline
+Scrubbing center & L3/L4/L7 & Élevée (Tbps) & Filtrage fin multi-couches & Coût, latence de redirection \\
+\hline
+CDN (Anycast)    & L7 (HTTP) & Très élevée & Distribution géographique & Limité au trafic web \\
+\hline
+Pare-feu / IPS   & L3/L4/L7 & Limitée (Gbps) & Proximité, contrôle local & Goulot d'étranglement \\
+\hline
+RTBH Blackholing & L3 & Illimitée & Protège l'infrastructure & Supprime le trafic légitime \\
+\hline
+Service cloud    & L3/L4/L7 & Élastique & Capacité massive, as-a-Service & Dépendance, coût, confidentialité \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ----- SOUS-SECTION EXISTANTE ENRICHIE -----
+\subsection{Limites des approches centralisées}
+
+Bien que les solutions présentées ci-dessus offrent chacune des capacités de mitigation significatives, elles partagent un trait commun~: elles opèrent de manière \textbf{centralisée et isolée}. Chaque organisation déploie ses propres défenses ou souscrit à un service individuel, sans mécanisme de coordination avec les autres entités potentiellement touchées par la même attaque.
+
+Cette approche présente plusieurs limites fondamentales \cite{douligeris2004ddos}~:
+\begin{itemize}
+    \item \textbf{Point de défaillance unique (\gls{spof})~:} que ce soit le \textit{scrubbing center}, le contrôleur SDN ou le fournisseur cloud, toute architecture centralisée introduit un point critique dont la défaillance compromet l'ensemble de la protection.
+    \item \textbf{Latence de redirection~:} le reroutage du trafic vers une infrastructure distante introduit une latence additionnelle (10 à 50~ms) qui dégrade la qualité de service pour les applications sensibles (VoIP, jeux en ligne, trading haute fréquence).
+    \item \textbf{Capacité finie~:} même les plus grandes infrastructures ont une capacité maximale. Face à une attaque dépassant cette capacité, la solution centralisée est elle-même submergée.
+    \item \textbf{Visibilité locale~:} chaque solution n'observe que le trafic qui lui est redirigé. Elle ne peut pas corréler ses observations avec celles d'autres infrastructures pour détecter des attaques coordonnées ciblant simultanément plusieurs victimes.
+    \item \textbf{Absence de mutualisation~:} les ressources de mitigation de différentes organisations ne sont pas partagées. Un \textit{scrubbing center} sous-utilisé ne peut pas venir en aide à un voisin surchargé.
+    \item \textbf{Coûts prohibitifs~:} le dimensionnement d'une infrastructure capable d'absorber les attaques les plus volumétriques (multi-Tbps) représente un investissement considérable, inaccessible aux PME et aux petites collectivités.
+\end{itemize}
+
+Ces limitations convergent vers un constat~: \textbf{la défense isolée ne suffit plus}. La réponse aux attaques \gls{ddos} modernes nécessite une approche \textbf{collaborative et distribuée}, où plusieurs entités autonomes coordonnent leurs actions en temps réel pour mutualiser leurs capacités de détection, d'analyse et de filtrage. C'est cette approche que nous développons dans ce mémoire.
+% --------------------------------------------------
+\section{Architecture pair-à-pair pour la coordination inter-n\oe{}uds}
+\label{sec:p2p}
+
+\subsection{Définition et pertinence du modèle pair-à-pair}
+
+Une architecture \gls{p2p} est un modèle de système distribué dans lequel les n\oe{}uds (ou pairs) sont logiquement équivalents et peuvent assumer simultanément les rôles de client et de serveur. Contrairement aux architectures centralisées traditionnelles, aucun n\oe{}ud ne joue le rôle d'autorité de contrôle unique \cite{tanenbaum2017distributed}. Chaque pair peut ainsi fournir des services aux autres tout en consommant leurs ressources.
+
+Dans le contexte de la mitigation des attaques \gls{ddos}, ce modèle apparaît particulièrement pertinent pour répondre aux limites des architectures centralisées identifiées précédemment (cf. section~1.3.8). En structurant différents mécanismes de défense — tels que les \textit{scrubbing centers}, les pare-feu ou les systèmes de détection — au sein d'un réseau logique superposé (\textit{overlay network}), l'architecture \gls{p2p} permet de répartir les capacités de détection et de filtrage entre plusieurs entités autonomes.
+
+Une telle organisation repose sur trois principes fondamentaux :
+
+\begin{itemize}
+    \item \textbf{Décentralisation :} l'absence de point de contrôle central élimine les points de défaillance uniques (\gls{spof}) et renforce la résilience globale de l'infrastructure de défense.
+    
+    \item \textbf{Autonomie et coopération :} chaque n\oe{}ud conserve la maîtrise de ses ressources locales tout en participant à un mécanisme de défense collectif, permettant de mutualiser les capacités de détection et de mitigation.
+    
+    \item \textbf{Symétrie des rôles :} un même pair peut signaler une attaque lorsqu'il est victime et contribuer simultanément à la mitigation en appliquant des règles de filtrage ou en relayant des informations vers d'autres pairs.
+\end{itemize}
+
+Cette approche ouvre la voie à des mécanismes de défense collaborative où plusieurs organisations peuvent coordonner leurs actions afin de limiter l'impact d'attaques distribuées à grande échelle.
+
+\subsection{Topologies et protocoles P2P applicables à la mitigation}
+
+Les systèmes \gls{p2p} peuvent adopter différentes formes d'organisation, dont l'efficacité varie selon les objectifs et les contraintes du système distribué \cite{tanenbaum2017distributed}. Dans le cadre d'une infrastructure de défense collaborative, plusieurs modèles sont particulièrement pertinents.
+
+\begin{itemize}
+
+\item \textbf{P2P non structuré :}  
+Dans ce modèle, les n\oe{}uds établissent des connexions de manière ad hoc sans structure globale prédéfinie. La recherche d'information ou la diffusion d'alertes s'effectue généralement par inondation (\textit{flooding}). Bien que cette approche soit très robuste face à la disparition de pairs, elle entraîne une surcharge réseau importante et devient difficilement scalable dans des environnements comportant un grand nombre de participants.
+
+\item \textbf{P2P structuré (\gls{dht}) :}  
+Les architectures structurées reposent sur une topologie logique déterministe, souvent implémentée à l'aide d'une table de hachage distribuée (\gls{dht}). Des systèmes tels que Chord \cite{stoica2001chord} permettent de localiser une information en $O(\log N)$ sauts. Dans le contexte de la défense \gls{ddos}, une \gls{dht} peut être utilisée pour maintenir une base de données distribuée contenant des indicateurs de compromission, des signatures d'attaques ou des listes d'adresses IP malveillantes partagées entre participants.
+
+\item \textbf{P2P hybride :}  
+Les architectures hybrides introduisent la notion de \textit{super-pairs}. Certains n\oe{}uds disposant de capacités importantes (par exemple des \textit{scrubbing centers} ou des n\oe{}uds c\oe{}ur de réseau d'un \gls{fai}) jouent un rôle de coordination ou d'agrégation, tandis que des n\oe{}uds périphériques participent à l'échange d'informations avec des capacités plus limitées. Ce modèle permet d'améliorer l'efficacité du routage des messages tout en conservant un degré de décentralisation.
+
+\item \textbf{Protocoles épidémiques (\textit{gossip}) :}  
+Les protocoles \textit{gossip} reposent sur une diffusion probabiliste de l'information. Chaque n\oe{}ud transmet périodiquement son état ou une alerte à un sous-ensemble aléatoire de ses voisins. Cette approche offre une forte tolérance aux pannes et permet une propagation rapide des informations, généralement en $O(\log N)$ cycles de communication. Dans le cadre d'une défense collaborative, les mécanismes \textit{gossip} sont particulièrement adaptés pour diffuser rapidement des alertes d'attaque ou des règles de mitigation sans saturer le réseau de communication.
+
+\end{itemize}
+
+\subsection{Défis du P2P appliqué à la sécurité réseau}
+
+Malgré ses avantages, l'application d'un modèle distribué à la coordination d'infrastructures de défense appartenant à des entités indépendantes soulève plusieurs défis majeurs.
+
+\begin{itemize}
+
+\item \textbf{Gestion de la confiance :}  
+Dans un système décentralisé, l'absence d'autorité centrale complique la validation de l'identité et de la fiabilité des pairs. Un n\oe{}ud compromis pourrait diffuser de fausses alertes afin de provoquer un blocage injustifié du trafic légitime (\textit{blackholing} offensif) ou créer de multiples identités afin d'influencer les décisions collectives (attaque \textit{Sybil}). La mise en place de mécanismes d'authentification forte ou de systèmes de réputation devient alors indispensable.
+
+\item \textbf{Latence de convergence :}  
+Les attaques \gls{ddos} volumétriques peuvent saturer les ressources d'une cible en quelques secondes. La propagation des alertes et la synchronisation des mécanismes de filtrage entre pairs doivent donc être extrêmement rapides afin que la mitigation distribuée puisse être effective avant l'effondrement du service attaqué.
+
+\item \textbf{Problème du passager clandestin (\textit{free-rider}) :}  
+La mitigation d'attaques distribuées nécessite des ressources importantes en bande passante et en capacité de traitement. Dans un système coopératif ouvert, certains participants pourraient bénéficier de la protection collective sans contribuer réellement à l'effort de mitigation. Des mécanismes d'incitation à la coopération, tels que des quotas de contribution ou des systèmes de réputation, peuvent être nécessaires pour limiter ce comportement.
+
+\item \textbf{Passage à l'échelle sous contrainte réseau :}  
+Lors d'une attaque de grande ampleur, le plan de données du réseau peut subir une congestion importante. Le réseau de coordination \gls{p2p} — qui constitue le plan de contrôle du système — doit donc rester opérationnel même en présence de pertes de paquets élevées ou de fortes variations de latence.
+
+\end{itemize}
+
+Ces défis expliquent pourquoi la mise en œuvre de mécanismes de défense véritablement distribués reste complexe dans la pratique. Les approches existantes tentant d'exploiter ces principes seront analysées dans le chapitre suivant à travers l'étude de plusieurs systèmes représentatifs de la littérature.
+% --------------------------------------------------
+\section{Conclusion}
+
+Ce chapitre a posé les fondements nécessaires à la compréhension du travail présenté dans ce mémoire. Nous avons défini les attaques \gls{ddos} et leurs catégories (volumétriques, protocolaires, applicatives), décrit l'infrastructure de mitigation actuelle (\textit{scrubbing centers}) et ses limites centralisées, puis introduit l'architecture \gls{p2p} comme solution potentielle de coordination entre n\oe{}uds de défense.
+
+Le chapitre suivant analyse les principales approches existantes en matière de défense collaborative contre les attaques DDoS.

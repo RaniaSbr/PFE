@@ -1,5 +1,4 @@
 ﻿$BASE_URL = "http://localhost:3001/api/v1"
-$attack_types = @("UDP_FLOOD", "SYN_FLOOD", "HTTP_FLOOD", "DNS_AMPLIFICATION")
 $severities = @("LOW", "MEDIUM", "HIGH", "CRITICAL")
 $tunnel_types = @("GRE", "VXLAN", "IPSEC")
 
@@ -14,11 +13,10 @@ if ($peers.Count -eq 0) {
 for ($i = 1; $i -le 100; $i++) {
     Write-Host "=== Simulation $i/100 ===" -ForegroundColor Cyan
     $volume = [math]::Round((Get-Random -Minimum 5 -Maximum 30), 1)
-    $attack_type = $attack_types | Get-Random
     $severity = $severities | Get-Random
     try {
-        $attack = Invoke-RestMethod "$BASE_URL/simulation/attack/detect" -Method POST -ContentType "application/json" -Body (@{ attack_type = $attack_type; volume_gbps = $volume; target_ip_range = "193.194.$(Get-Random -Min 1 -Max 255).0/24"; target_service = (@("web","dns","mail") | Get-Random); severity = $severity } | ConvertTo-Json)
-        Write-Host "Attaque : $attack_type $volume Gbps ($severity)" -ForegroundColor Yellow
+        $attack = Invoke-RestMethod "$BASE_URL/simulation/attack/detect" -Method POST -ContentType "application/json" -Body (@{ volume_gbps = $volume; target_ip_range = "193.194.$(Get-Random -Min 1 -Max 255).0/24"; target_service = (@("web","dns","mail") | Get-Random); severity = $severity } | ConvertTo-Json)
+        Write-Host "Attaque : $volume Gbps ($severity)" -ForegroundColor Yellow
         $nb_peers = Get-Random -Minimum 1 -Maximum ($peers.Count + 1)
         $selected_peers = $peers | Get-Random -Count $nb_peers
         $sessions = @()

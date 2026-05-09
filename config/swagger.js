@@ -70,10 +70,6 @@ const options = {
           type: "object",
           properties: {
             attack_id: { type: "string", format: "uuid" },
-            attack_type: {
-              type: "string",
-              enum: ["UDP_FLOOD", "SYN_FLOOD", "HTTP_FLOOD", "DNS_AMPLIFICATION", "NTP_AMPLIFICATION", "SLOWLORIS", "MULTI_VECTOR", "UNKNOWN"],
-            },
             detected_at: { type: "string", format: "date-time" },
             ended_at: { type: "string", format: "date-time", nullable: true },
             duration_seconds: { type: "integer", nullable: true },
@@ -114,7 +110,7 @@ const options = {
               type: "string",
               enum: ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "REJECTED", "ACTIVE", "COMPLETED", "FAILED", "CANCELLED", "EXPIRED"],
             },
-            requested_volume_gbps: { type: "number" },
+            allocation_pct: { type: "number", nullable: true, description: "Pourcentage du flux attribué à ce pair (0-100)" },
             accepted_volume_gbps: { type: "number", nullable: true },
             actual_volume_gbps: { type: "number", nullable: true },
             requested_at: { type: "string", format: "date-time" },

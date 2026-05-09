@@ -48,12 +48,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "REQUESTED",
       },
-      requested_volume_gbps: {
+      allocation_pct: {
         type: DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 0,
+        allowNull: true,
         validate: {
           min: 0,
+          max: 100,
         },
       },
       accepted_volume_gbps: {

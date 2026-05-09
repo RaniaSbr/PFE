@@ -56,9 +56,8 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [attack_type, volume_gbps, severity, target_ip_range]
+ *             required: [volume_gbps, severity, target_ip_range]
  *             properties:
- *               attack_type: { type: string, enum: [UDP_FLOOD, TCP_SYN, HTTP_FLOOD, DNS_AMP, ICMP_FLOOD] }
  *               volume_gbps: { type: number }
  *               severity: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
  *               target_ip_range: { type: string }
@@ -176,17 +175,14 @@ router.post("/simulation/node/init", async (req, res) => {
       });
 
       // Capacités de filtrage si fournies
-      if (Array.isArray(req.body.capabilities)) {
-        for (const cap of req.body.capabilities) {
-          if (!cap.attack_type_supported) continue;
-          await ScrubbingCapability.create({
-            node_id: node.node_id,
-            attack_type_supported: cap.attack_type_supported,
-            max_capacity_gbps: cap.max_capacity_gbps ?? 0,
-            filtering_accuracy: cap.filtering_accuracy ?? 1,
-            is_active: cap.is_active !== undefined ? cap.is_active : true,
-          });
-        }
+      if (Array.isArray(req.body.capabilities) && req.body.capabilities.length > 0) {
+        const cap = req.body.capabilities[0];
+        await ScrubbingCapability.create({
+          node_id: node.node_id,
+          max_capacity_gbps: cap.max_capacity_gbps ?? 0,
+          filtering_accuracy: cap.filtering_accuracy ?? 1,
+          is_active: cap.is_active !== undefined ? cap.is_active : true,
+        });
       }
     }
 
@@ -208,10 +204,6 @@ router.post("/simulation/node/init", async (req, res) => {
 // Simule le signal ATTACK_DETECTED de la boîte noire de détection
 router.post("/simulation/attack/detect", async (req, res) => {
   try {
-    if (!req.body.attack_type) {
-      return res.status(400).json({ error: "attack_type is required" });
-    }
-
     const node = await LocalNodeConfig.findOne();
     const localCapacity = Number(node?.max_scrubbing_capacity_gbps || 0);
     const localLoad = Number(node?.current_load_percent || 0);
@@ -220,7 +212,6 @@ router.post("/simulation/attack/detect", async (req, res) => {
     const overflow = Math.max(0, volumeGbps - available);
 
     const attack = await Attack.create({
-      attack_type: req.body.attack_type,
       detected_at: req.body.timestamp || new Date(),
       status: "DETECTED",
       peak_volume_gbps: volumeGbps,
@@ -240,7 +231,7 @@ router.post("/simulation/attack/detect", async (req, res) => {
       severity: "WARNING",
       actor: "simulation",
       target: attack.attack_id,
-      description: `[SIM] Attack detected: ${attack.attack_type} — ${volumeGbps} Gbps`,
+      description: `[SIM] Attack detected: ${volumeGbps} Gbps`,
     });
 
     return res.status(201).json({

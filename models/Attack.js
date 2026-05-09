@@ -1,4 +1,4 @@
-const { ATTACK_SEVERITIES, ATTACK_STATUSES, ATTACK_TYPES } = require("./enums");
+const { ATTACK_SEVERITIES, ATTACK_STATUSES } = require("./enums");
 
 module.exports = (sequelize, DataTypes) => {
   const Attack = sequelize.define(
@@ -8,10 +8,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-      },
-      attack_type: {
-        type: DataTypes.ENUM(...ATTACK_TYPES),
-        allowNull: false,
       },
       detected_at: {
         type: DataTypes.DATE,

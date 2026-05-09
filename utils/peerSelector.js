@@ -8,7 +8,12 @@
  *   Tp  = overall_score issu de TRUST_SCORES      — score de confiance
  *   Rp  = credits_received / (credits_received + credits_given + ε)  — réciprocité bilatérale
  *
- * Contrainte d'allocation : alloc_p ≤ 0.70 · cap_disp_p  (configurable via max_capacity_share_pct)
+ * Répartition proportionnelle :
+ *   w_i          = Score(p_i) / Σ Score(p_j)     — poids normalisé du pair i
+ *   allocation%(p_i) = w_i × 100                 — pourcentage de flux attribué
+ *
+ * Tous les pairs éligibles participent. Le flux total à redistribuer
+ * est inconnu a priori — la répartition est exprimée en pourcentages.
  *
  * Poids AHP validés (CR = 1.6 % < 10 %) :
  *   wC = 0.52 | wL = 0.20 | wT = 0.20 | wR = 0.08
@@ -28,18 +33,20 @@ function computeScore({ Cp, Lp_inv, Tp, Rp }) {
 }
 
 /**
- * Sélectionne les pairs candidats et alloue le volume excédentaire.
+ * Sélectionne TOUS les pairs éligibles et calcule la répartition proportionnelle du flux.
  *
- * @param {number} overflowGbps  - Volume excédentaire à redistribuer (Gbps)
+ * Le flux total n'est pas requis en entrée : chaque pair reçoit un pourcentage
+ * proportionnel à son score WSM. Si le volume est connu, il peut être passé
+ * via options.overflowGbps pour calculer les Gbps estimés en supplément.
+ *
  * @param {object} options
+ * @param {number} [options.overflowGbps]    - Volume excédentaire (optionnel, pour estimation Gbps)
  * @param {number} [options.minTrustScore]   - Score minimum pour participer (défaut : 0.0)
- * @param {boolean} [options.ignoreTrust]    - Ignorer le filtre de confiance (mode CRITIQUE)
- * @returns {Promise<{ plan: Array, remaining_gbps: number }>}
- *   plan : [{ peer, allocated_gbps, score, criteria }]
- *   remaining_gbps : volume non couvert (0 si tous les pairs suffisent)
+ * @param {boolean} [options.ignoreTrust]    - Ignorer le filtre de confiance
+ * @returns {Promise<{ plan: Array, total_peers: number }>}
+ *   plan : [{ peer, allocation_pct, weight, score, estimated_gbps?, criteria }]
  */
-async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = false } = {}) {
-  // Récupérer la politique active pour la contrainte d'allocation
+async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = false } = {}) {
   const node = await LocalNodeConfig.findOne();
   const policy = node
     ? await PolicyConfig.findOne({
@@ -48,10 +55,9 @@ async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = fa
       })
     : null;
 
-  const maxSharePct = Number(policy?.max_capacity_share_pct ?? 70) / 100;
   const minTrust = ignoreTrust ? 0.0 : minTrustScore;
 
-  // Pairs éligibles : ACTIVE, non BANNED, avec de la capacité disponible
+  // Pairs éligibles : ACTIVE, avec capacité disponible
   const peers = await Peer.findAll({
     where: {
       status: { [Op.in]: ["ACTIVE"] },
@@ -64,7 +70,7 @@ async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = fa
   });
 
   if (peers.length === 0) {
-    return { plan: [], remaining_gbps: overflowGbps };
+    return { plan: [], total_peers: 0 };
   }
 
   // Filtrer par score de confiance minimum
@@ -74,7 +80,7 @@ async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = fa
   });
 
   if (candidates.length === 0) {
-    return { plan: [], remaining_gbps: overflowGbps };
+    return { plan: [], total_peers: 0 };
   }
 
   // Pré-calculer les valeurs brutes pour normalisation
@@ -86,19 +92,16 @@ async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = fa
   const maxLat = Math.max(...latValues);
   const latRange = maxLat - minLat;
 
-  // Construire les données normalisées de chaque pair
+  // Calculer le score WSM de chaque pair
   const scored = candidates.map((peer, i) => {
-    const Cp = maxCap > 0 ? capValues[i] / maxCap : 0;
+    const Cp     = maxCap > 0   ? capValues[i] / maxCap                              : 0;
+    const Lp_inv = latRange > 0 ? 1 - (latValues[i] - minLat) / latRange            : 1;
+    const Tp     = peer.trust_score?.overall_score ?? 0.5;
 
-    // Lp' = 1 - (Lp - Lmin) / (Lmax - Lmin) ; si Lmax = Lmin → Lp' = 1 pour tous
-    const Lp_inv = latRange > 0 ? 1 - (latValues[i] - minLat) / latRange : 1;
-
-    const Tp = peer.trust_score?.overall_score ?? 0.5;
-
-    const ledger = peer.reciprocity_ledger;
+    const ledger   = peer.reciprocity_ledger;
     const received = Number(ledger?.credits_received ?? 0);
-    const given = Number(ledger?.credits_given ?? 0);
-    const Rp = received / (received + given + EPSILON);
+    const given    = Number(ledger?.credits_given    ?? 0);
+    const Rp       = received / (received + given + EPSILON);
 
     const score = computeScore({ Cp, Lp_inv, Tp, Rp });
 
@@ -110,48 +113,51 @@ async function selectPeers(overflowGbps, { minTrustScore = 0.0, ignoreTrust = fa
     };
   });
 
-  // Trier par score décroissant
+  // Somme totale des scores → base de la répartition proportionnelle
+  const totalScore = scored.reduce((sum, c) => sum + c.score, 0);
+
+  // Trier par score décroissant (pour la lisibilité)
   scored.sort((a, b) => b.score - a.score);
 
-  // Allocation gloutonne avec contrainte de sécurité
-  const plan = [];
-  let remaining = overflowGbps;
+  // Construire le plan : pour chaque pair, son poids et son pourcentage du flux
+  const plan = scored.map((candidate) => {
+    // w_i = Score(p_i) / Σ Score(p_j)
+    const weight         = totalScore > 0 ? candidate.score / totalScore : 1 / scored.length;
+    const allocation_pct = Number((weight * 100).toFixed(2));
 
-  for (const candidate of scored) {
-    if (remaining <= 0) break;
-
-    const maxAlloc = candidate.cap_disp * maxSharePct;
-    if (maxAlloc <= 0) continue;
-
-    const allocated = Math.min(remaining, maxAlloc);
-    remaining -= allocated;
-
-    plan.push({
+    const entry = {
       peer: {
-        peer_id: candidate.peer.peer_id,
-        peer_name: candidate.peer.peer_name,
-        organization_name: candidate.peer.organization_name,
-        api_endpoint_url: candidate.peer.api_endpoint_url,
+        peer_id:                 candidate.peer.peer_id,
+        peer_name:               candidate.peer.peer_name,
+        organization_name:       candidate.peer.organization_name,
+        api_endpoint_url:        candidate.peer.api_endpoint_url,
         declared_available_gbps: candidate.cap_disp,
-        measured_latency_ms: candidate.peer.measured_latency_ms,
-        trust_level: candidate.peer.trust_score?.trust_level ?? "BRONZE",
+        measured_latency_ms:     candidate.peer.measured_latency_ms,
+        trust_level:             candidate.peer.trust_score?.trust_level ?? "BRONZE",
       },
-      allocated_gbps: Number(allocated.toFixed(3)),
-      score: Number(candidate.score.toFixed(4)),
+      wsm_score:      Number(candidate.score.toFixed(4)),
+      weight:         Number(weight.toFixed(4)),
+      allocation_pct,
       criteria: {
-        capacity_normalized: Number(candidate.criteria.Cp.toFixed(4)),
-        latency_normalized_inv: Number(candidate.criteria.Lp_inv.toFixed(4)),
-        trust_score: Number(candidate.criteria.Tp.toFixed(4)),
-        reciprocity: Number(candidate.criteria.Rp.toFixed(4)),
+        capacity_normalized:     Number(candidate.criteria.Cp.toFixed(4)),
+        latency_normalized_inv:  Number(candidate.criteria.Lp_inv.toFixed(4)),
+        trust_score:             Number(candidate.criteria.Tp.toFixed(4)),
+        reciprocity:             Number(candidate.criteria.Rp.toFixed(4)),
       },
-    });
-  }
+    };
+
+    // Si le volume total est connu, ajouter l'estimation en Gbps
+    if (overflowGbps !== undefined && overflowGbps > 0) {
+      entry.estimated_gbps = Number((weight * overflowGbps).toFixed(3));
+    }
+
+    return entry;
+  });
 
   return {
     plan,
-    remaining_gbps: Number(Math.max(0, remaining).toFixed(3)),
-    total_allocated_gbps: Number((overflowGbps - Math.max(0, remaining)).toFixed(3)),
-    peers_selected: plan.length,
+    total_peers: plan.length,
+    ...(overflowGbps !== undefined && { overflow_gbps_provided: overflowGbps }),
   };
 }
 
