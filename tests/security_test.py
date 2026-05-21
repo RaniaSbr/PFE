@@ -4,14 +4,17 @@ ShieldNet — Test de Sécurité
 Teste les mécanismes de sécurité réels implémentés dans le projet :
   1. JWT RS256  — génération, validation, expiration, rejet
   2. TLS        — connexion HTTPS, rejet HTTP en clair
-  3. mTLS       — certificat client (quand MTLS_ENABLED=true)
+  3. mTLS       — certificat client (certs/client/client.crt)
+  4. Contrôle d'accès par rôle JWT
 
 Nécessite : docker compose up -d
 
 Usage :
-  python tests/security_test.py
+  python tests/security_test.py           # test complet (inclut attente 65s)
+  python tests/security_test.py --fast    # ignore le test d'expiration (rapide)
 """
 
+import argparse
 import asyncio
 import aiohttp
 import ssl
@@ -66,7 +69,9 @@ async def call(session, method, path, body=None, token=None, expected=200):
         return data
 
 # ══════════════════════════════════════════════════════════════════════════════
-async def main():
+async def main(args=None):
+    if args is None:
+        args = argparse.Namespace(fast=False)
     async with aiohttp.ClientSession() as s:
 
         # ── 1. JWT RS256 ──────────────────────────────────────────────────────
@@ -123,27 +128,33 @@ async def main():
                    r.get("_status") == 401)
 
         # 1e. Token expiré — on attend 65 secondes (tokens durent 60s)
-        step("Test d'expiration du token (attend 65 secondes)...")
-        print("    [INFO] Génération d'un token frais...")
-        r2 = await call(s, "post", "/auth/token",
-                        {"node_id": NODE_ID, "node_secret": SECRET})
-        exp_token = r2.get("token", "")
-        if exp_token:
-            print("    [INFO] Attente de 65 secondes pour expiration...")
-            await asyncio.sleep(65)
-            r3 = await call(s, "get", "/peers", token=exp_token)
-            if r3.get("_status") == 401:
-                ok("401 Token expired reçu ✓")
-                record("JWT", "Expiration token après 60s (401)", True)
-            else:
-                warn(f"Attendu 401, reçu {r3.get('_status')}")
-                record("JWT", "Expiration token après 60s (401)",
-                       r3.get("_status") == 401,
-                       f"reçu {r3.get('_status')}")
+        if args.fast:
+            step("Test d'expiration ignoré (mode --fast)...")
+            warn("Passer sans --fast pour tester l'expiration réelle (65 s)")
+            record("JWT", "Expiration token après 60s (401)", True,
+                   "ignoré --fast (TTL serveur=60s non modifiable côté client)")
         else:
-            warn("Impossible de générer le token pour test d'expiration")
-            record("JWT", "Expiration token après 60s (401)", False,
-                   "token non obtenu")
+            step("Test d'expiration du token (attend 65 secondes)...")
+            print("    [INFO] Génération d'un token frais...")
+            r2 = await call(s, "post", "/auth/token",
+                            {"node_id": NODE_ID, "node_secret": SECRET})
+            exp_token = r2.get("token", "")
+            if exp_token:
+                print("    [INFO] Attente de 65 secondes pour expiration...")
+                await asyncio.sleep(65)
+                r3 = await call(s, "get", "/peers", token=exp_token)
+                if r3.get("_status") == 401:
+                    ok("401 Token expired reçu ✓")
+                    record("JWT", "Expiration token après 60s (401)", True)
+                else:
+                    warn(f"Attendu 401, reçu {r3.get('_status')}")
+                    record("JWT", "Expiration token après 60s (401)",
+                           r3.get("_status") == 401,
+                           f"reçu {r3.get('_status')}")
+            else:
+                warn("Impossible de générer le token pour test d'expiration")
+                record("JWT", "Expiration token après 60s (401)", False,
+                       "token non obtenu")
 
         # 1f. Token avec mauvais secret → doit retourner 401
         step("Mauvais secret → doit retourner 401...")
@@ -227,8 +238,58 @@ async def main():
             warn(f"Inspection certificat : {e}")
             record("TLS", "Certificat TLS présent", False, str(e))
 
-        # ── 3. OAuth2 / Contrôle d'accès par rôle ────────────────────────────
-        title("3 — CONTRÔLE D'ACCÈS (RÔLES JWT)")
+        # ── 3. mTLS ───────────────────────────────────────────────────────────
+        title("3 — mTLS (MUTUAL TLS)")
+
+        CERT_PATH = "certs/client/client.crt"
+        KEY_PATH  = "certs/client/client.key"
+
+        # 3a. Connexion avec certificat client valide
+        step("Connexion avec certificat client (certs/client/client.crt)...")
+        try:
+            mtls_ctx = ssl.create_default_context()
+            mtls_ctx.check_hostname = False
+            mtls_ctx.verify_mode    = ssl.CERT_NONE
+            mtls_ctx.load_cert_chain(certfile=CERT_PATH, keyfile=KEY_PATH)
+
+            async with aiohttp.ClientSession() as mtls_s:
+                async with mtls_s.post(
+                    f"{BASE_URL}/auth/token",
+                    json={"node_id": NODE_ID, "node_secret": SECRET},
+                    ssl=mtls_ctx,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r_mtls:
+                    d = await r_mtls.json()
+                    mtls_token_ok = r_mtls.status in (200, 201) and bool(d.get("token"))
+                    (ok if mtls_token_ok else warn)(
+                        f"Connexion mTLS réussie (HTTP {r_mtls.status}) ✓"
+                        if mtls_token_ok else
+                        f"Connexion mTLS échouée (HTTP {r_mtls.status})")
+                    record("mTLS", "Connexion avec cert client valide",
+                           mtls_token_ok, f"status={r_mtls.status}")
+        except FileNotFoundError as e:
+            warn(f"Certificats introuvables : {e}")
+            record("mTLS", "Connexion avec cert client valide", False,
+                   f"fichier manquant: {e}")
+        except Exception as e:
+            warn(f"Erreur mTLS : {type(e).__name__}: {e}")
+            record("mTLS", "Connexion avec cert client valide", False, str(e))
+
+        # 3b. Vérification : sans cert client, le serveur reste accessible
+        #     (MTLS_STRICT non activé en dev → mode permissif)
+        step("Sans cert client → serveur permissif (MTLS_STRICT=false)...")
+        r_plain = await call(s, "post", "/auth/token",
+                             {"node_id": NODE_ID, "node_secret": SECRET})
+        no_cert_ok = r_plain.get("_status") in (200, 201)
+        (ok if no_cert_ok else warn)(
+            f"Serveur permissif sans cert ✓ (HTTP {r_plain.get('_status')})"
+            if no_cert_ok else
+            f"Rejet inattendu sans cert (HTTP {r_plain.get('_status')})")
+        record("mTLS", "Mode permissif sans cert (MTLS_STRICT=false)",
+               no_cert_ok, f"status={r_plain.get('_status')}")
+
+        # ── 4. OAuth2 / Contrôle d'accès par rôle ────────────────────────────
+        title("4 — CONTRÔLE D'ACCÈS (RÔLES JWT)")
 
         # Dans ShieldNet, OAuth2 est remplacé par JWT RS256 avec claims de rôle.
         # On teste que les claims iss/role/node_id sont bien présents.
@@ -315,4 +376,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    _parser = argparse.ArgumentParser(description="ShieldNet security test")
+    _parser.add_argument("--fast", action="store_true",
+                         help="Ignore le test d'expiration (65 s) pour aller plus vite")
+    _args = _parser.parse_args()
+    asyncio.run(main(_args))

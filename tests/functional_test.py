@@ -891,6 +891,115 @@ async def main():
                 warn("GET /trust : liste vide")
                 record("6", "GET /trust retourne des scores", False)
 
+            # ── PHASE 8 — Assertions PeerTrust ciblées ────────────────────────
+            title("PHASE 8 — ASSERTIONS PEERTRUST (GOLD / BANNED / WSM-BAN)")
+
+            # Isolation : vider victim.trust → Cr cold-start = 1.0
+            saved_trust = dict(victim.trust)
+            victim.trust.clear()
+            p8_sessions: List[str] = []
+            p8_peers:    List[str] = []
+
+            # ── 8a. S=1.0 → GOLD ─────────────────────────────────────────────
+            step("S=1.0 (livraison parfaite) → doit être GOLD...")
+            gold_pid = str(uuid.uuid4())
+            victim.peers[gold_pid] = {
+                "peer_id": gold_pid, "peer_name": "test-gold",
+                "status": "ACTIVE", "tier": "T1",
+                "overall_score": 0.5, "trust_level": "BRONZE",
+                "max_scrubbing_capacity_gbps": 50.0,
+                "declared_available_gbps": 25.0,
+            }
+            p8_peers.append(gold_pid)
+            aid_p8 = str(uuid.uuid4())
+            victim.attacks[aid_p8] = {
+                "attack_id": aid_p8, "severity": "CRITICAL", "status": "DETECTED"}
+            gold_sid = str(uuid.uuid4())
+            victim.sessions[gold_sid] = {
+                "session_id": gold_sid, "attack_id": aid_p8,
+                "helping_peer_id": gold_pid, "allocation_pct": 50,
+                "accepted_volume_gbps": 100.0,
+                "actual_volume_gbps": None,  # attack/over va poser actual=accepted
+                "status": "ACCEPTED", "tunnel_type": "GRE",
+            }
+            p8_sessions.append(gold_sid)
+            await call(http, "post", url(victim, "/attack/over"),
+                       {"attack_id": aid_p8, "session_ids": [gold_sid]}, tok_v)
+            r_gold = await call(http, "post",
+                                url(victim, f"/trust/{gold_pid}/recalculate"),
+                                token=tok_v)
+            gold_ok = (r_gold.get("trust_level") == "GOLD"
+                       and abs(r_gold.get("overall_score", 0) - 1.0) < 0.001)
+            (ok if gold_ok else warn)(
+                f"GOLD ✓  score={r_gold.get('overall_score')}" if gold_ok else
+                f"Attendu GOLD — reçu {r_gold.get('trust_level')} "
+                f"(score={r_gold.get('overall_score')})")
+            record("8", "S=1.0 → GOLD", gold_ok,
+                   f"score={r_gold.get('overall_score')}, "
+                   f"level={r_gold.get('trust_level')}")
+
+            # ── 8b. S=0.0 → BANNED ───────────────────────────────────────────
+            step("S=0.0 (livraison nulle) → doit être BANNED...")
+            ban_pid = str(uuid.uuid4())
+            victim.peers[ban_pid] = {
+                "peer_id": ban_pid, "peer_name": "test-banned",
+                "status": "ACTIVE", "tier": "T3",
+                "overall_score": 0.5, "trust_level": "BRONZE",
+                "max_scrubbing_capacity_gbps": 1.0,
+                "declared_available_gbps": 0.5,
+            }
+            p8_peers.append(ban_pid)
+            ban_sid = str(uuid.uuid4())
+            # Session déjà clôturée avec actual=0.0 — S=0 → score=0 → BANNED
+            victim.sessions[ban_sid] = {
+                "session_id": ban_sid, "attack_id": aid_p8,
+                "helping_peer_id": ban_pid, "allocation_pct": 10,
+                "accepted_volume_gbps": 100.0,
+                "actual_volume_gbps": 0.0,
+                "status": "COMPLETED",
+            }
+            p8_sessions.append(ban_sid)
+            r_ban = await call(http, "post",
+                               url(victim, f"/trust/{ban_pid}/recalculate"),
+                               token=tok_v)
+            ban_ok = (r_ban.get("trust_level") == "BANNED"
+                      and r_ban.get("overall_score", 1) < 0.001)
+            (ok if ban_ok else warn)(
+                f"BANNED ✓  score={r_ban.get('overall_score')}" if ban_ok else
+                f"Attendu BANNED — reçu {r_ban.get('trust_level')} "
+                f"(score={r_ban.get('overall_score')})")
+            record("8", "S=0.0 → BANNED", ban_ok,
+                   f"score={r_ban.get('overall_score')}, "
+                   f"level={r_ban.get('trust_level')}")
+
+            # Restaurer victim.trust (scores Phase 6)
+            victim.trust.update(saved_trust)
+
+            # ── 8c. WSM exclut un pair BANNED ─────────────────────────────────
+            step("WSM exclut les pairs BANNED...")
+            ban_wsm_id = selected[0]["peer_id"]
+            victim.peers[ban_wsm_id]["status"] = "BANNED"
+            r_wsm2 = await call(http, "post",
+                                url(victim, "/trust/select-peers"),
+                                {"ignore_trust": False}, tok_v)
+            sel2       = r_wsm2.get("selected_peers", [])
+            wsm_ban_ok = not any(p["peer_id"] == ban_wsm_id for p in sel2)
+            (ok if wsm_ban_ok else warn)(
+                f"Pair banni absent du WSM ✓ ({len(sel2)} pairs)"
+                if wsm_ban_ok else
+                f"ERREUR : pair banni présent dans les {len(sel2)} résultats")
+            victim.peers[ban_wsm_id]["status"] = "ACTIVE"
+            record("8", "WSM exclut BANNED", wsm_ban_ok,
+                   f"{len(sel2)} pairs retournés sans le banni")
+
+            # Nettoyage Phase 8
+            for pid in p8_peers:
+                victim.peers.pop(pid, None)
+                victim.trust.pop(pid, None)
+            for sid in p8_sessions:
+                victim.sessions.pop(sid, None)
+            victim.attacks.pop(aid_p8, None)
+
             # ── PHASE 7 — Tableau de bord final ───────────────────────────────
             title("PHASE 7 — TABLEAU DE BORD FINAL")
 
@@ -931,6 +1040,16 @@ async def main():
         print("\n  ✓ TEST FONCTIONNEL RÉUSSI\n")
     else:
         print(f"\n  ✗ {total - passed} assertion(s) échouée(s)\n")
+
+    # ── Export JSON ───────────────────────────────────────────────────────────
+    out_json = {
+        "total": total, "passed": passed,
+        "success": passed == total,
+        "results": RESULTS,
+    }
+    with open("tests/functional_results.json", "w", encoding="utf-8") as _f:
+        json.dump(out_json, _f, indent=2, ensure_ascii=False)
+    print(f"  Résultats exportés → tests/functional_results.json\n")
 
 
 if __name__ == "__main__":
