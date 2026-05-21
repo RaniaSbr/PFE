@@ -116,14 +116,15 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
   // Somme totale des scores → base de la répartition proportionnelle
   const totalScore = scored.reduce((sum, c) => sum + c.score, 0);
 
-  // Trier par score décroissant (pour la lisibilité)
-  scored.sort((a, b) => b.score - a.score);
+  // Trier par score croissant pour garantir la participation de tous les pairs
+  scored.sort((a, b) => a.score - b.score);
 
   // Construire le plan : pour chaque pair, son poids et son pourcentage du flux
   const plan = scored.map((candidate) => {
     // w_i = Score(p_i) / Σ Score(p_j)
     const weight         = totalScore > 0 ? candidate.score / totalScore : 1 / scored.length;
-    const allocation_pct = Number((weight * 100).toFixed(2));
+    // Partie entière du pourcentage (opérationnel pour la redirection)
+    const allocation_pct = Math.floor(weight * 100);
 
     const entry = {
       peer: {
@@ -146,9 +147,10 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
       },
     };
 
-    // Si le volume total est connu, ajouter l'estimation en Gbps
+    // Si le volume total est connu, plafonner par la capacité réelle du pair
     if (overflowGbps !== undefined && overflowGbps > 0) {
-      entry.estimated_gbps = Number((weight * overflowGbps).toFixed(3));
+      const raw_gbps = weight * overflowGbps;
+      entry.estimated_gbps = Number(Math.min(raw_gbps, candidate.cap_disp).toFixed(3));
     }
 
     return entry;

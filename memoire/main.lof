@@ -10,7 +10,15 @@
 \contentsline {figure}{\numberline {2.3}{\ignorespaces Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}}{25}{figure.caption.18}%
 \contentsline {figure}{\numberline {2.4}{\ignorespaces Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}}{28}{figure.caption.19}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Architecture distribuée de ShieldNet — 4 nœuds Docker interconnectés}}{32}{figure.caption.21}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Flux d'authentification JWT RS256 dans ShieldNet}}{36}{figure.caption.25}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Machine à états du statut d'un pair}}{41}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Cycle de vie d'une session de coopération DDoS}}{41}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{33}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{35}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{37}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Coalition ~: cinq nœuds hétérogènes interconnectés en overlay \gls {p2p} plat.}}{38}{figure.caption.24}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Schéma entité-association de la base de données locale d'un nœud ShieldNet.}}{39}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Diagramme de classes UML du système ShieldNet.}}{41}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative.}}{46}{figure.caption.31}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Double couche de sécurité~: mTLS au niveau transport, JWT RS256 au niveau applicatif.}}{47}{figure.caption.32}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des répertoires du projet.}}{51}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Diagramme de déploiement~: coalition à deux nœuds avec Docker.}}{52}{figure.caption.36}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Temps de réponse moyens en fonction du nombre de nœuds simulés.}}{58}{figure.caption.38}%

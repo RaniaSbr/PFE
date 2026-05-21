@@ -77,15 +77,6 @@ module.exports = (sequelize, DataTypes) => {
           max: 255,
         },
       },
-      escalation_triggered: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      escalation_triggered_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
       coalition_helped: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

@@ -7,7 +7,6 @@ const {
   LocalNodeConfig,
   Peer,
   PeerCapability,
-  PolicyConfig,
   ReciprocityLedger,
   TrustScore,
 } = require("../models");
@@ -133,18 +132,6 @@ const router = express.Router();
 
 const ACTIVE_SESSION_STATUSES = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
 
-function resolveNodeState(loadPercent, policy) {
-  const load = Number(loadPercent || 0);
-  const alertThreshold = Number(policy?.alert_threshold_pct ?? 70);
-  const escalationThreshold = Number(policy?.escalation_threshold_pct ?? 85);
-  const criticalThreshold = Number(policy?.critical_threshold_pct ?? 95);
-
-  if (load > criticalThreshold) return "CRITICAL";
-  if (load > escalationThreshold) return "ESCALATION";
-  if (load > alertThreshold) return "ALERT";
-  return "NORMAL";
-}
-
 // GET /status
 router.get("/status", async (req, res) => {
   try {
@@ -154,15 +141,9 @@ router.get("/status", async (req, res) => {
       return res.status(404).json({ error: "Local node configuration not found" });
     }
 
-    const [policy, activeSessions] = await Promise.all([
-      PolicyConfig.findOne({
-        where: { node_id: node.node_id, is_current: true },
-        order: [["created_at", "DESC"]],
-      }),
-      HelpSession.count({
-        where: { status: { [Op.in]: ACTIVE_SESSION_STATUSES } },
-      }),
-    ]);
+    const activeSessions = await HelpSession.count({
+      where: { status: { [Op.in]: ACTIVE_SESSION_STATUSES } },
+    });
 
     const maxCapacity = Number(node.max_scrubbing_capacity_gbps || 0);
     const loadPercent = Number(node.current_load_percent || 0);
@@ -172,7 +153,6 @@ router.get("/status", async (req, res) => {
       node_id: node.node_id,
       node_name: node.node_name,
       status: node.status,
-      current_state: resolveNodeState(loadPercent, policy),
       current_load_pct: loadPercent,
       available_gbps: Number(availableGbps.toFixed(2)),
       active_sessions: activeSessions,

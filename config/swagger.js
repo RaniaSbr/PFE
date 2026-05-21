@@ -84,8 +84,6 @@ const options = {
             target_service: { type: "string", nullable: true },
             target_port: { type: "integer", nullable: true },
             target_protocol: { type: "integer", nullable: true },
-            escalation_triggered: { type: "boolean" },
-            escalation_triggered_at: { type: "string", format: "date-time", nullable: true },
             coalition_helped: { type: "boolean" },
             nb_peers_involved: { type: "integer" },
             severity: {

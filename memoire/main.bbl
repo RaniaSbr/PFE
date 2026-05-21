@@ -137,38 +137,38 @@
       \field{title}{{TCP SYN} Flooding Attacks and Common Mitigations}
       \field{year}{2007}
     \endentry
-    \entry{hwang1981wsm}{article}{}{}
-      \name{author}{2}{}{%
-        {{hash=47417bf7b2f8f966093001ea50716819}{%
-           family={Hwang},
-           familyi={H\bibinitperiod},
-           given={Ching-Lai},
-           giveni={C\bibinithyphendelim L\bibinitperiod}}}%
-        {{hash=eff3743596ba331125cf12e2cff5febc}{%
-           family={Yoon},
-           familyi={Y\bibinitperiod},
-           given={Kwangsun},
-           giveni={K\bibinitperiod}}}%
+    \entry{fielding2000rest}{thesis}{}{}
+      \name{author}{1}{}{%
+        {{hash=87dbbd44b3977c28b71d826a931add3e}{%
+           family={Fielding},
+           familyi={F\bibinitperiod},
+           given={Roy\bibnamedelima Thomas},
+           giveni={R\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
       }
-      \list{publisher}{1}{%
-        {Springer}%
+      \list{institution}{1}{%
+        {University of California, Irvine}%
       }
-      \strng{namehash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{fullhash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{fullhashraw}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{bibnamehash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{authorbibnamehash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{authornamehash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{authorfullhash}{c67ae70ea943494d5803f58cfcb74f8e}
-      \strng{authorfullhashraw}{c67ae70ea943494d5803f58cfcb74f8e}
-      \field{sortinit}{H}
-      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \strng{namehash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{fullhash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{fullhashraw}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{bibnamehash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{authorbibnamehash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{authornamehash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{authorfullhash}{87dbbd44b3977c28b71d826a931add3e}
+      \strng{authorfullhashraw}{87dbbd44b3977c28b71d826a931add3e}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Lecture Notes in Economics and Mathematical Systems}
-      \field{title}{Multiple Attribute Decision Making: Methods and Applications}
-      \field{volume}{186}
-      \field{year}{1981}
+      \field{title}{Architectural Styles and the Design of Network-based Software Architectures}
+      \field{type}{phdthesis}
+      \field{year}{2000}
+      \verb{urlraw}
+      \verb https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+      \endverb
+      \verb{url}
+      \verb https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+      \endverb
     \endentry
     \entry{rfc7518jwa}{misc}{}{}
       \name{author}{1}{}{%
@@ -724,6 +724,35 @@
       \field{year}{2001}
       \field{pages}{149\bibrangedash 160}
       \range{pages}{12}
+    \endentry
+    \entry{stormwall2024severity}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=f7355ab3d61c2ebed7832a405f7c9812}{%
+           family={{StormWall}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{fullhash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{fullhashraw}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{bibnamehash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{authorbibnamehash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{authornamehash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{authorfullhash}{f7355ab3d61c2ebed7832a405f7c9812}
+      \strng{authorfullhashraw}{f7355ab3d61c2ebed7832a405f7c9812}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{StormWall Network, FAQ}
+      \field{note}{Consulté le 11 mai 2026}
+      \field{title}{{DDoS} Severity Level}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://stormwall.network/resources/instructions/faq/ddos-severity-level
+      \endverb
+      \verb{url}
+      \verb https://stormwall.network/resources/instructions/faq/ddos-severity-level
+      \endverb
     \endentry
     \entry{tanenbaum2017distributed}{book}{}{}
       \name{author}{2}{}{%

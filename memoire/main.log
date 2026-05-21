@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  18 APR 2026 22:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  21 MAY 2026 11:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -818,18 +818,58 @@ Package: blx-case-expl3 2025/07/10 v3.21 expl3 case changing code for biblatex
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/setspace\setspace.sty
 Package: setspace 2022/12/04 v6.7b set line spacing
 )
+(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/tocloft\tocloft.sty
+Package: tocloft 2017/08/31 v2.3i parameterised ToC, etc., typesetting
+Package tocloft Info: The document has chapter divisions on input line 51.
+\cftparskip=\skip99
+\cftbeforetoctitleskip=\skip100
+\cftaftertoctitleskip=\skip101
+\cftbeforepartskip=\skip102
+\cftpartnumwidth=\skip103
+\cftpartindent=\skip104
+\cftbeforechapskip=\skip105
+\cftchapindent=\skip106
+\cftchapnumwidth=\skip107
+\cftbeforesecskip=\skip108
+\cftsecindent=\skip109
+\cftsecnumwidth=\skip110
+\cftbeforesubsecskip=\skip111
+\cftsubsecindent=\skip112
+\cftsubsecnumwidth=\skip113
+\cftbeforesubsubsecskip=\skip114
+\cftsubsubsecindent=\skip115
+\cftsubsubsecnumwidth=\skip116
+\cftbeforeparaskip=\skip117
+\cftparaindent=\skip118
+\cftparanumwidth=\skip119
+\cftbeforesubparaskip=\skip120
+\cftsubparaindent=\skip121
+\cftsubparanumwidth=\skip122
+\cftbeforeloftitleskip=\skip123
+\cftafterloftitleskip=\skip124
+\cftbeforefigskip=\skip125
+\cftfigindent=\skip126
+\cftfignumwidth=\skip127
+\c@lofdepth=\count469
+\c@lotdepth=\count470
+\cftbeforelottitleskip=\skip128
+\cftafterlottitleskip=\skip129
+\cftbeforetabskip=\skip130
+\cfttabindent=\skip131
+\cfttabnumwidth=\skip132
+)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lst@mode=\count469
+\lst@mode=\count471
 \lst@gtempboxa=\box64
 \lst@token=\toks34
-\lst@length=\count470
+\lst@length=\count472
 \lst@currlwidth=\dimen268
-\lst@column=\count471
-\lst@pos=\count472
+\lst@column=\count473
+\lst@pos=\count474
 \lst@lostspace=\dimen269
 \lst@width=\dimen270
-\lst@newlines=\count473
-\lst@lineno=\count474
+\lst@newlines=\count475
+\lst@lineno=\count476
 \lst@maxwidth=\dimen271
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
@@ -837,8 +877,8 @@ File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
-\c@lstnumber=\count475
-\lst@skipnumbers=\count476
+\c@lstnumber=\count477
+\lst@skipnumbers=\count478
 \lst@framebox=\box65
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
@@ -903,14 +943,14 @@ libraryfiltered.code.tex
 \pgf@yd=\dimen283
 \w@pgf@writea=\write4
 \r@pgf@reada=\read4
-\c@pgf@counta=\count477
-\c@pgf@countb=\count478
-\c@pgf@countc=\count479
-\c@pgf@countd=\count480
+\c@pgf@counta=\count479
+\c@pgf@countb=\count480
+\c@pgf@countc=\count481
+\c@pgf@countd=\count482
 \t@pgf@toka=\toks39
 \t@pgf@tokb=\toks40
 \t@pgf@tokc=\toks41
-\pgf@sys@id@count=\count481
+\pgf@sys@id@count=\count483
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.c
 fg
@@ -929,8 +969,8 @@ File: pgfsys-common-pdf.def 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
 ssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfsyssoftpath@smallbuffer@items=\count482
-\pgfsyssoftpath@bigbuffer@items=\count483
+\pgfsyssoftpath@smallbuffer@items=\count484
+\pgfsyssoftpath@bigbuffer@items=\count485
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
 sprotocol.code.tex
@@ -947,7 +987,7 @@ code.tex)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparse
 r.code.tex
 \pgfmath@dimen=\dimen284
-\pgfmath@count=\count484
+\pgfmath@count=\count486
 \pgfmath@box=\box67
 \pgfmath@toks=\toks42
 \pgfmath@stack@operand=\toks43
@@ -975,7 +1015,7 @@ ions.integerarithmetics.code.tex)
 code.tex)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat
 .code.tex
-\c@pgfmathroundto@lastzeros=\count485
+\c@pgfmathroundto@lastzeros=\count487
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.
 tex)
@@ -1015,7 +1055,7 @@ File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfpic=\box68
 \pgf@hbox=\box69
 \pgf@layerbox@main=\box70
-\pgf@picture@serial@count=\count486
+\pgf@picture@serial@count=\count488
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 egraphicstate.code.tex
@@ -1050,8 +1090,8 @@ File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 eshade.code.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@max=\dimen308
-\pgf@sys@shading@range@num=\count487
-\pgf@shadingcount=\count488
+\pgf@sys@shading@range@num=\count489
+\pgf@shadingcount=\count490
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 eimage.code.tex
@@ -1121,7 +1161,7 @@ Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
 aryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@plot@mark@count=\count489
+\pgf@plot@mark@count=\count491
 \pgfplotmarksize=\dimen313
 )
 \tikz@lastx=\dimen314
@@ -1136,19 +1176,19 @@ File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \tikz@figbox@bg=\box74
 \tikz@tempbox=\box75
 \tikz@tempbox@bg=\box76
-\tikztreelevel=\count490
-\tikznumberofchildren=\count491
-\tikznumberofcurrentchild=\count492
-\tikz@fig@count=\count493
+\tikztreelevel=\count492
+\tikznumberofchildren=\count493
+\tikznumberofcurrentchild=\count494
+\tikz@fig@count=\count495
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
 matrix.code.tex
 File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfmatrixcurrentrow=\count494
-\pgfmatrixcurrentcolumn=\count495
-\pgf@matrix@numberofcolumns=\count496
+\pgfmatrixcurrentrow=\count496
+\pgfmatrixcurrentcolumn=\count497
+\pgf@matrix@numberofcolumns=\count498
 )
-\tikz@expandcount=\count497
+\tikz@expandcount=\count499
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z/libraries\tikzlibrarytopaths.code.tex
@@ -1175,6 +1215,34 @@ pgflibraryshapes.geometric.code.tex
 File: pgflibraryshapes.geometric.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
+z/libraries\tikzlibraryshapes.multipart.code.tex
+File: tikzlibraryshapes.multipart.code.tex 2025-08-29 v3.1.11a (3.1.11a)
+
+(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/shapes\
+pgflibraryshapes.multipart.code.tex
+File: pgflibraryshapes.multipart.code.tex 2025-08-29 v3.1.11a (3.1.11a)
+\pgfnodepartlowerbox=\box77
+\pgfnodeparttwobox=\box78
+\pgfnodepartthreebox=\box79
+\pgfnodepartfourbox=\box80
+\pgfnodeparttwentybox=\box81
+\pgfnodepartnineteenbox=\box82
+\pgfnodeparteighteenbox=\box83
+\pgfnodepartseventeenbox=\box84
+\pgfnodepartsixteenbox=\box85
+\pgfnodepartfifteenbox=\box86
+\pgfnodepartfourteenbox=\box87
+\pgfnodepartthirteenbox=\box88
+\pgfnodeparttwelvebox=\box89
+\pgfnodepartelevenbox=\box90
+\pgfnodeparttenbox=\box91
+\pgfnodepartninebox=\box92
+\pgfnodeparteightbox=\box93
+\pgfnodepartsevenbox=\box94
+\pgfnodepartsixbox=\box95
+\pgfnodepartfivebox=\box96
+))
+(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z/libraries\tikzlibrarydecorations.pathreplacing.code.tex
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z/libraries\tikzlibrarydecorations.code.tex
@@ -1185,11 +1253,11 @@ decorations.code.tex
 \pgfdecoratedinputsegmentcompleteddistance=\dimen328
 \pgfdecoratedinputsegmentremainingdistance=\dimen329
 \pgf@decorate@distancetomove=\dimen330
-\pgf@decorate@repeatstate=\count498
+\pgf@decorate@repeatstate=\count500
 \pgfdecorationsegmentamplitude=\dimen331
 \pgfdecorationsegmentlength=\dimen332
 )
-\tikz@lib@dec@box=\box77
+\tikz@lib@dec@box=\box97
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/decorat
 ions\pgflibrarydecorations.pathreplacing.code.tex))
@@ -1223,7 +1291,7 @@ Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
 \XKV@toks=\toks47
 \XKV@tempa@toks=\toks48
 )
-\XKV@depth=\count499
+\XKV@depth=\count501
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/mfirstuc\mfirstuc.sty
@@ -1255,12 +1323,12 @@ File: glossaries-french.ldf 2016/12/12 v1.1
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/datatool\datatool-base.
 sty
 Package: datatool-base 2025/12/04 v3.4.3 (NLCT)
-\l__datatool_tmpa_int=\count500
-\l__datatool_tmpb_int=\count501
-\l__datatool_tmpc_int=\count502
-\l__datatool_tmpd_int=\count503
-\l__datatool_count_int=\count504
-\l__datatool_tmp_datatype_int=\count505
+\l__datatool_tmpa_int=\count502
+\l__datatool_tmpb_int=\count503
+\l__datatool_tmpc_int=\count504
+\l__datatool_tmpd_int=\count505
+\l__datatool_count_int=\count506
+\l__datatool_tmp_datatype_int=\count507
 \l__datatool_tmpa_dim=\dimen333
 \l__datatool_tmpb_dim=\dimen334
 
@@ -1269,41 +1337,41 @@ def
 File: datatool-l3fp.def 2025/12/04 v3.4.3 (NLCT)
 )
 \@dtl@toks=\toks51
-\@dtl@tmpcount=\count506
-\dtl@tmplength=\skip99
-\l__datatool_measure_box=\box78
-\dtl@sortresult=\count507
+\@dtl@tmpcount=\count508
+\dtl@tmplength=\skip133
+\l__datatool_measure_box=\box98
+\dtl@sortresult=\count509
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/datatool\datatool-utf8.
 ldf
 File: datatool-utf8.ldf 2025/12/04 v3.4.3 (NLCT)
 )
-\@dtl@datatype=\count508
-\c_datatool_unknown_int=\count509
-\l__datatool_year_int=\count510
-\l__datatool_month_int=\count511
-\l__datatool_day_int=\count512
-\l__datatool_hour_int=\count513
-\l__datatool_minute_int=\count514
-\l__datatool_second_int=\count515
-\l__datatool_tzhour_int=\count516
-\l__datatool_tzminute_int=\count517
-\l__datatool_julian_int=\count518
-\l__datatool_local_julian_int=\count519
-\l__datatool_prefix_int=\count520
-\l__datatool_suffix_int=\count521
-\@dtl@foreach@level=\count522
+\@dtl@datatype=\count510
+\c_datatool_unknown_int=\count511
+\l__datatool_year_int=\count512
+\l__datatool_month_int=\count513
+\l__datatool_day_int=\count514
+\l__datatool_hour_int=\count515
+\l__datatool_minute_int=\count516
+\l__datatool_second_int=\count517
+\l__datatool_tzhour_int=\count518
+\l__datatool_tzminute_int=\count519
+\l__datatool_julian_int=\count520
+\l__datatool_local_julian_int=\count521
+\l__datatool_prefix_int=\count522
+\l__datatool_suffix_int=\count523
+\@dtl@foreach@level=\count524
 
 
 Package tracklang Warning: No `datatool' support for dialect `french'  on input
  line 9924.
 
-\dtl@codeA=\count523
-\dtl@codeB=\count524
+\dtl@codeA=\count525
+\dtl@codeB=\count526
 )
-\gls@level=\count525
+\gls@level=\count527
 \@gls@tmpb=\toks52
-\gls@tmplen=\skip100
+\gls@tmplen=\skip134
 \l__glossaries_tmpa_dim=\dimen335
 \l__glossaries_tmpb_dim=\dimen336
 \glskeylisttok=\toks53
@@ -1318,13 +1386,13 @@ Package: glossary-hypernav 2025/11/09 v4.9 (NLCT)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-list.sty
 Package: glossary-list 2025/11/09 v4.9 (NLCT)
-\glslistdottedwidth=\skip101
+\glslistdottedwidth=\skip135
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-long.sty
 Package: glossary-long 2025/11/09 v4.9 (NLCT)
-\glsdescwidth=\skip102
-\glspagelistwidth=\skip103
+\glsdescwidth=\skip136
+\glspagelistwidth=\skip137
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-super.sty
@@ -1333,11 +1401,11 @@ Package: glossary-super 2025/11/09 v4.9 (NLCT)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/supertabular\supertabul
 ar.sty
 Package: supertabular 2025/06/26 v4.2d the supertabular environment
-\c@tracingst=\count526
+\c@tracingst=\count528
 \ST@wd=\dimen337
-\ST@rightskip=\skip104
-\ST@leftskip=\skip105
-\ST@parfillskip=\skip106
+\ST@rightskip=\skip138
+\ST@leftskip=\skip139
+\ST@parfillskip=\skip140
 \ST@pageleft=\dimen338
 \ST@headht=\dimen339
 \ST@tailht=\dimen340
@@ -1347,12 +1415,12 @@ Package: supertabular 2025/06/26 v4.2d the supertabular environment
 \ST@prevht=\dimen344
 \ST@toadd=\dimen345
 \ST@dimen=\dimen346
-\ST@pbox=\box79
+\ST@pbox=\box99
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-tree.sty
 Package: glossary-tree 2025/11/09 v4.9 (NLCT)
-\l__glossaries_tree_max_known_level_int=\count527
+\l__glossaries_tree_max_known_level_int=\count529
 \l__glossaries_tree_offset_dim=\dimen347
 \l__glossaries_tree_namewidth_dim=\dimen348
 \l__glossaries_tree_symbolwidth_dim=\dimen349
@@ -1362,24 +1430,24 @@ Package: glossary-tree 2025/11/09 v4.9 (NLCT)
 \l__glossaries_tree_symbolwidth_padding_dim=\dimen353
 \l__glossaries_tree_namesymbolwidth_dim=\dimen354
 \l__glossaries_tree_namesymbolwidth_padding_dim=\dimen355
-\l__glossaries_tree_level_int=\count528
-\glstreeindent=\skip107
+\l__glossaries_tree_level_int=\count530
+\glstreeindent=\skip141
 ))
 \glswrite=\write5
 \glo@main@file=\write6
 \openout6 = `main.glo'.
 
-Package glossaries Info: Writing glossary file main.glo on input line 114.
+Package glossaries Info: Writing glossary file main.glo on input line 120.
 \glo@acronym@file=\write7
 \openout7 = `main.acn'.
 
-Package glossaries Info: Writing glossary file main.acn on input line 114.
+Package glossaries Info: Writing glossary file main.acn on input line 120.
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
 Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'french'.
-LaTeX Font Info:    Trying to load font information for T1+lmr on input line 15
-6.
+LaTeX Font Info:    Trying to load font information for T1+lmr on input line 16
+2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmr.fd
 File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -1389,25 +1457,25 @@ Package babel Info: 'french' activates 'french' shorthands.
 )
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 156.
-LaTeX Font Info:    ... okay on input line 156.
-LaTeX Info: Redefining \degres on input line 156.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Info: Redefining \degres on input line 162.
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -1446,16 +1514,16 @@ LaTeX Info: Redefining \degres on input line 156.
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count529
+\scratchcounter=\count531
 \scratchdimen=\dimen356
-\scratchbox=\box80
-\nofMPsegments=\count530
-\nofMParguments=\count531
+\scratchbox=\box100
+\nofMPsegments=\count532
+\nofMParguments=\count533
 \everyMPshowfont=\toks57
-\MPscratchCnt=\count532
+\MPscratchCnt=\count534
 \MPscratchDim=\dimen357
-\MPnumerator=\count533
-\makeMPintoPDFobject=\count534
+\MPnumerator=\count535
+\makeMPintoPDFobject=\count536
 \everyMPtoPDFconversion=\toks58
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
@@ -1478,7 +1546,7 @@ Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 )
 Package caption Info: supertabular package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 156.
+Package hyperref Info: Link coloring ON on input line 162.
 
 (main.out) (main.out)
 \@outlinefile=\write8
@@ -1498,65 +1566,66 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (main.bbl)
-Package biblatex Info: Reference section=0 on input line 156.
-Package biblatex Info: Reference segment=0 on input line 156.
-\c@lstlisting=\count535
- (chapters/abstract.tex) (main.toc
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 5
+Package biblatex Info: Reference section=0 on input line 162.
+Package biblatex Info: Reference segment=0 on input line 162.
+\c@lstlisting=\count537
+ (chapters/abstract.tex [1
+
+\openout5 = `main.ist'.
+
+
+{C:/Users/21355/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/2135
+5/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}] [2
+
+]) (main.toc
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 2
 .
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 5
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
 .
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-5.
+2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-5.
+2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 5.
+(Font)              <12> on input line 2.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 5.
+(Font)              <8> on input line 2.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 5.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 5.
+(Font)              <6> on input line 2.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 5.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-[1
-
-\openout5 = `main.ist'.
-
-
-{C:/Users/21355/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/2135
-5/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}]
+[3]
 Package babel Info: 'french' activates 'french' shorthands.
-(babel)             Reported on input line 68.
- [2] [3])
+(babel)             Reported on input line 69.
+ [4] [5])
 \tf@toc=\write9
 \openout9 = `main.toc'.
 
-
-[4] (main.lof
+ [6] (main.lof
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 6
 .
 
@@ -1566,18 +1635,16 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 \tf@lof=\write10
 \openout10 = `main.lof'.
 
- [5
-
-]
-(main.lot)
+ [7]
+[8] (main.lot)
 \tf@lot=\write11
 \openout11 = `main.lot'.
 
- [6
+ [9{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.e
+nc}{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}]
 
-]
 No file main.acr.
-[7] (chapters/introduction.tex [1
+[10] (chapters/introduction.tex [1
 
 ] [2] [3]) (chapters/chapter1.tex [4]
 Chapitre 1.
@@ -1760,9 +1827,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 414--414
 []|\T1/lmr/m/n/10.95 Dépendance,
  []
 
-[13] [14] [15] [16{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips
-/lm/lm-mathit.enc}{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips
-/lm/lm-rm.enc}] [17]) (chapters/chapter2.tex [18]
+[13] [14] [15] [16] [17]) (chapters/chapter2.tex [18]
 Chapitre 2.
 
 Overfull \hbox (3.84152pt too wide) in paragraph at lines 29--30
@@ -1773,7 +1838,7 @@ Overfull \hbox (3.84152pt too wide) in paragraph at lines 29--30
 [19
 
 ]
-<figures/do.png, id=959, 513.92pt x 538.01pt>
+<figures/do.png, id=977, 513.92pt x 538.01pt>
 File: figures/do.png Graphic file (type png)
 <use figures/do.png>
 Package pdftex.def Info: figures/do.png  used on input line 36.
@@ -1797,12 +1862,8 @@ T1/lmtt/m/n/12 DNS_AMPLIFICATION\T1/lmr/m/n/12 , \T1/lmtt/m/n/12 NTP_AMPLIFICAT
 ION\T1/lmr/m/n/12 ,
  []
 
-
-LaTeX Warning: Reference `fig:clearinghouse_cycle' on page 22 undefined on inpu
-t line 117.
-
 [22]
-<figures/clearing_house.png, id=1000, 1167.36125pt x 479.7925pt>
+<figures/clearing_house.png, id=1020, 1167.36125pt x 479.7925pt>
 File: figures/clearing_house.png Graphic file (type png)
 <use figures/clearing_house.png>
 Package pdftex.def Info: figures/clearing_house.png  used on input line 135.
@@ -1814,13 +1875,13 @@ Overfull \hbox (27.5449pt too wide) in paragraph at lines 147--148
  []
 
 [23 <./figures/clearing_house.png>] [24]
-<figures/nawas.png, id=1024, 1309.89375pt x 498.36188pt>
+<figures/nawas.png, id=1043, 1309.89375pt x 498.36188pt>
 File: figures/nawas.png Graphic file (type png)
 <use figures/nawas.png>
 Package pdftex.def Info: figures/nawas.png  used on input line 186.
 (pdftex.def)             Requested size: 374.86775pt x 142.62015pt.
  [25 <./figures/nawas.png>] [26]
-<figures/defcom.png, id=1044, 612.03656pt x 576.65437pt>
+<figures/defcom.png, id=1063, 612.03656pt x 576.65437pt>
 File: figures/defcom.png Graphic file (type png)
 <use figures/defcom.png>
 Package pdftex.def Info: figures/defcom.png  used on input line 257.
@@ -1832,75 +1893,237 @@ Overfull \hbox (1.83513pt too wide) in paragraph at lines 276--277
  , de \T1/lmr/bx/n/12 vé-ri-fi-ca-tion cryp-to-gra-phique des mes-
  []
 
-[29]) (chapters/chapter3.tex) (chapters/chapter4.tex [30]
+[29]) (chapters/chapter3.tex [30]
 Chapitre 3.
 [31
 
 ]
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-)
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-)
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 100.
-
-[32] [33] [34]
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd)
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 205.
-
-Overfull \hbox (19.84743pt too wide) in paragraph at lines 218--218
-[]\T1/lmr/bx/n/17.28 Module d'Au-then-ti-fi-ca-tion : JWT RS256 et mTLS 
- []
-
-[35{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}
-] [36] [37] [38] [39] [40] [41] [42]
-Overfull \hbox (66.50204pt too wide) in paragraph at lines 583--584
-\T1/lmtt/m/n/12 /traffic/redirect \T1/lmr/m/n/12 n'est pas ex-pli-ci-te-ment ap
--pelé. Le garde \T1/lmtt/m/n/12 if (!session.actual_volume_gbps)
+Overfull \hbox (4.54504pt too wide) in paragraph at lines 42--43
+[]\T1/lmr/bx/n/12 Traçabilité com-plète : \T1/lmr/m/n/12 chaque évé-ne-ment si-
+gni-fi-ca-tif (chan-ge-ment de confiance,
  []
 
 
-Overfull \hbox (13.25447pt too wide) in paragraph at lines 592--593
-[]\T1/lmr/m/n/12 L'algorithme de sé-lec-tion des pairs est fondé sur le \T1/lmr
-/bx/n/12 Weigh-ted Sum Mo-del \T1/lmr/m/n/12 (WSM) [[][]5[][]],
+Overfull \hbox (0.1575pt too wide) in paragraph at lines 57--58
+\T1/lmr/m/n/12 peut alors \T1/lmr/bx/n/12 ac-cep-ter \T1/lmr/m/n/12 (\T1/lmtt/m
+/n/12 PUT /help/{id}/accept\T1/lmr/m/n/12 ) ou \T1/lmr/bx/n/12 re-je-ter \T1/lm
+r/m/n/12 (\T1/lmtt/m/n/12 PUT /help/{id}/reject\T1/lmr/m/n/12 )
  []
 
-[43] [44] [45] [46{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips
-/lm/lm-mathex.enc}] [47] [48] [49] [50] [51] [52] [53] [54] [55] [56])
-(chapters/conclusion.tex) [57] [58
+[32]
+<figures/uc_mitigation_collaborative.png, id=1131, 807.015pt x 752.8125pt>
+File: figures/uc_mitigation_collaborative.png Graphic file (type png)
+<use figures/uc_mitigation_collaborative.png>
+Package pdftex.def Info: figures/uc_mitigation_collaborative.png  used on input
+ line 61.
+(pdftex.def)             Requested size: 441.01773pt x 411.39465pt.
+ [33 <./figures/uc_mitigation_collaborative.png>]
+<figures/uc_moteur_confiance.png, id=1139, 928.46875pt x 858.20625pt>
+File: figures/uc_moteur_confiance.png Graphic file (type png)
+<use figures/uc_moteur_confiance.png>
+Package pdftex.def Info: figures/uc_moteur_confiance.png  used on input line 76
+.
+(pdftex.def)             Requested size: 441.01773pt x 407.6522pt.
+
+Overfull \hbox (31.1505pt too wide) in paragraph at lines 93--94
+[]\T1/lmr/m/n/12 Le groupe \T1/lmr/bx/n/12 Sé-cu-rité \T1/lmr/m/n/12 couvre l'\
+T1/lmr/bx/n/12 obtention d'un to-ken JWT RS256 \T1/lmr/m/n/12 (\T1/lmtt/m/n/12 
+POST /auth/token\T1/lmr/m/n/12 ),
+ []
+
+<figures/uc_role_pair.png, id=1141, 761.84625pt x 1030.85126pt>
+File: figures/uc_role_pair.png Graphic file (type png)
+<use figures/uc_role_pair.png>
+Package pdftex.def Info: figures/uc_role_pair.png  used on input line 97.
+(pdftex.def)             Requested size: 441.01773pt x 596.73016pt.
+[34{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.e
+nc}] [35 <./figures/uc_moteur_confiance.png>]
+Overfull \hbox (33.94235pt too wide) in paragraph at lines 154--155
+[]\T1/lmr/bx/n/12 Clôture : \T1/lmr/m/n/12 à la fin de l'at-taque, le n÷ud vic-
+time no-ti-fie la clô-ture (\T1/lmtt/m/n/12 POST /attack/over\T1/lmr/m/n/12 ),
+ []
+
+
+LaTeX Warning: File `figures/ERD.png' not found on input line 171.
+
+
+! Package pdftex.def Error: File `figures/ERD.png' not found: using draft setti
+ng.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.171 ...aphics[width=\textwidth]{figures/ERD.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+[36] [37 <./figures/uc_role_pair.png>]
+Overfull \hbox (67.59335pt too wide) in paragraph at lines 176--177
+\T1/lmr/m/n/12 to-rique des com-por-te-ments anor-maux), \T1/lmtt/m/n/12 HEARTB
+EAT_LOG \T1/lmr/m/n/12 (si-gnaux de pré-sence), \T1/lmtt/m/n/12 RECIPROCITY_LED
+GER
+ []
+
+
+Overfull \hbox (1.37703pt too wide) in paragraph at lines 176--177
+\T1/lmr/m/n/12 auto-relation \T1/lmtt/m/n/12 (0,1)--(0,N) \T1/lmr/m/n/12 pour l
+es mes-sages de ré-ponse). La table \T1/lmtt/m/n/12 PEER_CAPABILITIES
+ []
+
+
+Overfull \hbox (33.7806pt too wide) in paragraph at lines 178--179
+[]\T1/lmr/m/n/12 Le n÷ud lo-cal est dé-crit par \T1/lmtt/m/n/12 LOCAL_NODE_CONF
+IG\T1/lmr/m/n/12 , dont dé-pendent \T1/lmtt/m/n/12 SCRUBBING_CAPABILITY
+ []
+
+[38] [39] [40]
+<figures/class_diagram.png, id=1189, 2316.655pt x 2428.07124pt>
+File: figures/class_diagram.png Graphic file (type png)
+<use figures/class_diagram.png>
+Package pdftex.def Info: figures/class_diagram.png  used on input line 230.
+(pdftex.def)             Requested size: 441.01773pt x 462.22752pt.
+ [41 <./figures/class_diagram.png>]
+Overfull \hbox (10.01483pt too wide) in paragraph at lines 241--242
+\T1/lmr/m/n/12 tient le solde bi-la-té-ral (cré-dits don-nés, re-çus, ba-lance 
+nette). \T1/lmtt/m/n/12 RECIPROCITY_TRANSACTIONS
+ []
+
+[42] [43] [44] [45] [46]
+Overfull \hbox (50.59898pt too wide) in paragraph at lines 474--475
+[]\T1/lmr/m/n/12 L'empreinte du cer-ti-fi-cat de chaque pair est sto-ckée dans 
+le champ \T1/lmtt/m/n/12 certificate_fingerprint
+ []
+
+[47] [48] [49]) (chapters/chapter4.tex [50]
+Chapitre 4.
+
+Underfull \hbox (badness 5726) in paragraph at lines 43--43
+[]|\T1/lmr/m/n/10.95 Modèle évé-ne-men-tiel adapté aux I/O
+ []
+
+
+Underfull \hbox (badness 1137) in paragraph at lines 43--43
+\T1/lmr/m/n/10.95 concur-rentes (heart-beats, re-quêtes inter-
+ []
+
+
+Overfull \hbox (22.38884pt too wide) in paragraph at lines 71--72
+ [][] 
+ []
+
+[51
 
 ]
-Overfull \hbox (9.39993pt too wide) in paragraph at lines 188--188
+Overfull \hbox (8.74095pt too wide) in paragraph at lines 164--165
+[]\T1/lmr/m/n/12 Le mo-dule \T1/lmtt/m/n/12 utils/trustManager.js \T1/lmr/m/n/1
+2 im-plé-mente la for-mule Peer-Trust (Équa-tion [][]3.1[][]).
+ []
+
+[52]
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 166.
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 167.
+ [53]
+Overfull \hbox (58.04561pt too wide) in paragraph at lines 238--239
+[]\T1/lmr/m/n/12 Si le ni-veau de-vient BAN-NED : le pair est mar-qué \T1/lmtt/
+m/n/12 status = BANNED \T1/lmr/m/n/12 et \T1/lmtt/m/n/12 membership_status
+ []
+
+
+Overfull \hbox (79.87578pt too wide) in paragraph at lines 239--240
+[]\T1/lmr/m/n/12 Tout chan-ge-ment de ni-veau dé-clenche une en-trée dans \T1/l
+mtt/m/n/12 AUDIT_LOG \T1/lmr/m/n/12 (type \T1/lmtt/m/n/12 TRUST_LEVEL_CHANGED\T
+1/lmr/m/n/12 ). 
+ []
+
+
+Overfull \hbox (37.67549pt too wide) in paragraph at lines 240--241
+[]\T1/lmr/m/n/12 Un ban-nis-se-ment au-to-ma-tique gé-nère une en-trée de sé-vé
+-rité CRI-TI-CAL (\T1/lmtt/m/n/12 PEER_BANNED\T1/lmr/m/n/12 ). 
+ []
+
+
+Overfull \hbox (42.99573pt too wide) in paragraph at lines 249--250
+[]\T1/lmr/m/n/12 Le mo-dule \T1/lmtt/m/n/12 utils/peerSelector.js \T1/lmr/m/n/1
+2 im-plé-mente l'Équa-tion [][]3.2[][]. La fonc-tion \T1/lmtt/m/n/12 selectPeer
+s()
+ []
+
+[54] [55] [56]
+Overfull \hbox (0.17531pt too wide) in paragraph at lines 353--354
+[]\T1/lmr/bx/n/12 Tests fonc-tion-nels \T1/lmr/m/n/12 (\T1/lmtt/m/n/12 tests/fu
+nctional_test.py\T1/lmr/m/n/12 ) : vé-ri-fi-ca-tion de chaque end-
+ []
+
+
+Overfull \hbox (55.45488pt too wide) in paragraph at lines 370--388
+ [][] 
+ []
+
+[57] [58]) (chapters/conclusion.tex [59] [60
+
+]
+Overfull \hbox (23.87419pt too wide) in paragraph at lines 52--53
+[]\T1/lmr/bx/n/12 Intégration avec les pro-to-coles exis-tants : \T1/lmr/m/n/12
+ une pas-se-relle vers [][][]DOTS[][] (RFC 8782)
+ []
+
+[61]) [62] [63
+
+]
+Overfull \hbox (9.39993pt too wide) in paragraph at lines 194--194
 []\T1/lmr/m/n/12 C. []\T1/lmr/m/sc/12 Rossow[]\T1/lmr/m/n/12 , ^^S   Am-pli-fi-
 ca-tion Hell : Re-vi-si-ting Net-work Pro-to-cols for DDoS Abuse, ^^T
  []
 
-(chapters/appendix.tex) [59] (main.aux)
+
+Overfull \hbox (17.06207pt too wide) in paragraph at lines 194--194
+\T1/lmr/m/n/12 mai 2026, 2024. adresse : [][]$\T1/lmtt/m/n/12 https : / / storm
+wall . network / resources / instructions /
+ []
+
+[64] (chapters/appendix.tex) [65] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: BF0035D13AD7907AC76568E75F80D935;26879.
+(rerunfilecheck)             Checksum: 055087D809AB5E98DA91585355CC795F;26165.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 46121 strings out of 467867
- 906849 string characters out of 5418335
- 2045955 words of memory out of 5000000
- 73551 multiletter control sequences out of 15000+600000
- 724039 words of font info for 99 fonts, out of 8000000 for 9000
+ 46552 strings out of 467867
+ 925595 string characters out of 5418335
+ 2082279 words of memory out of 5000000
+ 74299 multiletter control sequences out of 15000+600000
+ 723299 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,16n,102p,2489b,2346s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,16n,94p,2489b,2358s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+pdfTeX warning (dest): name{glo:tls} has been referenced but does not exist, re
+placed by a fixed one
+
+
+pdfTeX warning (dest): name{glo:rtt} has been referenced but does not exist, re
+placed by a fixed one
+
+
+pdfTeX warning (dest): name{glo:uuid} has been referenced but does not exist, r
+eplaced by a fixed one
+
+
+pdfTeX warning (dest): name{glo:jwt} has been referenced but does not exist, re
+placed by a fixed one
+
+
+pdfTeX warning (dest): name{glo:mtls} has been referenced but does not exist, r
+eplaced by a fixed one
+
 
 pdfTeX warning (dest): name{glo:as} has been referenced but does not exist, rep
 laced by a fixed one
@@ -1950,11 +2173,15 @@ pdfTeX warning (dest): name{glo:fai} has been referenced but does not exist, re
 placed by a fixed one
 
 
-pdfTeX warning (dest): name{glo:p2p} has been referenced but does not exist, re
+pdfTeX warning (dest): name{glo:dos} has been referenced but does not exist, re
 placed by a fixed one
 
 
-pdfTeX warning (dest): name{glo:dos} has been referenced but does not exist, re
+pdfTeX warning (dest): name{glo:rest} has been referenced but does not exist, r
+eplaced by a fixed one
+
+
+pdfTeX warning (dest): name{glo:api} has been referenced but does not exist, re
 placed by a fixed one
 
 
@@ -1962,15 +2189,27 @@ pdfTeX warning (dest): name{glo:spof} has been referenced but does not exist, r
 eplaced by a fixed one
 
 
-pdfTeX warning (dest): name{glo:ddos} has been referenced but does not exist, r
-eplaced by a fixed one
-
-
 pdfTeX warning (dest): name{glo:iot} has been referenced but does not exist, re
 placed by a fixed one
 
 
+pdfTeX warning (dest): name{glo:p2p} has been referenced but does not exist, re
+placed by a fixed one
+
+
 pdfTeX warning (dest): name{glo:dots} has been referenced but does not exist, r
+eplaced by a fixed one
+
+
+pdfTeX warning (dest): name{glo:wsm} has been referenced but does not exist, re
+placed by a fixed one
+
+
+pdfTeX warning (dest): name{glo:ahp} has been referenced but does not exist, re
+placed by a fixed one
+
+
+pdfTeX warning (dest): name{glo:ddos} has been referenced but does not exist, r
 eplaced by a fixed one
 
 <C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb>
@@ -1978,6 +2217,7 @@ eplaced by a fixed one
 <C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb
 ><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pf
 b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pf
+b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pf
 b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pf
 b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi8.pfb
 ><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb>
@@ -1996,9 +2236,9 @@ rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt8.pfb><C:/User
 s/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtti10.pfb><C:/Use
 rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam
 10.pfb>
-Output written on main.pdf (66 pages, 2402187 bytes).
+Output written on main.pdf (75 pages, 2811283 bytes).
 PDF statistics:
- 1976 PDF objects out of 2073 (max. 8388607)
- 775 named destinations out of 1000 (max. 500000)
- 1017 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1709 PDF objects out of 1728 (max. 8388607)
+ 459 named destinations out of 1000 (max. 500000)
+ 1021 words of extra memory for PDF output out of 10000 (max. 10000000)
 

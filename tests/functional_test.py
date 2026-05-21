@@ -377,7 +377,7 @@ def build_app(st: NodeState) -> web.Application:
                 continue
             sess              = st.sessions[sid]
             sess["status"]    = "COMPLETED"
-            if not sess.get("actual_volume_gbps"):
+            if sess.get("actual_volume_gbps") is None:
                 sess["actual_volume_gbps"] = sess.get("accepted_volume_gbps", 0)
             pid = sess.get("helping_peer_id", "")
             vol = sess.get("actual_volume_gbps") or 0
@@ -547,6 +547,7 @@ async def main():
 
     victim  = states[0]
     helpers = states[1:]
+    peer_id_to_tier = {h.node_id: h.tier for h in helpers}
 
     # ── Génération de l'attaque (APRÈS création de la victime) ───────────────
     attack_info = generate_attack(victim.capacity, victim.load)
@@ -785,10 +786,13 @@ async def main():
                     tok_v,
                 )
                 if r_red.get("status") == "ACTIVE":
-                    active_sessions.append(sess)
+                    active_sessions.append({
+                        **sess,
+                        "actual_volume_gbps": r_red.get("actual_volume_gbps", 0),
+                    })
 
             total_vol = sum(
-                round(overflow * (s.get("allocation_pct", 0) / 100), 2)
+                s.get("actual_volume_gbps", 0)
                 for s in active_sessions
             )
             coverage = (min(100.0, total_vol / overflow * 100)

@@ -60,6 +60,12 @@
 \usepackage{setspace}
 \onehalfspacing
 
+% Table des matières — chapitres en grand
+\usepackage{tocloft}
+\renewcommand{\cftchapfont}{\large\bfseries}
+\renewcommand{\cftchappagefont}{\large\bfseries}
+\setlength{\cftbeforechapskip}{10pt}
+
 % Listings (code source)
 \usepackage{listings}
 
@@ -103,7 +109,7 @@
 
 % TikZ
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, arrows.meta,decorations.pathreplacing, calc}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.multipart, decorations.pathreplacing, calc}
 
 
 % Pifont (pour \ding)

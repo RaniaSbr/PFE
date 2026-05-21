@@ -1,11 +1,14 @@
 \babel@toc {french}{}\relax 
-\contentsline {chapter}{Liste des figures}{v}{chapter*.2}%
-\contentsline {chapter}{Liste des tableaux}{vi}{chapter*.3}%
-\contentsline {chapter}{Introduction générale}{1}{chapter*.4}%
-\contentsline {section}{Contexte}{2}{section*.5}%
-\contentsline {section}{Problématique}{2}{section*.6}%
-\contentsline {section}{Objectifs}{3}{section*.7}%
-\contentsline {section}{Organisation du rapport}{3}{section*.8}%
+\contentsline {chapter}{Résumé}{i}{chapter*.1}%
+\contentsline {chapter}{Abstract}{ii}{chapter*.2}%
+\contentsline {chapter}{Liste des figures}{viii}{chapter*.2}%
+\contentsline {chapter}{Liste des tableaux}{ix}{chapter*.2}%
+\contentsline {chapter}{Introduction générale}{1}{chapter*.3}%
+\contentsline {section}{Contexte}{2}{section*.4}%
+\contentsline {section}{Problématique}{2}{section*.5}%
+\contentsline {section}{Objectifs}{3}{section*.6}%
+\contentsline {section}{Périmètre du travail}{3}{section*.7}%
+\contentsline {section}{Organisation du rapport}{4}{section*.8}%
 \contentsline {chapter}{\numberline {1}Contexte et concepts fondamentaux}{5}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Introduction}{5}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Les attaques par déni de service distribué (DDoS)}{5}{section.1.2}%
@@ -32,7 +35,7 @@
 \contentsline {subsection}{\numberline {1.4.2}Topologies et protocoles P2P applicables à la mitigation}{16}{subsection.1.4.2}%
 \contentsline {subsection}{\numberline {1.4.3}Défis du P2P appliqué à la sécurité réseau}{17}{subsection.1.4.3}%
 \contentsline {section}{\numberline {1.5}Conclusion}{17}{section.1.5}%
-\contentsline {chapter}{\numberline {2}État de l'art}{19}{chapter.2}%
+\contentsline {chapter}{\numberline {2}Étude bibliographique}{19}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Introduction}{19}{section.2.1}%
 \contentsline {section}{\numberline {2.2}DOTS --- DDoS Open Threat Signaling}{19}{section.2.2}%
 \contentsline {subsection}{\numberline {2.2.1}Contexte et motivation}{19}{subsection.2.2.1}%
@@ -58,67 +61,66 @@
 \contentsline {subsection}{\numberline {2.5.2}Limites identifiées}{28}{subsection.2.5.2}%
 \contentsline {section}{\numberline {2.6}Synthèse comparative}{29}{section.2.6}%
 \contentsline {section}{\numberline {2.7}Conclusion}{30}{section.2.7}%
-\contentsline {chapter}{\numberline {3}Conception et Implémentation de ShieldNet}{31}{chapter.3}%
+\contentsline {chapter}{\numberline {3}Conception et Architecture du système}{31}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Introduction}{31}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Architecture Générale de ShieldNet}{32}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Vue d'ensemble}{32}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Pile technologique}{32}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Structure du projet}{32}{subsection.3.2.3}%
-\contentsline {section}{\numberline {3.3}Modèle de Données Relationnel}{33}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Vue d'ensemble du schéma}{33}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Table PEERS}{34}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Table HELP\_SESSIONS}{35}{subsection.3.3.3}%
-\contentsline {subsection}{\numberline {3.3.4}Initialisation et synchronisation de la base}{35}{subsection.3.3.4}%
-\contentsline {section}{\numberline {3.4}Module d'Authentification : JWT RS256 et mTLS}{36}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}Principes de sécurité}{36}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}Architecture JWT asymétrique}{36}{subsection.3.4.2}%
-\contentsline {subsection}{\numberline {3.4.3}Génération du token}{36}{subsection.3.4.3}%
-\contentsline {subsection}{\numberline {3.4.4}Vérification du token (middleware)}{37}{subsection.3.4.4}%
-\contentsline {subsubsection}{\numberline {3.4.4.1}Gestion des routes publiques}{37}{subsubsection.3.4.4.1}%
-\contentsline {subsection}{\numberline {3.4.5}Correction d'un bug critique de bootstrapping}{38}{subsection.3.4.5}%
-\contentsline {subsection}{\numberline {3.4.6}Middleware mTLS}{38}{subsection.3.4.6}%
-\contentsline {section}{\numberline {3.5}Module de Découverte et Gestion des Pairs}{39}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Vue d'ensemble}{39}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Enregistrement transactionnel des pairs}{39}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}Protocole de heartbeat}{40}{subsection.3.5.3}%
-\contentsline {subsection}{\numberline {3.5.4}Machine à états des pairs}{41}{subsection.3.5.4}%
-\contentsline {section}{\numberline {3.6}Module de Coalition Anti-DDoS}{41}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Cycle de vie d'une attaque}{41}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Détection et alerte}{42}{subsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.6.3}Négociation et redirection}{42}{subsection.3.6.3}%
-\contentsline {subsection}{\numberline {3.6.4}Clôture et mise à jour des crédits}{42}{subsection.3.6.4}%
-\contentsline {section}{\numberline {3.7}Algorithme WSM de Sélection des Pairs}{43}{section.3.7}%
-\contentsline {subsection}{\numberline {3.7.1}Formalisation mathématique}{43}{subsection.3.7.1}%
-\contentsline {subsection}{\numberline {3.7.2}Poids AHP validés}{44}{subsection.3.7.2}%
-\contentsline {subsection}{\numberline {3.7.3}Implémentation}{44}{subsection.3.7.3}%
-\contentsline {subsection}{\numberline {3.7.4}Contrainte d'allocation}{45}{subsection.3.7.4}%
-\contentsline {subsection}{\numberline {3.7.5}Exemple numérique}{45}{subsection.3.7.5}%
-\contentsline {section}{\numberline {3.8}Modèle de Confiance PeerTrust}{46}{section.3.8}%
-\contentsline {subsection}{\numberline {3.8.1}Formulation mathématique}{46}{subsection.3.8.1}%
-\contentsline {subsection}{\numberline {3.8.2}Poids contextuels de sévérité}{46}{subsection.3.8.2}%
-\contentsline {subsection}{\numberline {3.8.3}Niveaux de confiance}{47}{subsection.3.8.3}%
-\contentsline {subsection}{\numberline {3.8.4}Implémentation du calcul}{47}{subsection.3.8.4}%
-\contentsline {subsection}{\numberline {3.8.5}Persistance et actions automatiques}{48}{subsection.3.8.5}%
-\contentsline {subsection}{\numberline {3.8.6}Exemple de dégradation du score}{49}{subsection.3.8.6}%
-\contentsline {subsection}{\numberline {3.8.7}API de gestion de la confiance}{49}{subsection.3.8.7}%
-\contentsline {section}{\numberline {3.9}Service de Heartbeat Automatique}{49}{section.3.9}%
-\contentsline {subsection}{\numberline {3.9.1}Architecture du service}{49}{subsection.3.9.1}%
-\contentsline {subsection}{\numberline {3.9.2}Gestion des pairs injoignables}{50}{subsection.3.9.2}%
-\contentsline {section}{\numberline {3.10}Infrastructure de Déploiement}{51}{section.3.10}%
-\contentsline {subsection}{\numberline {3.10.1}Conteneurisation Docker}{51}{subsection.3.10.1}%
-\contentsline {subsection}{\numberline {3.10.2}Génération des certificats TLS}{52}{subsection.3.10.2}%
-\contentsline {subsection}{\numberline {3.10.3}Client HTTPS/mTLS}{52}{subsection.3.10.3}%
-\contentsline {section}{\numberline {3.11}Script de Démonstration}{53}{section.3.11}%
-\contentsline {subsection}{\numberline {3.11.1}Architecture du scénario}{53}{subsection.3.11.1}%
-\contentsline {subsection}{\numberline {3.11.2}Phase 0 — Réinitialisation}{53}{subsection.3.11.2}%
-\contentsline {subsection}{\numberline {3.11.3}Phase 3 — Simulation de l'attaque}{54}{subsection.3.11.3}%
-\contentsline {subsection}{\numberline {3.11.4}Phase 4 — Résultat de la sélection WSM}{54}{subsection.3.11.4}%
-\contentsline {subsection}{\numberline {3.11.5}Résultats de la démonstration}{54}{subsection.3.11.5}%
-\contentsline {section}{\numberline {3.12}Monitoring et Journalisation}{55}{section.3.12}%
-\contentsline {subsection}{\numberline {3.12.1}Journal d'audit}{55}{subsection.3.12.1}%
-\contentsline {subsection}{\numberline {3.12.2}Endpoint de monitoring}{55}{subsection.3.12.2}%
-\contentsline {section}{\numberline {3.13}Sécurité et Considérations de Production}{56}{section.3.13}%
-\contentsline {subsection}{\numberline {3.13.1}Mesures de sécurité implémentées}{56}{subsection.3.13.1}%
-\contentsline {subsection}{\numberline {3.13.2}Limitations actuelles et perspectives}{56}{subsection.3.13.2}%
-\contentsline {section}{\numberline {3.14}Synthèse et Bilan de la Contribution}{56}{section.3.14}%
-\contentsline {chapter}{Bibliographie}{58}{chapter*.40}%
+\contentsline {section}{\numberline {3.2}Conception préliminaire}{31}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Périmètre du système}{31}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Objectifs et exigences du système}{32}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Diagrammes de cas d'utilisation}{32}{subsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.3.1}Protocole de mitigation collaborative}{32}{subsubsection.3.2.3.1}%
+\contentsline {subsubsection}{\numberline {3.2.3.2}Moteur de confiance PeerTrust}{34}{subsubsection.3.2.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.3.3}Rôle du nœud pair dans la coalition}{34}{subsubsection.3.2.3.3}%
+\contentsline {subsection}{\numberline {3.2.4}Architecture générale}{36}{subsection.3.2.4}%
+\contentsline {subsubsection}{\numberline {3.2.4.1}Topologie de la coalition}{36}{subsubsection.3.2.4.1}%
+\contentsline {subsubsection}{\numberline {3.2.4.2}Cycle de vie d'une session de mitigation}{36}{subsubsection.3.2.4.2}%
+\contentsline {section}{\numberline {3.3}Conception technique détaillée}{36}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Modèle de données}{36}{subsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.1}Schéma entité-association}{36}{subsubsection.3.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.2}Identifiants et intégrité référentielle}{38}{subsubsection.3.3.1.2}%
+\contentsline {subsection}{\numberline {3.3.2}Diagramme de classes}{41}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Modèle de confiance~: PeerTrust adapté}{42}{subsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.3.1}Motivation du choix de PeerTrust}{42}{subsubsection.3.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.3.2}Formule T(u) et ses paramètres}{43}{subsubsection.3.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3.3}Niveaux de confiance}{44}{subsubsection.3.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Algorithme de sélection des pairs~: WSM}{44}{subsection.3.3.4}%
+\contentsline {subsubsection}{\numberline {3.3.4.1}Critères de sélection}{44}{subsubsection.3.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.3.4.2}Pondération AHP}{45}{subsubsection.3.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.3.4.3}Répartition proportionnelle du flux}{45}{subsubsection.3.3.4.3}%
+\contentsline {subsection}{\numberline {3.3.5}Diagramme d'activités~: session de mitigation}{45}{subsection.3.3.5}%
+\contentsline {subsection}{\numberline {3.3.6}Mécanismes de sécurité}{47}{subsection.3.3.6}%
+\contentsline {subsubsection}{\numberline {3.3.6.1}Transport sécurisé~: mTLS}{47}{subsubsection.3.3.6.1}%
+\contentsline {subsubsection}{\numberline {3.3.6.2}Authentification applicative~: JWT RS256}{47}{subsubsection.3.3.6.2}%
+\contentsline {subsection}{\numberline {3.3.7}Interface API REST}{48}{subsection.3.3.7}%
+\contentsline {subsubsection}{\numberline {3.3.7.1}Style architectural}{48}{subsubsection.3.3.7.1}%
+\contentsline {subsubsection}{\numberline {3.3.7.2}Endpoints}{48}{subsubsection.3.3.7.2}%
+\contentsline {section}{\numberline {3.4}Conclusion}{48}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Implémentation et Évaluation}{51}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction}{51}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Environnement technique}{51}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Pile technologique}{51}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Structure du projet}{51}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Déploiement avec Docker}{52}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Implémentation du gestionnaire de confiance}{53}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Calcul de T(u) avec Cr historique}{53}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Capture de la crédibilité à la clôture}{54}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Persistance et sanctions automatiques}{54}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Implémentation de la sélection des pairs}{55}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Calcul du score WSM}{55}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Plan de répartition proportionnelle}{55}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Mécanismes de sécurité}{56}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}JWT RS256~: génération et vérification}{56}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}mTLS~: configuration côté serveur}{57}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}Tests et évaluation}{57}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Protocole de test}{57}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Résultats des tests de scalabilité}{57}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Analyse des résultats}{59}{subsection.4.6.3}%
+\contentsline {paragraph}{Taux de succès de 100\,\%.}{59}{section*.39}%
+\contentsline {paragraph}{Sélection WSM quasi-constante.}{59}{section*.40}%
+\contentsline {paragraph}{Heartbeat~: légère croissance maîtrisée.}{59}{section*.41}%
+\contentsline {paragraph}{Perspectives de scalabilité.}{59}{section*.42}%
+\contentsline {section}{\numberline {4.7}Conclusion}{59}{section.4.7}%
+\contentsline {chapter}{Conclusion générale}{60}{chapter*.43}%
+\contentsline {section}{Synthèse des travaux}{60}{section*.44}%
+\contentsline {section}{Contributions}{60}{section*.45}%
+\contentsline {section}{Limites et perspectives}{61}{section*.46}%
+\contentsline {chapter}{Bibliographie}{63}{chapter*.47}%

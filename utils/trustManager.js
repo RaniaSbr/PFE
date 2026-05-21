@@ -104,36 +104,28 @@ async function fetchCrFromNetwork(localNodeId, excludePeerId) {
 /**
  * Calcule T(u) pour un pair donné selon PeerTrust Éq. 6 (Xiong & Liu, 2004).
  *
- * T(u) = Σ[ S(u,i) · Cr(p(u,i)) · D(u,i) ] / Σ[ Cr(p(u,i)) · D(u,i) ]
+ * T(u) = Σ[ S(u,i) · Cr(u,i) · D(u,i) ] / Σ[ Cr(u,i) · D(u,i) ]
  *
+ * Cr(u,i) est capturé à la clôture de chaque session (cr_value en base).
+ * Chaque session conserve ainsi la crédibilité du réseau au moment des faits.
  * Retourne { score, level, session_count }.
  */
 async function computeTrustScore(peer_id) {
-  // Charger en parallèle : sessions et nœud local
-  const [sessions, localNode] = await Promise.all([
-    HelpSession.findAll({
-      where: { helping_peer_id: peer_id, status: "COMPLETED" },
-      include: [{ model: Attack, as: "attack", attributes: ["severity"] }],
-    }),
-    LocalNodeConfig.findOne(),
-  ]);
+  const sessions = await HelpSession.findAll({
+    where: { helping_peer_id: peer_id, status: "COMPLETED" },
+    include: [{ model: Attack, as: "attack", attributes: ["severity"] }],
+  });
 
   if (sessions.length === 0) {
     return { score: DEFAULT_TRUST, level: "BRONZE", session_count: 0 };
   }
 
-  // ── Mécanisme PeerTrust ──────────────────────────────────────────────────────
-  // Cr(p(u,i)) = T(nœud_local) selon le réseau.
-  // On interroge TOUS les pairs actifs (sauf le pair évalué) :
-  //   "Quel est votre score de confiance pour moi ?"
-  // Cr = moyenne des réponses → opinion collective du réseau sur le nœud local.
-  let Cr = DEFAULT_TRUST;
-  if (localNode) {
-    Cr = await fetchCrFromNetwork(localNode.node_id, peer_id);
-  }
-
-  // T(u) = Σ S(u,i) · Cr(p(u,i)) · D(u,i)  — Éq. 6 originale (Xiong & Liu, 2004)
-  let score = 0;
+  // T(u) = Σ[S·Cr_i·D] / Σ[Cr_i·D]
+  // Cr_i = cr_value sauvegardé à la clôture de la session i.
+  // Chaque session ayant potentiellement un Cr différent, Cr ne s'annule plus.
+  // Normalisation inspirée de l'Éq. 3 (Xiong & Liu, 2004) → T(u) ∈ [0,1].
+  let numerator   = 0;
+  let denominator = 0;
 
   for (const session of sessions) {
     const accepted = Number(session.accepted_volume_gbps ?? 0);
@@ -146,11 +138,14 @@ async function computeTrustScore(peer_id) {
     const severity = session.attack?.severity ?? "LOW";
     const D = SEVERITY_WEIGHTS[severity] ?? 0.25;
 
-    score += S * Cr * D;
+    // Cr historique capturé à la clôture de la session
+    const Cr_i = session.cr_value ?? DEFAULT_TRUST;
+
+    numerator   += S * Cr_i * D;
+    denominator += Cr_i * D;
   }
 
-  // Borner à [0,1] pour la compatibilité avec les seuils de niveau
-  score = Math.min(1, Math.max(0, score));
+  const score = denominator > 0 ? numerator / denominator : DEFAULT_TRUST;
   const level = scoreToLevel(score);
 
   return { score, level, session_count: sessions.length };
@@ -213,4 +208,4 @@ async function recalculateAndSave(peer_id) {
   return { ...trustScore.toJSON(), overall_score: score, trust_level: level };
 }
 
-module.exports = { computeTrustScore, recalculateAndSave, scoreToLevel, getCachedTrust };
+module.exports = { computeTrustScore, recalculateAndSave, scoreToLevel, getCachedTrust, fetchCrFromNetwork };

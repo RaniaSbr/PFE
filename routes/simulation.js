@@ -164,9 +164,6 @@ router.post("/simulation/node/init", async (req, res) => {
       // Politique par défaut
       await PolicyConfig.create({
         node_id: node.node_id,
-        alert_threshold_pct: 70,
-        escalation_threshold_pct: 85,
-        critical_threshold_pct: 95,
         min_trust_score_to_help: 0.70,
         max_capacity_share_pct: 70,
         heartbeat_interval_sec: 30,
@@ -222,12 +219,11 @@ router.post("/simulation/attack/detect", async (req, res) => {
       target_port: req.body.target_port ?? null,
       target_protocol: req.body.target_protocol ?? null,
       severity: req.body.severity || "MEDIUM",
-      escalation_triggered: false,
       coalition_helped: false,
     });
 
     logAudit({
-      event_type: "ESCALATION_TRIGGERED",
+      event_type: "ATTACK_DETECTED",
       severity: "WARNING",
       actor: "simulation",
       target: attack.attack_id,

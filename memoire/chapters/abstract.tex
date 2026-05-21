@@ -1,0 +1,35 @@
+% =============================================
+% RÉSUMÉ (Français) + ABSTRACT (Anglais)
+% =============================================
+
+% ----- Résumé français -----
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+\markboth{Résumé}{Résumé}
+
+Les attaques par déni de service distribué (\gls{ddos}) constituent l'une des menaces les plus critiques pour la disponibilité des services numériques modernes. Face à l'augmentation exponentielle de leur volume et de leur sophistication, les approches de mitigation centralisées montrent leurs limites~: points de défaillance uniques, coûts élevés et absence de coordination entre acteurs indépendants.
+
+Ce mémoire présente la conception et l'implémentation d'un système distribué de mitigation collaborative des attaques \gls{ddos}, reposant sur une coalition pair-à-pair de n\oe{}uds de protection hétérogènes. Le système propose trois contributions principales~: (1)~un mécanisme de confiance fondé sur le modèle PeerTrust, adapté avec une crédibilité historique par session garantissant une évaluation fidèle à la réalité temporelle du réseau~; (2)~un algorithme de sélection multicritère des pairs assistants basé sur le Weighted Sum Model avec pondération \gls{ahp}, prenant en compte la capacité disponible, la latence, la confiance et la réciprocité~; (3)~une sécurisation de bout en bout des communications inter-n\oe{}uds par mTLS et JWT RS256 sans secret partagé.
+
+Le prototype, développé en Node.js avec PostgreSQL, a été évalué sur une coalition simulée de 20 à 100~n\oe{}uds. Les résultats démontrent un taux de succès de 100\,\% pour l'ensemble des opérations testées, avec un temps de sélection \gls{wsm} inférieur à 33~ms quelle que soit la taille de la coalition.
+
+\medskip
+\noindent\textbf{Mots-clés~:} DDoS, mitigation collaborative, pair-à-pair, confiance, PeerTrust, Weighted Sum Model, mTLS, JWT, sécurité réseau.
+
+\newpage
+
+% ----- Abstract anglais -----
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{Abstract}
+
+Distributed Denial of Service (DDoS) attacks represent one of the most critical threats to the availability of modern digital services. As their volume and sophistication grow exponentially, centralized mitigation approaches show their limitations~: single points of failure, high costs, and lack of coordination between independent actors.
+
+This thesis presents the design and implementation of a distributed collaborative DDoS mitigation system based on a peer-to-peer coalition of heterogeneous protection nodes. The system proposes three main contributions~: (1)~a trust mechanism based on the PeerTrust model, extended with per-session historical credibility to ensure evaluation faithful to the temporal reality of the network~; (2)~a multi-criteria peer selection algorithm based on the Weighted Sum Model with AHP weighting, considering available capacity, latency, trust and reciprocity~; (3)~end-to-end security of inter-node communications via mutual TLS and JWT RS256 without shared secrets.
+
+The prototype, developed in Node.js with PostgreSQL, was evaluated on a simulated coalition ranging from 20 to 100~nodes. Results demonstrate a 100\,\% success rate for all tested operations, with WSM selection time below 33~ms regardless of coalition size.
+
+\medskip
+\noindent\textbf{Keywords~:} DDoS, collaborative mitigation, peer-to-peer, trust, PeerTrust, Weighted Sum Model, mTLS, JWT, network security.
+
+\newpage

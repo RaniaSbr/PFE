@@ -9,6 +9,7 @@ const {
   ReciprocityLedger,
 } = require("../models");
 const { logAudit, logMessage } = require("../utils/logger");
+const { fetchCrFromNetwork } = require("../utils/trustManager");
 
 const router = express.Router();
 
@@ -180,6 +181,14 @@ const router = express.Router();
  *         description: Session introuvable
  */
 
+// Échelle Stormwall Network : sévérité calculée à partir du volume total filtré
+function computeSeverity(total_volume_gbps) {
+  if (total_volume_gbps >= 100) return "CRITICAL";
+  if (total_volume_gbps >= 10)  return "HIGH";
+  if (total_volume_gbps >= 1)   return "MEDIUM";
+  return "LOW";
+}
+
 async function getLocalNodeId() {
   const node = await LocalNodeConfig.findOne();
   return node ? node.node_id : null;
@@ -198,9 +207,7 @@ router.post("/alert", async (req, res) => {
       target_service: req.body.target_service ?? null,
       target_port: req.body.target_port ?? null,
       target_protocol: req.body.target_protocol ?? null,
-      severity: req.body.severity || "LOW",
-      escalation_triggered: Boolean(req.body.escalation_triggered),
-      escalation_triggered_at: req.body.escalation_triggered ? new Date() : null,
+      severity: "LOW", // calculée a posteriori dans POST /attack/over
       coalition_helped: Boolean(req.body.coalition_helped),
     };
 
@@ -216,16 +223,6 @@ router.post("/alert", async (req, res) => {
     } else {
       created = true;
       attack = await Attack.create({ attack_id: req.body.attack_id, ...payload });
-    }
-
-    if (payload.escalation_triggered) {
-      logAudit({
-        event_type: "ESCALATION_TRIGGERED",
-        severity: "WARNING",
-        actor: "system",
-        target: attack.attack_id,
-        description: `Escalation triggered for attack ${attack.attack_id}`,
-      });
     }
 
     return res.status(created ? 201 : 200).json(attack);
@@ -543,6 +540,10 @@ router.post("/attack/over", async (req, res) => {
         { where: { session_id: { [Op.in]: sessionIds } } },
       );
 
+      // Capturer Cr au moment de la clôture, une seule fois par pair distinct
+      const localNodeId = await getLocalNodeId();
+      const crCache = {};
+
       for (const session of sessions) {
         // Si actual_volume_gbps n'a pas été renseigné, on utilise le volume accepté
         // (le pair a fourni ce qu'il avait promis)
@@ -550,6 +551,15 @@ router.post("/attack/over", async (req, res) => {
           await session.update({
             actual_volume_gbps: session.accepted_volume_gbps ?? 0,
           });
+        }
+
+        // Sauvegarder Cr historique : opinion du réseau sur le nœud local au moment de la session
+        if (localNodeId) {
+          const pid = session.helping_peer_id;
+          if (crCache[pid] === undefined) {
+            crCache[pid] = await fetchCrFromNetwork(localNodeId, pid);
+          }
+          await session.update({ cr_value: crCache[pid] });
         }
 
         const volume = session.actual_volume_gbps || session.accepted_volume_gbps || 0;
@@ -566,12 +576,21 @@ router.post("/attack/over", async (req, res) => {
       }
     }
 
+    // Volume total filtré = somme des actual_volume_gbps de toutes les sessions
+    const allSessions = await HelpSession.findAll({
+      where: { attack_id: req.body.attack_id, status: "COMPLETED" },
+    });
+    const totalFiltered = allSessions.reduce(
+      (sum, s) => sum + Number(s.actual_volume_gbps ?? 0), 0
+    );
+
     await attack.update({
       ended_at: req.body.timestamp || new Date(),
       duration_seconds: req.body.attack_duration_seconds ?? attack.duration_seconds,
       status: req.body.status || "ENDED",
       coalition_helped: sessionIds.length > 0 ? true : attack.coalition_helped,
       nb_peers_involved: sessionIds.length || attack.nb_peers_involved,
+      severity: computeSeverity(totalFiltered),
     });
 
     return res.json(attack);

@@ -16,7 +16,7 @@ Les secteurs les plus ciblés incluent notamment la finance, les télécommunica
 
 Les solutions actuelles reposent majoritairement sur des architectures centralisées, telles que les \textit{scrubbing centers} ou les services de mitigation cloud. Bien que ces solutions offrent une capacité de traitement élevée, elles présentent des limites structurelles~: dépendance à un point unique de décision, latence due à la redirection du trafic, coûts élevés et absence de coordination dynamique entre acteurs indépendants.
 
-Face à ces limites, une nouvelle approche émerge~: la \textbf{défense collaborative distribuée}. Plutôt que de traiter les attaques de manière isolée, plusieurs entités autonomes peuvent coopérer afin de partager des informations, synchroniser leurs actions et renforcer leur résilience collective. C'est dans ce cadre que s'inscrit ce projet de fin d'études \textbf{}, visant à concevoir une infrastructure de coordination inter-n\oe{}uds pour la défense collaborative contre les attaques \gls{ddos}.
+Face à ces limites, une nouvelle approche émerge~: la \textbf{défense collaborative distribuée}. Plutôt que de traiter les attaques de manière isolée, plusieurs entités autonomes peuvent coopérer afin de partager des informations, synchroniser leurs actions et renforcer leur résilience collective. C'est dans ce cadre que s'inscrit ce projet de fin d'études \textbf{ShieldNet}, visant à concevoir une infrastructure de coordination inter-n\oe{}uds pour la défense collaborative contre les attaques \gls{ddos}.
 
 % -------------------------------------------------------
 % Contexte
@@ -80,32 +80,51 @@ Pour atteindre cet objectif, le travail consiste à~:
 \end{enumerate}
 
 % -------------------------------------------------------
+% Périmètre
+% -------------------------------------------------------
+
+\section*{Périmètre du travail}
+\addcontentsline{toc}{section}{Périmètre du travail}
+
+Ce travail se concentre exclusivement sur les \textbf{échanges inter-nœuds} au sein d'une coalition de défense déjà constituée. Plus précisément, le périmètre couvre~:
+
+\begin{itemize}
+    \item la conception et l'implémentation de l'\textbf{API REST} exposée par chaque nœud pour la coordination collaborative~;
+    \item le \textbf{protocole d'aide} entre nœuds~: signalement d'attaque, demande et acceptation de sessions de mitigation, redirection de trafic, clôture~;
+    \item le \textbf{mécanisme de confiance} fondé sur PeerTrust~: calcul des scores, détection des violations, exclusion automatique~;
+    \item la \textbf{sécurisation des communications} inter-nœuds par mTLS et JWT RS256.
+\end{itemize}
+
+Les aspects suivants sont explicitement \textbf{hors périmètre}~:
+
+\begin{itemize}
+    \item la formation du réseau P2P (bootstrap, découverte initiale des pairs, protocoles de routage overlay)~;
+    \item la détection technique des attaques DDoS au niveau réseau (analyse de trafic, deep packet inspection)~;
+    \item le filtrage et le nettoyage effectif du trafic (scrubbing) au sein de chaque nœud~;
+    \item la gestion des tunnels de redirection au niveau infrastructure (configuration GRE, BGP Flowspec).
+\end{itemize}
+
+% -------------------------------------------------------
 % Organisation du rapport
 % -------------------------------------------------------
 
 \section*{Organisation du rapport}
 \addcontentsline{toc}{section}{Organisation du rapport}
 
-Le présent mémoire est structuré comme suit~:
+Le présent mémoire est structuré en quatre chapitres~:
 
 \begin{itemize}
     \item \textbf{Chapitre~1~: Contexte et concepts fondamentaux.}
-    Ce chapitre présente les fondements théoriques des attaques \gls{ddos}, la taxonomie des vecteurs d'attaque et les mécanismes de mitigation existants (\textit{scrubbing centers}, techniques de redirection, pipeline de filtrage), ainsi que les principes des architectures pair-à-pair applicables à la coordination inter-n\oe{}uds.
+    Ce chapitre présente les fondements théoriques des attaques \gls{ddos}, la taxonomie des vecteurs d'attaque et les mécanismes de mitigation existants (\textit{scrubbing centers}, CDN, pare-feu, RTBH, services cloud), ainsi que les principes des architectures pair-à-pair applicables à la coordination inter-n\oe{}uds.
 
     \item \textbf{Chapitre~2~: État de l'art.}
-    Ce chapitre propose un état de l'art des approches collaboratives et distribuées en matière de défense contre les \gls{ddos}. Cinq systèmes représentatifs sont analysés en profondeur~: \gls{dots}, DDoS Clearing House, NaWas/NBIP et DefCOM. Une synthèse comparative identifie les lacunes motivant notre contribution.
+    Ce chapitre analyse les principales approches collaboratives et distribuées de défense contre les attaques \gls{ddos}~: le protocole de signalisation \gls{dots}, la DDoS Clearing House, la mutualisation opérationnelle NaWas/NBIP et l'overlay coopératif DefCOM. Une synthèse comparative identifie les lacunes motivant la contribution de ce mémoire.
 
-    \item \textbf{Chapitre~3~: Modélisation du système.}
-    Ce chapitre décrit le modèle du système  et formalise les hypothèses retenues, les cas d'usage de coordination et les exigences fonctionnelles et non fonctionnelles.
+    \item \textbf{Chapitre~3~: Conception et Architecture du système.}
+    Ce chapitre décrit les décisions de conception du système~: topologie \gls{p2p} de la coalition, modèle de données, mécanisme de confiance fondé sur PeerTrust, algorithme de sélection des pairs par \gls{wsm} avec pondération \gls{ahp}, protocoles de sécurité mTLS et JWT RS256, et interface \gls{api} \gls{rest}.
 
-    \item \textbf{Chapitre~4~: Conception.}
-    Ce chapitre détaille la conception du protocole distribué de coordination inter-n\oe{}uds et de l'architecture d'API sécurisée pour l'échange de métadonnées d'attaque.
-
-    \item \textbf{Chapitre~5~: Implémentation.}
-    Ce chapitre présente l'implémentation du prototype  et l'environnement expérimental mis en place pour la validation.
-
-    \item \textbf{Chapitre~6~: Résultats et évaluation.}
-    Ce chapitre expose les résultats expérimentaux obtenus et leur analyse en termes de temps de réponse, de passage à l'échelle et de résilience.
+    \item \textbf{Chapitre~4~: Implémentation et Évaluation.}
+    Ce chapitre présente la réalisation concrète du prototype~: pile technologique, implémentation du gestionnaire de confiance et du sélecteur de pairs, configuration de la sécurité, et résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
 \end{itemize}
 
 Enfin, une \textbf{conclusion générale} synthétise les contributions du travail et propose des perspectives d'évolution.

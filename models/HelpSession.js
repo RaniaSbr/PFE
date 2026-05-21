@@ -119,6 +119,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       },
+      cr_value: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 0.5,
+        validate: { min: 0, max: 1 },
+      },
       created_at: {
         type: DataTypes.DATE,
         allowNull: false,

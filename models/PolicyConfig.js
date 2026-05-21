@@ -17,37 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
-      alert_threshold_pct: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 70,
-        validate: {
-          min: 0,
-          max: 100,
-        },
-      },
-      escalation_threshold_pct: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 85,
-        validate: {
-          min: 0,
-          max: 100,
-        },
-      },
-      critical_threshold_pct: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 95,
-        validate: {
-          min: 0,
-          max: 100,
-        },
-      },
       min_trust_score_to_help: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0.7,
+        defaultValue: 0.4,
         validate: {
           min: 0,
           max: 1,

@@ -1,7 +1,7 @@
 % =============================================
-% CHAPITRE 2 : État de l'art
+% CHAPITRE 2 : Étude bibliographique
 % =============================================
-\chapter{État de l'art}
+\chapter{Étude bibliographique}
 \label{chap:etat_art}
 
 \section{Introduction}
@@ -114,7 +114,7 @@ Les fingerprints sont sérialisés au format \textbf{JSON} et échangés via une
 
 \subsubsection{Architecture logicielle}
 
-Le système suit une architecture à trois composants (voir Figure~\ref{fig:clearinghouse_cycle})~:
+Le système suit une architecture à trois composants (voir Figure~\ref{fig:ddos_clearing_house})~:
 
 \begin{enumerate}
     \item \textbf{Module local de génération (\textit{DDoS DB local})~:} Déployé chez chaque membre participant, ce module se connecte aux outils de détection existants (NetFlow/IPFIX collectors, IDS type Suricata/Snort, ou plateformes \gls{ddos} dédiées). Il capture les métadonnées du trafic d'attaque via \textbf{DissecTor}, un outil d'analyse de captures PCAP développé par SIDN Labs, qui extrait automatiquement les champs du fingerprint à partir du trafic brut. Le module applique ensuite une \textbf{anonymisation} des adresses IP sources (troncature à /24) et supprime tout payload applicatif avant transmission.
@@ -325,6 +325,6 @@ L'analyse révèle qu'aucun système existant ne combine simultanément~:
 % --------------------------------------------------
 \section{Conclusion}
 
-L'état de l'art révèle une progression vers la défense collaborative~: \gls{dots} standardise la signalisation inter-domaines mais reste hiérarchique~; le Clearing House partage l'intelligence d'attaque mais sans orchestration active et avec un délai inhérent~; NaWas mutualise les ressources physiques mais sans coordination horizontale entre membres~; DefCOM propose une architecture overlay distribuée mais manque de mécanismes de confiance et d'interopérabilité.
+L'Étude bibliographique révèle une progression vers la défense collaborative~: \gls{dots} standardise la signalisation inter-domaines mais reste hiérarchique~; le Clearing House partage l'intelligence d'attaque mais sans orchestration active et avec un délai inhérent~; NaWas mutualise les ressources physiques mais sans coordination horizontale entre membres~; DefCOM propose une architecture overlay distribuée mais manque de mécanismes de confiance et d'interopérabilité.
 
 \textbf{Aucun système ne combine pleinement} une architecture décentralisée (\gls{p2p}), une coordination d'actions en temps réel, un partage d'intelligence proactif et des mécanismes de confiance robustes. C'est précisément dans cet espace que s'inscrit la contribution présentée dans les chapitres suivants de ce mémoire.
