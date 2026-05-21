@@ -737,6 +737,25 @@ async def main():
             record("4", "Somme allocations ≈ 100%",
                    abs(total_pct - 100) < 1, f"total={total_pct:.2f}%")
 
+            step("Assertion ordre WSM : score moyen T1 > T3...")
+            t1_sc = [p["wsm_score"] for p in selected
+                     if peer_id_to_tier.get(p["peer_id"]) == "T1"]
+            t3_sc = [p["wsm_score"] for p in selected
+                     if peer_id_to_tier.get(p["peer_id"]) == "T3"]
+            if t1_sc and t3_sc:
+                avg_t1 = sum(t1_sc) / len(t1_sc)
+                avg_t3 = sum(t3_sc) / len(t3_sc)
+                wsm_ord = avg_t1 > avg_t3
+                (ok if wsm_ord else warn)(
+                    f"T1 moyen {avg_t1:.4f} > T3 moyen {avg_t3:.4f} ✓"
+                    if wsm_ord else
+                    f"T1 {avg_t1:.4f} ≤ T3 {avg_t3:.4f} (inattendu)")
+                record("4", "WSM : score moyen T1 > T3", wsm_ord,
+                       f"T1={avg_t1:.4f}×{len(t1_sc)}, T3={avg_t3:.4f}×{len(t3_sc)}")
+            else:
+                warn(f"Pas assez de T1/T3 (T1={len(t1_sc)}, T3={len(t3_sc)})")
+                record("4", "WSM : score moyen T1 > T3", False, "données insuffisantes")
+
             # ── PHASE 5 — Réponse coalition ───────────────────────────────────
             title("PHASE 5 — RÉPONSE DE LA COALITION (99 PAIRS)")
 
