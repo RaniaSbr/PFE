@@ -1,24 +1,21 @@
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Architecture générale d'une attaque DDoS.}}{6}{figure.caption.9}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Processus de mitigation via un \textit {scrubbing center}.}}{9}{figure.caption.11}%
-\contentsline {figure}{\numberline {1.3}{\ignorespaces Principe de protection anti-DDoS par un CDN avec Anycast.}}{10}{figure.caption.12}%
-\contentsline {figure}{\numberline {1.4}{\ignorespaces Mécanisme de RTBH via BGP~: la victime annonce un préfixe avec une communauté RTBH, et le FAI redirige le trafic correspondant vers \texttt {null0}.}}{12}{figure.caption.13}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Architecture générale d'une attaque DDoS.}}{6}{figure.caption.15}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Processus de mitigation via un \textit {scrubbing center}.}}{8}{figure.caption.17}%
+\contentsline {figure}{\numberline {1.3}{\ignorespaces Principe de protection anti-DDoS par un CDN avec Anycast.}}{9}{figure.caption.18}%
+\contentsline {figure}{\numberline {1.4}{\ignorespaces Mécanisme de RTBH via BGP~: la victime annonce un préfixe avec une communauté RTBH, et le FAI redirige le trafic correspondant vers \texttt {null0}.}}{10}{figure.caption.19}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Architecture de référence du protocole \gls {dots} : séparation entre le canal de signalisation (CoAP/DTLS/UDP) et le canal de données (RESTCONF/HTTPS/TCP).}}{20}{figure.caption.16}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Architecture du \textit {DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}}{23}{figure.caption.17}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}}{25}{figure.caption.18}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}}{28}{figure.caption.19}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Architecture de référence du protocole \gls {dots} : séparation entre le canal de signalisation (CoAP/DTLS/UDP) et le canal de données (RESTCONF/HTTPS/TCP).}}{17}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Architecture du \textit {DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}}{20}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}}{21}{figure.caption.24}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}}{24}{figure.caption.25}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{33}{figure.caption.21}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{35}{figure.caption.22}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{37}{figure.caption.23}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Coalition ~: cinq nœuds hétérogènes interconnectés en overlay \gls {p2p} plat.}}{38}{figure.caption.24}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Schéma entité-association de la base de données locale d'un nœud ShieldNet.}}{39}{figure.caption.25}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Diagramme de classes UML du système ShieldNet.}}{41}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative.}}{46}{figure.caption.31}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Double couche de sécurité~: mTLS au niveau transport, JWT RS256 au niveau applicatif.}}{47}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{28}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{29}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{31}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Exemple de coalition~: sept nœuds hétérogènes interconnectés en overlay \gls {p2p} plat non structuré.}}{39}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Schéma entité-association de la base de données locale d'un nœud.}}{40}{figure.caption.38}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative (deux couloirs~: nœud victime et nœud pair).}}{46}{figure.caption.43}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des répertoires du projet.}}{51}{figure.caption.35}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Diagramme de déploiement~: coalition à deux nœuds avec Docker.}}{52}{figure.caption.36}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Temps de réponse moyens en fonction du nombre de nœuds simulés.}}{58}{figure.caption.38}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des répertoires du projet.}}{51}{figure.caption.46}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}}{59}{figure.caption.48}%

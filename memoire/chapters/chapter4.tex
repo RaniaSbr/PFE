@@ -49,111 +49,11 @@ Le projet est organisé selon le schéma de la Figure~\ref{fig:structure}, sépa
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[
-    dir/.style={font=\ttfamily\small, align=left},
-    file/.style={font=\ttfamily\footnotesize, gray!70, align=left},
-    edge from parent/.style={draw, -}
-]
-\node[dir] {shieldnet/}
-    child { node[dir] {models/}
-        child { node[file] {Peer.js \quad TrustScore.js \quad HelpSession.js \quad \ldots} } }
-    child { node[dir] {routes/}
-        child { node[file] {coalition.js \quad trust.js \quad discovery.js \quad auth.js \quad \ldots} } }
-    child { node[dir] {utils/}
-        child { node[file] {trustManager.js \quad peerSelector.js \quad logger.js \quad httpsClient.js} } }
-    child { node[dir] {middleware/}
-        child { node[file] {auth.js \quad (JWT RS256 + mTLS)} } }
-    child { node[dir] {config/}
-        child { node[file] {database.js \quad node-config.js \quad policy-defaults.js} } }
-    child { node[dir] {certs/}
-        child { node[file] {node.key \quad node.crt} } }
-    child { node[file] {server.js \quad docker-compose.yml} };
-\end{tikzpicture}
+\includegraphics[width=\textwidth]{figures/shieldnet_directory_tree.png}
 \caption{Structure des répertoires du projet.}
 \label{fig:structure}
 \end{figure}
 
-\subsection{Déploiement avec Docker}
-
-Chaque nœud s'exécute dans un conteneur Docker exposant le port 8443 (HTTPS). Un fichier \texttt{docker-compose.yml} permet de simuler localement une coalition multi-nœuds~: chaque service dispose de son propre volume de certificats et d'une instance PostgreSQL dédiée, connectée au réseau d'overlay Docker.
-
-La Figure~\ref{fig:deploiement} présente l'architecture de déploiement d'une coalition à deux nœuds.
-
-\begin{figure}[htbp]
-\centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-  host/.style={draw=black!60, thick, rounded corners=5pt, fill=gray!5,
-               minimum width=6.2cm, minimum height=5.8cm},
-  ctr/.style={draw=black!70, thick, rounded corners=3pt, fill=blue!10,
-              minimum width=5.4cm, minimum height=1.8cm, align=center, font=\small},
-  db/.style={draw=black!70, thick, rounded corners=3pt, fill=green!10,
-             minimum width=5.4cm, minimum height=1.6cm, align=center, font=\small},
-  net/.style={draw=black!50, thick, dashed, rounded corners=4pt, fill=yellow!5,
-              minimum width=14cm, minimum height=1.0cm, align=center, font=\small},
-  arr/.style={<->, thick, gray!70},
-  lbl/.style={font=\scriptsize}
-]
-
-%% Hôte 1
-\draw[host] (-7.5, 5.5) rectangle (-1.3, -0.7);
-\node[font=\small\bfseries, gray!70] at (-4.4, 5.1) {Hôte Docker 1};
-
-\node[ctr] (nodeA) at (-4.4, 3.8) {
-  \textbf{node-a}\\
-  \small Node.js 20 LTS\\
-  \scriptsize port 8443 (HTTPS/mTLS)
-};
-
-\node[db]  (dbA)   at (-4.4, 1.4) {
-  \textbf{postgres-a}\\
-  \small PostgreSQL 15\\
-  \scriptsize port 5432 (interne)
-};
-
-\draw[arr] (nodeA.south) -- node[lbl, right] {Sequelize} (dbA.north);
-
-%% Volume certificats
-\node[draw=gray!50, dashed, fill=gray!10, rounded corners=2pt,
-      font=\scriptsize, minimum width=2cm] at (-4.4, 0.0) {vol: certs-a};
-
-%% Hôte 2
-\draw[host] (1.3, 5.5) rectangle (7.5, -0.7);
-\node[font=\small\bfseries, gray!70] at (4.4, 5.1) {Hôte Docker 2};
-
-\node[ctr] (nodeB) at (4.4, 3.8) {
-  \textbf{node-b}\\
-  \small Node.js 20 LTS\\
-  \scriptsize port 8444 (HTTPS/mTLS)
-};
-
-\node[db]  (dbB)   at (4.4, 1.4) {
-  \textbf{postgres-b}\\
-  \small PostgreSQL 15\\
-  \scriptsize port 5433 (interne)
-};
-
-\draw[arr] (nodeB.south) -- node[lbl, right] {Sequelize} (dbB.north);
-
-\node[draw=gray!50, dashed, fill=gray!10, rounded corners=2pt,
-      font=\scriptsize, minimum width=2cm] at (4.4, 0.0) {vol: certs-b};
-
-%% Réseau Docker overlay
-\draw[net] (-7.3, -1.2) rectangle (7.3, -2.2);
-\node[font=\small\bfseries, gray!60] at (0, -1.7) {coalition-net (bridge Docker)};
-
-%% Connexions au réseau
-\draw[arr] (nodeA.south) -- ++( 0,-1.6) -- ++(0,-0.9);
-\draw[arr] (nodeB.south) -- ++(0,-1.6) -- ++(0,-0.9);
-
-%% Communication inter-nœuds
-\draw[arr, blue!60, very thick] (nodeA.east) -- node[lbl, above] {HTTPS mTLS + JWT} (nodeB.west);
-
-\end{tikzpicture}
-}
-\caption{Diagramme de déploiement~: coalition à deux nœuds avec Docker.}
-\label{fig:deploiement}
-\end{figure}
 
 % --------------------------------------------------
 \section{Implémentation du gestionnaire de confiance}
@@ -342,6 +242,199 @@ const server = https.createServer({
 En mode \texttt{MTLS\_STRICT=true}, toute connexion sans certificat client valide est rejetée au niveau TLS avant même d'atteindre les middlewares applicatifs. En mode non strict, le certificat est optionnel~; cela permet à des outils de test (Postman, Swagger UI) de s'y connecter sans certificat.
 
 % --------------------------------------------------
+\section{Protocole de communication inter-nœuds}
+\label{sec:protocole_com}
+
+Les nœuds communiquent exclusivement via des requêtes HTTPS authentifiées par JWT RS256. Cette section présente les messages JSON échangés lors des principales interactions du protocole.
+
+% --------------------------------------------------
+\subsection{Authentification}
+
+Avant tout appel API protégé, un nœud obtient un token JWT en transmettant son identifiant et son secret local.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /auth/token}.}, label=lst:auth]
+// Requête
+{
+  "node_id":     "node-university",
+  "node_secret": "secret-key-2025"
+}
+
+// Réponse 200 OK
+{
+  "token":      "eyJhbGciOiJSUzI1NiJ9...",
+  "expires_in": "60s",
+  "node_id":    "node-university",
+  "role":       "local",
+  "algorithm":  "RS256"
+}
+\end{lstlisting}
+
+Le token expire après 60 secondes afin de limiter les attaques par rejeu. Le nœud récepteur vérifie la signature RS256 à l'aide de la clé publique de l'émetteur, enregistrée dans la table \texttt{Peers}.
+
+% --------------------------------------------------
+\subsection{Heartbeat}
+
+Chaque nœud envoie périodiquement un heartbeat à ses pairs pour signaler son état et sa charge courante.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /heartbeat}.}, label=lst:heartbeat]
+// Requête
+{
+  "peer_id":                  "550e8400-e29b-41d4-a716-446655440000",
+  "reported_status":          "ACTIVE",
+  "reported_load_pct":        42.5,
+  "reported_available_gbps":  5.75,
+  "round_trip_time_ms":       12
+}
+
+// Réponse 201 Created
+{
+  "message":   "Heartbeat recorded",
+  "heartbeat": {
+    "peer_id":                 "550e8400-...",
+    "reported_status":         "ACTIVE",
+    "reported_load_pct":       42.5,
+    "reported_available_gbps": 5.75,
+    "round_trip_time_ms":      12
+  }
+}
+\end{lstlisting}
+
+À la réception, le nœud met à jour le champ \texttt{last\_heartbeat} du pair et remet à zéro son compteur \texttt{consecutive\_missed\_heartbeats}.
+
+% --------------------------------------------------
+\subsection{Détection d'une attaque}
+
+Lorsqu'une attaque \gls{ddos} est détectée, le nœud victime l'enregistre localement via \texttt{POST /alert}.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /alert}.}, label=lst:alert]
+// Requête
+{
+  "target_ip_range":  "192.168.1.0/24",
+  "target_service":   "HTTP",
+  "target_port":      80,
+  "target_protocol":  "TCP",
+  "status":           "DETECTED",
+  "coalition_helped": false
+}
+
+// Réponse 201 Created
+{
+  "attack_id":        "a1b2c3d4-...",
+  "status":           "DETECTED",
+  "severity":         "LOW",
+  "detected_at":      "2026-05-22T10:00:00.000Z",
+  "target_ip_range":  "192.168.1.0/24",
+  "coalition_helped": false
+}
+\end{lstlisting}
+
+La sévérité est initialisée à \texttt{LOW} et recalculée à la clôture de l'attaque en fonction du volume total filtré par la coalition.
+
+% --------------------------------------------------
+\subsection{Demande et réponse d'aide}
+
+Le nœud victime envoie une demande d'aide à chaque pair sélectionné par l'algorithme \gls{wsm}.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /help/request}.}, label=lst:helpreq]
+// Requête
+{
+  "attack_id":        "a1b2c3d4-...",
+  "helping_peer_id":  "550e8400-...",
+  "requesting_node_id": "node-university",
+  "allocation_pct":   60,
+  "tunnel_type":      "GRE"
+}
+
+// Réponse 201 Created
+{
+  "session_id":         "f9e8d7c6-...",
+  "attack_id":          "a1b2c3d4-...",
+  "helping_peer_id":    "550e8400-...",
+  "requesting_node_id": "node-university",
+  "status":             "REQUESTED",
+  "allocation_pct":     60,
+  "direction":          "OUTBOUND_REQUEST",
+  "requested_at":       "2026-05-22T10:00:05.000Z"
+}
+\end{lstlisting}
+
+Le pair accepte ou rejette la session après vérification du score de confiance et de sa capacité disponible.
+
+\begin{lstlisting}[language=json, caption={Acceptation (\texttt{PUT /help/\{id\}/accept}) et rejet (\texttt{PUT /help/\{id\}/reject}).}, label=lst:helpacc]
+// Acceptation — corps de la requête
+{
+  "accepted_volume_gbps": 8.5,
+  "tunnel_type":          "GRE",
+  "response_time_ms":     230
+}
+// Réponse 200 OK
+{
+  "session_id":           "f9e8d7c6-...",
+  "status":               "ACCEPTED",
+  "accepted_volume_gbps": 8.5,
+  "tunnel_type":          "GRE",
+  "responded_at":         "2026-05-22T10:00:06.000Z"
+}
+
+// Rejet — corps de la requête
+{ "rejection_reason": "Capacité insuffisante" }
+// Réponse 200 OK
+{
+  "session_id":       "f9e8d7c6-...",
+  "status":           "REJECTED",
+  "rejection_reason": "Capacité insuffisante",
+  "responded_at":     "2026-05-22T10:00:06.000Z"
+}
+\end{lstlisting}
+
+% --------------------------------------------------
+\subsection{Redirection du trafic et clôture}
+
+Une fois la session acceptée, le nœud victime déclenche la redirection du trafic vers le pair via un tunnel réseau.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /traffic/redirect}.}, label=lst:redirect]
+// Requête
+{
+  "session_id":  "f9e8d7c6-...",
+  "tunnel_type": "GRE",
+  "volume_gbps": 8.5
+}
+
+// Réponse 200 OK
+{
+  "session_id":        "f9e8d7c6-...",
+  "status":            "ACTIVE",
+  "tunnel_type":       "GRE",
+  "actual_volume_gbps": 8.5,
+  "activated_at":      "2026-05-22T10:00:07.000Z"
+}
+\end{lstlisting}
+
+À la fin de l'attaque, le nœud victime clôture toutes les sessions et déclenche la mise à jour des crédits de réciprocité.
+
+\begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /attack/over}.}, label=lst:over]
+// Requête
+{
+  "attack_id":               "a1b2c3d4-...",
+  "session_ids":             ["f9e8d7c6-..."],
+  "attack_duration_seconds": 300
+}
+
+// Réponse 200 OK
+{
+  "attack_id":        "a1b2c3d4-...",
+  "status":           "ENDED",
+  "severity":         "HIGH",
+  "ended_at":         "2026-05-22T10:05:00.000Z",
+  "duration_seconds": 300,
+  "coalition_helped": true,
+  "nb_peers_involved": 1
+}
+\end{lstlisting}
+
+La sévérité finale est calculée selon l'échelle Stormwall~: \texttt{CRITICAL} ($\geq$100 Gbps filtrés), \texttt{HIGH} ($\geq$10 Gbps), \texttt{MEDIUM} ($\geq$1 Gbps), \texttt{LOW} (en dessous).
+
+% --------------------------------------------------
 \section{Tests et évaluation}
 \label{sec:tests}
 
@@ -389,60 +482,26 @@ Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}
-\begin{scope}
-\draw[->] (0,0) -- (7.5,0) node[right] {\small Nœuds};
-\draw[->] (0,0) -- (0,5.5) node[above] {\small Temps (ms)};
-
-% Axes graduations x
-\foreach \x/\label in {1/20, 2.5/40, 4/60, 5.5/80, 7/100} {
-  \draw (\x, 0.05) -- (\x, -0.05);
-  \node[below, font=\scriptsize] at (\x, -0.05) {\label};
-}
-
-% Axes graduations y
-\foreach \y/\label in {0.5/100, 1/200, 1.5/300, 2/400, 2.5/500, 3/600} {
-  \draw (0.05, \y) -- (-0.05, \y);
-  \node[left, font=\scriptsize] at (-0.05, \y) {\label};
-}
-
-% Courbe Enregistrement (moy) -- valeurs: 389,313,426,449,457
-\draw[blue!70, thick, mark=*, mark options={fill=blue!70}]
-  plot coordinates {(1,1.945)(2.5,1.565)(4,2.13)(5.5,2.245)(7,2.285)};
-\node[right, font=\scriptsize, blue!70] at (7.05, 2.285) {Enreg.};
-
-% Courbe Heartbeat (moy) -- valeurs: 160,220,280,450,407
-\draw[green!60!black, thick, dashed]
-  plot coordinates {(1,0.8)(2.5,1.1)(4,1.4)(5.5,2.25)(7,2.035)};
-\node[right, font=\scriptsize, green!60!black] at (7.05, 2.035) {Heartbeat};
-
-% Courbe WSM -- valeurs: 32.15,22.5,20.79,28.55,30.4 (echelle x10)
-\draw[red!70, thick, dotted]
-  plot coordinates {(1,0.322)(2.5,0.225)(4,0.208)(5.5,0.286)(7,0.304)};
-\node[right, font=\scriptsize, red!70] at (7.05, 0.304) {WSM};
-
-\node[font=\scriptsize, gray] at (3.5, -0.6) {(\textit{WSM multiplié par 10 pour lisibilité})};
-\end{scope}
-\end{tikzpicture}
-\caption{Temps de réponse moyens en fonction du nombre de nœuds simulés.}
+\includegraphics[width=\textwidth]{figures/shieldnet_scalability.png}
+\caption{Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}
 \label{fig:scalabilite}
 \end{figure}
 
-\subsection{Analyse des résultats}
+% \subsection{Analyse des résultats}
 
-Trois observations majeures ressortent des résultats~:
+% Trois observations majeures ressortent des résultats~:
 
-\paragraph{Taux de succès de 100\,\%.}
-Tous les enregistrements et tous les heartbeats ont réussi sur l'ensemble des paliers testés (20 à 100 nœuds). Aucune erreur d'authentification, de collision d'identifiant \gls{uuid} ou de contrainte de base de données n'a été observée.
+% \paragraph{Taux de succès de 100\,\%.}
+% Tous les enregistrements et tous les heartbeats ont réussi sur l'ensemble des paliers testés (20 à 100 nœuds). Aucune erreur d'authentification, de collision d'identifiant \gls{uuid} ou de contrainte de base de données n'a été observée.
 
-\paragraph{Sélection WSM quasi-constante.}
-Le temps de sélection \gls{wsm} reste compris entre 20 et 32~ms quel que soit le nombre de pairs (20 à 100). Cette stabilité s'explique par le fait que la sélection repose uniquement sur une requête SQL avec jointures (une seule requête vers PostgreSQL), dont la complexité ne dépend que du nombre d'entrées en base et non d'échanges réseau entre nœuds.
+% \paragraph{Sélection WSM quasi-constante.}
+% Le temps de sélection \gls{wsm} reste compris entre 20 et 32~ms quel que soit le nombre de pairs (20 à 100). Cette stabilité s'explique par le fait que la sélection repose uniquement sur une requête SQL avec jointures (une seule requête vers PostgreSQL), dont la complexité ne dépend que du nombre d'entrées en base et non d'échanges réseau entre nœuds.
 
-\paragraph{Heartbeat~: légère croissance maîtrisée.}
-Le temps de heartbeat croît de 160~ms (20 nœuds) à 450~ms (80 nœuds) avant de redescendre légèrement à 407~ms (100 nœuds), probablement en raison du pool de connexions PostgreSQL qui atteint son régime permanent. Cette croissance reste dans des limites acceptables pour un système dont l'intervalle de heartbeat par défaut est configuré à 30 secondes.
+% \paragraph{Heartbeat~: légère croissance maîtrisée.}
+% Le temps de heartbeat croît de 160~ms (20 nœuds) à 450~ms (80 nœuds) avant de redescendre légèrement à 407~ms (100 nœuds), probablement en raison du pool de connexions PostgreSQL qui atteint son régime permanent. Cette croissance reste dans des limites acceptables pour un système dont l'intervalle de heartbeat par défaut est configuré à 30 secondes.
 
-\paragraph{Perspectives de scalabilité.}
-Les résultats indiquent un comportement sub-linéaire~: doubler le nombre de nœuds de 50 à 100 n'a pas doublé les temps de réponse. Pour des coalitions de plusieurs centaines de nœuds, l'ajout d'un système de cache distribué (Redis) pour les scores de confiance et l'utilisation de connexions persistantes pour les heartbeats permettraient de maintenir ces performances.
+% \paragraph{Perspectives de scalabilité.}
+% Les résultats indiquent un comportement sub-linéaire~: doubler le nombre de nœuds de 50 à 100 n'a pas doublé les temps de réponse. Pour des coalitions de plusieurs centaines de nœuds, l'ajout d'un système de cache distribué (Redis) pour les scores de confiance et l'utilisation de connexions persistantes pour les heartbeats permettraient de maintenir ces performances.
 
 % --------------------------------------------------
 \section{Conclusion}

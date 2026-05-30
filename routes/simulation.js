@@ -16,6 +16,7 @@ const {
   AuditLog,
 } = require("../models");
 const { logAudit } = require("../utils/logger");
+const { recalculateAndSave } = require("../utils/trustManager");
 
 const router = express.Router();
 
@@ -205,20 +206,20 @@ router.post("/simulation/attack/detect", async (req, res) => {
     const localCapacity = Number(node?.max_scrubbing_capacity_gbps || 0);
     const localLoad = Number(node?.current_load_percent || 0);
     const available = Math.max(0, localCapacity * (1 - localLoad / 100));
-    const volumeGbps = Number(req.body.volume_gbps || 0);
-    const overflow = Math.max(0, volumeGbps - available);
 
+    // Le volume n'est pas connu à la détection — seule la congestion est observable.
+    // actual_volume_gbps sera renseigné par les pairs à la fin de la mitigation.
     const attack = await Attack.create({
       detected_at: req.body.timestamp || new Date(),
       status: "DETECTED",
-      peak_volume_gbps: volumeGbps,
+      peak_volume_gbps: 0,             // inconnu à la détection — sera mis à jour via /attack/over
       local_capacity_at_detection: available,
-      overflow_volume_gbps: overflow,
+      overflow_volume_gbps: 0,        // inconnu à la détection
       target_ip_range: req.body.target_ip_range ?? null,
       target_service: req.body.target_service ?? null,
       target_port: req.body.target_port ?? null,
       target_protocol: req.body.target_protocol ?? null,
-      severity: req.body.severity || "MEDIUM",
+      severity: "LOW",                 // calculée a posteriori dans /attack/over
       coalition_helped: false,
     });
 
@@ -227,7 +228,7 @@ router.post("/simulation/attack/detect", async (req, res) => {
       severity: "WARNING",
       actor: "simulation",
       target: attack.attack_id,
-      description: `[SIM] Attack detected: ${volumeGbps} Gbps`,
+      description: `[SIM] Anomalie détectée sur ${req.body.target_ip_range || "?"} — volume inconnu`,
     });
 
     return res.status(201).json({
@@ -236,8 +237,9 @@ router.post("/simulation/attack/detect", async (req, res) => {
       node_state: {
         local_capacity_gbps: localCapacity,
         available_gbps: Number(available.toFixed(2)),
-        overflow_gbps: Number(overflow.toFixed(2)),
-        escalation_needed: overflow > 0,
+        // Capacité disponible que la coalition peut absorber
+        coalition_needed_gbps: Number(available.toFixed(2)),
+        escalation_needed: true, // on demande toujours de l'aide — volume inconnu
       },
     });
   } catch (error) {
@@ -274,6 +276,195 @@ router.post("/simulation/attack/end", async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({ error: error.message });
+  }
+});
+
+// POST /simulation/seed-peers
+// Injecte N pairs virtuels avec des scores de confiance variés pour la démo.
+// Chaque profil (GOLD→BANNED) est ingénié via des sessions COMPLETED dont les
+// ratios actual/accepted produisent le score voulu selon la formule PeerTrust Éq.6.
+router.post("/simulation/seed-peers", async (req, res) => {
+  try {
+    const node = await LocalNodeConfig.findOne();
+    if (!node) {
+      return res.status(400).json({ error: "Nœud local non initialisé — lance d'abord init-coalition.py" });
+    }
+
+    // Supprimer les pairs virtuels existants (peer_name commence par "sim-")
+    const { Op } = require("sequelize");
+    const existing = await Peer.findAll({ where: { peer_name: { [Op.like]: "sim-%" } } });
+    if (existing.length > 0) {
+      const ids = existing.map(p => p.peer_id);
+      await HelpSession.destroy({ where: { helping_peer_id: { [Op.in]: ids } } });
+      await TrustViolation.destroy({ where: { peer_id: { [Op.in]: ids } } });
+      await TrustScore.destroy({ where: { peer_id: { [Op.in]: ids } } });
+      await Peer.destroy({ where: { peer_id: { [Op.in]: ids } } });
+    }
+
+    // Une attaque fictive partagée par toutes les sessions
+    const fakeAttack = await Attack.create({
+      detected_at: new Date(Date.now() - 3600_000),
+      ended_at:    new Date(Date.now() - 1800_000),
+      status: "ENDED",
+      severity: "HIGH",
+      peak_volume_gbps: 25,
+      overflow_volume_gbps: 12,
+      local_capacity_at_detection: 10,
+      duration_seconds: 1800,
+      coalition_helped: true,
+      target_ip_range: "10.0.0.0/24",
+    });
+
+    // Profils : chaque entrée définit les sessions qui produisent le score voulu.
+    // T(u) = Σ[S·D] / Σ[D]  (Cr=0.5 constant, s'annule)
+    // S = actual_gbps / accepted_gbps    D = poids de sévérité (LOW=0.25 … CRITICAL=1.0)
+    const SEVERITY_D = { LOW: 0.25, MEDIUM: 0.50, HIGH: 0.75, CRITICAL: 1.00 };
+    const ORG_TYPES  = ["UNIVERSITY","ISP","DATACENTER","PME","GOVERNMENT","STARTUP","NGO","OTHER"];
+    const TIERS      = ["T1","T1","T2","T2","T3"];
+    const TUNNELS    = ["GRE","VXLAN","IPSEC","BGP_FLOWSPEC"];
+
+    const PROFILES = [
+      {
+        level: "GOLD", count: 20,
+        // S élevés → T ≈ 0.88–0.95
+        sessions: [
+          { S: 0.95, sev: "HIGH"     },
+          { S: 0.90, sev: "CRITICAL" },
+          { S: 0.92, sev: "HIGH"     },
+          { S: 0.88, sev: "MEDIUM"   },
+        ],
+      },
+      {
+        level: "SILVER", count: 25,
+        // S moyens-hauts → T ≈ 0.65–0.75
+        sessions: [
+          { S: 0.75, sev: "HIGH"     },
+          { S: 0.68, sev: "CRITICAL" },
+          { S: 0.72, sev: "MEDIUM"   },
+          { S: 0.65, sev: "HIGH"     },
+        ],
+      },
+      {
+        level: "BRONZE", count: 25,
+        // S mixtes → T ≈ 0.45–0.55
+        sessions: [
+          { S: 0.55, sev: "MEDIUM" },
+          { S: 0.48, sev: "HIGH"   },
+          { S: 0.52, sev: "LOW"    },
+          { S: 0.45, sev: "MEDIUM" },
+        ],
+      },
+      {
+        level: "SUSPECT", count: 20,
+        // S faibles → T ≈ 0.25–0.32
+        sessions: [
+          { S: 0.25, sev: "HIGH"     },
+          { S: 0.30, sev: "CRITICAL" },
+          { S: 0.22, sev: "HIGH"     },
+          { S: 0.35, sev: "MEDIUM"   },
+        ],
+      },
+      {
+        level: "BANNED", count: 10,
+        // S très faibles → T ≈ 0.06–0.10
+        sessions: [
+          { S: 0.08, sev: "CRITICAL" },
+          { S: 0.05, sev: "HIGH"     },
+          { S: 0.10, sev: "CRITICAL" },
+          { S: 0.07, sev: "HIGH"     },
+        ],
+      },
+    ];
+
+    const summary = [];
+    let idx = 1;
+
+    for (const profile of PROFILES) {
+      for (let i = 0; i < profile.count; i++, idx++) {
+        const orgType = ORG_TYPES[(idx - 1) % ORG_TYPES.length];
+        const tier    = TIERS[(idx - 1) % TIERS.length];
+        const cap     = tier === "T1" ? 20 : tier === "T2" ? 10 : 5;
+
+        // Légère variation de S pour que chaque pair ait un score distinct
+        const jitter = (Math.random() - 0.5) * 0.04;
+
+        const peer = await Peer.create({
+          peer_name:                  `sim-${String(idx).padStart(3,"0")}`,
+          organization_name:          `${orgType} Sim-${idx}`,
+          organization_type:          orgType,
+          tier,
+          country_code:               "DZ",
+          api_endpoint_url:           `https://sim-${idx}.shieldnet.local/api/v1`,
+          public_key:                 `SIMKEY_${idx}`,
+          max_scrubbing_capacity_gbps: cap,
+          declared_available_gbps:    cap * 0.8,
+          status:                     profile.level === "BANNED" ? "BANNED" : "ACTIVE",
+          membership_status:          profile.level === "BANNED" ? "EXPELLED" : "CONFIRMED",
+          relationship_type:          "KNOWN_PEER",
+        });
+
+        // Créer les sessions COMPLETED avec les S ingéniérés
+        for (const tpl of profile.sessions) {
+          const S_final  = Math.min(1, Math.max(0.01, tpl.S + jitter));
+          const accepted = parseFloat((cap * 0.6).toFixed(2));
+          const actual   = parseFloat((accepted * S_final).toFixed(2));
+          await HelpSession.create({
+            attack_id:            fakeAttack.attack_id,
+            requesting_node_id:   node.node_id,
+            helping_peer_id:      peer.peer_id,
+            direction:            "INBOUND_REQUEST",
+            status:               "COMPLETED",
+            accepted_volume_gbps: accepted,
+            actual_volume_gbps:   actual,
+            tunnel_type:          TUNNELS[idx % TUNNELS.length],
+            cr_value:             0.5,
+            credits_exchanged:    parseFloat((actual * 0.1).toFixed(3)),
+            allocation_pct:       60,
+            requested_at:         new Date(Date.now() - 7200_000),
+            responded_at:         new Date(Date.now() - 7100_000),
+            activated_at:         new Date(Date.now() - 7000_000),
+            completed_at:         new Date(Date.now() - 5400_000),
+          });
+        }
+
+        // Recalculer et persister le score PeerTrust
+        const ts = await recalculateAndSave(peer.peer_id);
+
+        // Violation pour les pairs bannis
+        if (profile.level === "BANNED") {
+          await TrustViolation.create({
+            peer_id:          peer.peer_id,
+            violation_type:   "FREE_RIDING",
+            severity:         "CRITICAL",
+            description:      `[SIM] Pair ${peer.peer_name} — refus répété d'aider lors d'attaques CRITICAL`,
+            sanction_applied: "PERMANENT_BAN",
+          });
+        }
+
+        summary.push({ peer: peer.peer_name, level: ts.trust_level, score: ts.overall_score });
+      }
+    }
+
+    const counts = summary.reduce((acc, p) => {
+      acc[p.level] = (acc[p.level] || 0) + 1;
+      return acc;
+    }, {});
+
+    logAudit({
+      event_type: "SYSTEM_CONFIG_CHANGE",
+      severity: "INFO",
+      actor: "simulation",
+      target: "seed-peers",
+      description: `[SIM] ${summary.length} pairs virtuels créés — ${JSON.stringify(counts)}`,
+    });
+
+    return res.status(201).json({
+      message: `${summary.length} pairs virtuels créés`,
+      distribution: counts,
+      peers: summary,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

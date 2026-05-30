@@ -1,57 +1,57 @@
-\chapter*{Conclusion générale}
-\addcontentsline{toc}{chapter}{Conclusion générale}
-\markboth{Conclusion générale}{Conclusion générale}
+% \chapter*{Conclusion générale}
+% \addcontentsline{toc}{chapter}{Conclusion générale}
+% \markboth{Conclusion générale}{Conclusion générale}
 
-% -------------------------------------------------------
-\section*{Synthèse des travaux}
-\addcontentsline{toc}{section}{Synthèse des travaux}
-% -------------------------------------------------------
+% % -------------------------------------------------------
+% \section*{Synthèse des travaux}
+% \addcontentsline{toc}{section}{Synthèse des travaux}
+% % -------------------------------------------------------
 
-Ce mémoire a présenté la conception et l'implémentation d'un système distribué de mitigation collaborative des attaques \gls{ddos}, reposant sur une coalition pair-à-pair de n\oe{}uds de protection hétérogènes. Face aux limites structurelles des approches centralisées --- points de défaillance uniques, coûts élevés et absence de mutualisation des ressources --- le système proposé offre une alternative décentralisée où chaque participant prend ses décisions de manière autonome tout en contribuant à la défense collective.
+% Ce mémoire a présenté la conception et l'implémentation d'un système distribué de mitigation collaborative des attaques \gls{ddos}, reposant sur une coalition pair-à-pair de n\oe{}uds de protection hétérogènes. Face aux limites structurelles des approches centralisées --- points de défaillance uniques, coûts élevés et absence de mutualisation des ressources --- le système proposé offre une alternative décentralisée où chaque participant prend ses décisions de manière autonome tout en contribuant à la défense collective.
 
-Le premier chapitre a posé les fondements conceptuels~: taxonomie des attaques \gls{ddos}, mécanismes d'infrastructure de mitigation existants et principes des architectures pair-à-pair. Le deuxième chapitre a analysé les approches collaboratives existantes (\gls{dots}, DDoS Clearing House, NaWas/NBIP, DefCOM) et identifié leurs lacunes en matière de mécanismes de confiance et de sélection intelligente des pairs.
+% Le premier chapitre a posé les fondements conceptuels~: taxonomie des attaques \gls{ddos}, mécanismes d'infrastructure de mitigation existants et principes des architectures pair-à-pair. Le deuxième chapitre a analysé les approches collaboratives existantes (\gls{dots}, DDoS Clearing House, NaWas/NBIP, DefCOM) et identifié leurs lacunes en matière de mécanismes de confiance et de sélection intelligente des pairs.
 
-Le troisième chapitre a présenté la conception du système en deux volets~: la conception préliminaire a défini les exigences et l'architecture globale de la coalition~; la conception technique détaillée a formalisé le modèle de données, le mécanisme de confiance PeerTrust adapté, l'algorithme de sélection \gls{wsm} avec pondération \gls{ahp}, et les protocoles de sécurité mTLS et JWT RS256.
+% Le troisième chapitre a présenté la conception du système en deux volets~: la conception préliminaire a défini les exigences et l'architecture globale de la coalition~; la conception technique détaillée a formalisé le modèle de données, le mécanisme de confiance PeerTrust adapté, l'algorithme de sélection \gls{wsm} avec pondération \gls{ahp}, et les protocoles de sécurité mTLS et JWT RS256.
 
-Le quatrième chapitre a détaillé l'implémentation et l'évaluation du prototype. Les tests de scalabilité conduits sur une coalition simulée de 20 à 100~n\oe{}uds ont démontré~:
-\begin{itemize}
-    \item un \textbf{taux de succès de 100\,\%} pour les opérations d'enregistrement et de heartbeat à tous les paliers~;
-    \item un \textbf{temps de sélection WSM inférieur à 33~ms}, quasi-constant quelle que soit la taille de la coalition~;
-    \item des \textbf{temps de réponse heartbeat} restant en dessous de 500~ms jusqu'à 100~n\oe{}uds simultanés.
-\end{itemize}
+% Le quatrième chapitre a détaillé l'implémentation et l'évaluation du prototype. Les tests de scalabilité conduits sur une coalition simulée de 20 à 100~n\oe{}uds ont démontré~:
+% \begin{itemize}
+%     \item un \textbf{taux de succès de 100\,\%} pour les opérations d'enregistrement et de heartbeat à tous les paliers~;
+%     \item un \textbf{temps de sélection WSM inférieur à 33~ms}, quasi-constant quelle que soit la taille de la coalition~;
+%     \item des \textbf{temps de réponse heartbeat} restant en dessous de 500~ms jusqu'à 100~n\oe{}uds simultanés.
+% \end{itemize}
 
-% -------------------------------------------------------
-\section*{Contributions}
-\addcontentsline{toc}{section}{Contributions}
-% -------------------------------------------------------
+% % -------------------------------------------------------
+% \section*{Contributions}
+% \addcontentsline{toc}{section}{Contributions}
+% % -------------------------------------------------------
 
-Les contributions principales de ce travail sont au nombre de trois~:
+% Les contributions principales de ce travail sont au nombre de trois~:
 
-\begin{enumerate}
-    \item \textbf{Adaptation du modèle PeerTrust avec crédibilité historique~:} la crédibilité $Cr_i$ est désormais capturée à la clôture de chaque session d'aide et persistée en base de données. Cette approche rend le calcul de $T(u)$ fidèle à la réalité temporelle du réseau~: chaque session est évaluée avec la réputation en vigueur à l'époque des faits, et la formule implémente une véritable moyenne pondérée bornée dans $[0,1]$.
+% \begin{enumerate}
+%     \item \textbf{Adaptation du modèle PeerTrust avec crédibilité historique~:} la crédibilité $Cr_i$ est désormais capturée à la clôture de chaque session d'aide et persistée en base de données. Cette approche rend le calcul de $T(u)$ fidèle à la réalité temporelle du réseau~: chaque session est évaluée avec la réputation en vigueur à l'époque des faits, et la formule implémente une véritable moyenne pondérée bornée dans $[0,1]$.
 
-    \item \textbf{Sélection multicritère des pairs par WSM-AHP~:} l'algorithme de sélection combine quatre critères (capacité, latence, confiance, réciprocité) avec des poids validés par la méthode \gls{ahp} (CR~$= 1{,}6\,\%$). La répartition proportionnelle permet à tous les pairs éligibles de participer simultanément, chacun recevant un pourcentage de flux proportionnel à son score.
+%     \item \textbf{Sélection multicritère des pairs par WSM-AHP~:} l'algorithme de sélection combine quatre critères (capacité, latence, confiance, réciprocité) avec des poids validés par la méthode \gls{ahp} (CR~$= 1{,}6\,\%$). La répartition proportionnelle permet à tous les pairs éligibles de participer simultanément, chacun recevant un pourcentage de flux proportionnel à son score.
 
-    \item \textbf{Sécurité asymétrique sans secret partagé~:} le choix de JWT RS256 combiné à mTLS garantit que la compromission d'un n\oe{}ud n'expose pas les autres membres de la coalition. Chaque n\oe{}ud signe ses tokens avec sa clé privée~; les autres vérifient avec sa clé publique enregistrée.
-\end{enumerate}
+%     \item \textbf{Sécurité asymétrique sans secret partagé~:} le choix de JWT RS256 combiné à mTLS garantit que la compromission d'un n\oe{}ud n'expose pas les autres membres de la coalition. Chaque n\oe{}ud signe ses tokens avec sa clé privée~; les autres vérifient avec sa clé publique enregistrée.
+% \end{enumerate}
 
-% -------------------------------------------------------
-\section*{Limites et perspectives}
-\addcontentsline{toc}{section}{Limites et perspectives}
-% -------------------------------------------------------
+% % -------------------------------------------------------
+% \section*{Limites et perspectives}
+% \addcontentsline{toc}{section}{Limites et perspectives}
+% % -------------------------------------------------------
 
-Ce travail ouvre plusieurs pistes d'amélioration~:
+% Ce travail ouvre plusieurs pistes d'amélioration~:
 
-\begin{itemize}
-    \item \textbf{Mécanisme de découverte automatique~:} actuellement, les pairs sont enregistrés manuellement. Un protocole de découverte par bootstrap (similaire à \gls{dht}) permettrait à un n\oe{}ud de rejoindre la coalition en ne connaissant qu'un seul pair initial.
+% \begin{itemize}
+%     \item \textbf{Mécanisme de découverte automatique~:} actuellement, les pairs sont enregistrés manuellement. Un protocole de découverte par bootstrap (similaire à \gls{dht}) permettrait à un n\oe{}ud de rejoindre la coalition en ne connaissant qu'un seul pair initial.
 
-    \item \textbf{Détection des comportements malveillants~:} le système détecte les pairs peu fiables via leur score de confiance, mais n'identifie pas encore les attaques Sybil (création de multiples identités) ni le free-riding coordonné. L'intégration d'un module de détection d'anomalies comportementales renforcerait la robustesse de la coalition.
+%     \item \textbf{Détection des comportements malveillants~:} le système détecte les pairs peu fiables via leur score de confiance, mais n'identifie pas encore les attaques Sybil (création de multiples identités) ni le free-riding coordonné. L'intégration d'un module de détection d'anomalies comportementales renforcerait la robustesse de la coalition.
 
-    \item \textbf{Passage à l'échelle au-delà de 100~n\oe{}uds~:} pour des coalitions de plusieurs centaines de participants, l'ajout d'un cache distribué (Redis) pour les scores de confiance et le passage à des connexions persistantes pour les heartbeats permettraient de maintenir les performances observées.
+%     \item \textbf{Passage à l'échelle au-delà de 100~n\oe{}uds~:} pour des coalitions de plusieurs centaines de participants, l'ajout d'un cache distribué (Redis) pour les scores de confiance et le passage à des connexions persistantes pour les heartbeats permettraient de maintenir les performances observées.
 
-    \item \textbf{Intégration avec les protocoles existants~:} une passerelle vers \gls{dots} (RFC~8782) permettrait à la coalition de s'interfacer avec les prestataires de mitigation commerciaux, combinant ainsi les avantages de la coopération pair-à-pair et la capacité des services cloud.
+%     \item \textbf{Intégration avec les protocoles existants~:} une passerelle vers \gls{dots} (RFC~8782) permettrait à la coalition de s'interfacer avec les prestataires de mitigation commerciaux, combinant ainsi les avantages de la coopération pair-à-pair et la capacité des services cloud.
 
-    \item \textbf{Évaluation en environnement réel~:} les tests ont été conduits en simulation locale. Un déploiement sur une infrastructure géographiquement distribuée permettrait de mesurer l'impact de la latence réseau réelle sur les mécanismes de consensus et de recalcul de confiance.
-\end{itemize}
+%     \item \textbf{Évaluation en environnement réel~:} les tests ont été conduits en simulation locale. Un déploiement sur une infrastructure géographiquement distribuée permettrait de mesurer l'impact de la latence réseau réelle sur les mécanismes de consensus et de recalcul de confiance.
+% \end{itemize}
 
-En définitive, ce travail démontre la faisabilité d'une défense collaborative distribuée contre les attaques \gls{ddos}, reposant sur des mécanismes de confiance formels et une sélection intelligente des pairs. Il constitue une base solide pour le développement d'une infrastructure de coalition opérationnelle, adaptée aux contraintes hétérogènes des organisations participantes.
+% En définitive, ce travail démontre la faisabilité d'une défense collaborative distribuée contre les attaques \gls{ddos}, reposant sur des mécanismes de confiance formels et une sélection intelligente des pairs. Il constitue une base solide pour le développement d'une infrastructure de coalition opérationnelle, adaptée aux contraintes hétérogènes des organisations participantes.

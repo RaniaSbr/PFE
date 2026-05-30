@@ -1,0 +1,2573 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShieldNet — Coalition Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #f6f6f4;
+        --surface: #ffffff;
+        --border: #e2e1dd;
+        --border-strong: #c8c7c1;
+        --text: #1a1a18;
+        --muted: #6b6b67;
+        --faint: #9e9d99;
+        --accent: #1a1a18;
+        --green: #1d6b45;
+        --green-bg: #edf7f1;
+        --red: #7a2020;
+        --red-bg: #fdf0f0;
+        --amber: #7a5010;
+        --amber-bg: #fdf5e8;
+        --blue: #1a3a6b;
+        --blue-bg: #eef3fb;
+        --font-sans: "IBM Plex Sans", sans-serif;
+        --font-mono: "IBM Plex Mono", monospace;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      /* TOPBAR */
+      .topbar {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 52px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .brand {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        color: var(--text);
+      }
+      .brand span {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1d6b45;
+        animation: blink 2s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+      #clock {
+        color: var(--text);
+      }
+
+      /* NAV TABS */
+      .nav {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 32px;
+        display: flex;
+        gap: 0;
+      }
+      .nav-tab {
+        font-size: 13px;
+        color: var(--muted);
+        padding: 12px 18px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+        white-space: nowrap;
+        user-select: none;
+        font-family: var(--font-sans);
+      }
+      .nav-tab:hover {
+        color: var(--text);
+      }
+      .nav-tab.active {
+        color: var(--text);
+        border-bottom-color: var(--text);
+        font-weight: 500;
+      }
+
+      /* PAGES */
+      .page {
+        display: none;
+        padding: 28px 32px;
+        max-width: 1280px;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* SECTION HEADER */
+      .section-header {
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+
+      /* STAT GRID */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 24px;
+      }
+      .stat-cell {
+        background: var(--surface);
+        padding: 16px 18px;
+      }
+      .stat-val {
+        font-size: 22px;
+        font-weight: 300;
+        font-family: var(--font-mono);
+        color: var(--text);
+        line-height: 1;
+      }
+      .stat-val.green {
+        color: var(--green);
+      }
+      .stat-val.red {
+        color: var(--red);
+      }
+      .stat-val.amber {
+        color: var(--amber);
+      }
+      .stat-lbl {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-family: var(--font-mono);
+      }
+
+      /* CARDS GRID */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      @media (max-width: 900px) {
+        .cards-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .node-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .node-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+      }
+      .node-card.gold::before {
+        background: #c2922a;
+      }
+      .node-card.silver::before {
+        background: #7a7a76;
+      }
+      .node-card.bronze::before {
+        background: #a06030;
+      }
+      .node-card.suspect::before {
+        background: #b02020;
+      }
+      .node-card.banned::before {
+        background: #6b1010;
+        opacity: 0.6;
+      }
+      .node-card.banned {
+        opacity: 0.6;
+      }
+      .nc-type {
+        font-size: 10px;
+        font-family: var(--font-mono);
+        color: var(--faint);
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .nc-name {
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .nc-org {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .nc-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .sdot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+      }
+      .sdot.off {
+        background: var(--border-strong);
+      }
+      .sdot.ban {
+        background: var(--red);
+      }
+      .tier-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-family: var(--font-mono);
+        margin-bottom: 10px;
+      }
+      .badge-GOLD {
+        background: var(--amber-bg);
+        color: var(--amber);
+      }
+      .badge-SILVER {
+        background: #f1f1ef;
+        color: #5a5a56;
+      }
+      .badge-BRONZE {
+        background: var(--amber-bg);
+        color: #a06030;
+      }
+      .badge-SUSPECT {
+        background: var(--red-bg);
+        color: var(--red);
+      }
+      .badge-BANNED {
+        background: var(--red-bg);
+        color: #6b1010;
+      }
+      .badge-UNKNOWN {
+        background: #f1f1ef;
+        color: var(--muted);
+      }
+      .nc-score-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 4px;
+        font-family: var(--font-mono);
+      }
+      .nc-bar-bg {
+        height: 2px;
+        background: var(--border);
+        border-radius: 1px;
+        overflow: hidden;
+      }
+      .nc-bar-fill {
+        height: 100%;
+        border-radius: 1px;
+      }
+      .fill-GOLD {
+        background: #c2922a;
+      }
+      .fill-SILVER {
+        background: #7a7a76;
+      }
+      .fill-BRONZE {
+        background: #a06030;
+      }
+      .fill-SUSPECT {
+        background: var(--red);
+      }
+      .fill-BANNED {
+        background: #6b1010;
+      }
+      .fill-UNKNOWN {
+        background: var(--border-strong);
+      }
+      .nc-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+      .nc-metrics span {
+        color: var(--text);
+      }
+
+      /* TWO COL */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      @media (max-width: 700px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* PANEL */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 20px;
+      }
+      .panel-title {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 500;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* WSM */
+      .wsm-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+      .wsm-rank {
+        width: 16px;
+        color: var(--faint);
+        font-family: var(--font-mono);
+        flex-shrink: 0;
+        text-align: right;
+      }
+      .wsm-name {
+        width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .wsm-bar-bg {
+        flex: 1;
+        background: var(--border);
+        border-radius: 1px;
+        height: 4px;
+        overflow: hidden;
+      }
+      .wsm-bar-fill {
+        height: 100%;
+        background: var(--text);
+        border-radius: 1px;
+      }
+      .wsm-score {
+        width: 52px;
+        text-align: right;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--blue);
+        flex-shrink: 0;
+      }
+      .wsm-alloc {
+        width: 28px;
+        text-align: right;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      /* TRUST DIST */
+      .dist-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+      .dist-label {
+        width: 52px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .dist-bar-bg {
+        flex: 1;
+        background: var(--border);
+        border-radius: 1px;
+        height: 6px;
+        overflow: hidden;
+      }
+      .dist-bar-fill {
+        height: 100%;
+        border-radius: 1px;
+      }
+      .dist-count {
+        width: 24px;
+        text-align: right;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+      }
+      .dist-pct {
+        width: 32px;
+        text-align: right;
+        color: var(--faint);
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+
+      /* TABLE */
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        background: var(--surface);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+        color: var(--muted);
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        font-weight: 500;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--bg);
+      }
+      tbody tr:hover {
+        background: #fafaf8;
+      }
+      tbody td {
+        padding: 8px 10px;
+        color: var(--text);
+      }
+      .tl-badge {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+      }
+      .tl-GOLD {
+        background: var(--amber-bg);
+        color: var(--amber);
+      }
+      .tl-SILVER {
+        background: #f1f1ef;
+        color: #5a5a56;
+      }
+      .tl-BRONZE {
+        background: var(--amber-bg);
+        color: #a06030;
+      }
+      .tl-SUSPECT {
+        background: var(--red-bg);
+        color: var(--red);
+      }
+      .tl-BANNED {
+        background: var(--red-bg);
+        color: #6b1010;
+      }
+      .tl-UNKNOWN {
+        background: #f1f1ef;
+        color: var(--muted);
+      }
+      .s-ok {
+        color: var(--green);
+      }
+      .s-off {
+        color: var(--muted);
+      }
+      .s-ban {
+        color: var(--red);
+      }
+
+      /* ATTACK BANNER */
+      #attack-banner {
+        display: none;
+        background: var(--red-bg);
+        border: 1px solid #e8c0c0;
+        border-radius: 6px;
+        padding: 12px 18px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      .atk-label {
+        font-size: 10px;
+        font-family: var(--font-mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--red);
+        font-weight: 500;
+        margin-bottom: 3px;
+      }
+      .atk-info {
+        font-size: 13px;
+        color: #5a1010;
+        font-family: var(--font-mono);
+      }
+
+      /* FORM ELEMENTS */
+      .form-group {
+        margin-bottom: 12px;
+      }
+      .form-label {
+        display: block;
+        font-size: 10px;
+        font-family: var(--font-mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      select,
+      input[type="text"] {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 7px 10px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      select:focus,
+      input[type="text"]:focus {
+        border-color: var(--border-strong);
+      }
+
+      /* BUTTONS */
+      .btn {
+        width: 100%;
+        padding: 9px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        margin-top: 10px;
+        transition: opacity 0.15s;
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-danger {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn-success {
+        background: var(--green);
+        color: #fff;
+      }
+      .btn-primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      .btn-dark {
+        background: var(--text);
+        color: #fff;
+      }
+
+      /* STEPS */
+      .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .step:last-child {
+        border-bottom: none;
+      }
+      .step-num {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .step-pending {
+        background: var(--bg);
+        color: var(--faint);
+        border: 1px solid var(--border);
+      }
+      .step-active {
+        background: var(--blue-bg);
+        color: var(--blue);
+        border: 1px solid #b8cff0;
+        animation: blink 1.5s infinite;
+      }
+      .step-done {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid #b0dfc0;
+      }
+      .step-title {
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .step-detail {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.6;
+        font-family: var(--font-mono);
+      }
+
+      /* AUDIT */
+      .audit-row {
+        display: flex;
+        gap: 10px;
+        padding: 5px 0;
+        border-bottom: 1px solid var(--bg);
+        font-size: 11px;
+        font-family: var(--font-mono);
+        align-items: baseline;
+      }
+      .audit-t {
+        color: var(--faint);
+        white-space: nowrap;
+        flex-shrink: 0;
+        width: 52px;
+      }
+      .audit-sev {
+        font-weight: 500;
+        flex-shrink: 0;
+        width: 60px;
+      }
+      .audit-type {
+        color: var(--muted);
+        flex-shrink: 0;
+        width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .audit-desc {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text);
+      }
+
+      /* SIM SECTION */
+      .sim-bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .btn-sm {
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        color: var(--text);
+      }
+      .btn-sm:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-sm.blue {
+        background: var(--blue);
+        color: #fff;
+        border-color: var(--blue);
+      }
+      .btn-sm.red {
+        background: var(--red);
+        color: #fff;
+        border-color: var(--red);
+      }
+
+      /* METRICS ROW */
+      .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 24px;
+      }
+
+      /* REFRESH BAR */
+      .refresh-bar {
+        height: 1px;
+        background: var(--border);
+        overflow: hidden;
+        margin-top: 24px;
+      }
+      .refresh-fill {
+        height: 100%;
+        background: var(--text);
+        animation: refill 3s linear infinite;
+      }
+      @keyframes refill {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
+      }
+      .refresh-text {
+        font-size: 10px;
+        color: var(--faint);
+        text-align: right;
+        margin-top: 5px;
+        font-family: var(--font-mono);
+      }
+
+      /* SETUP BANNER */
+      #setup-banner {
+        background: var(--blue-bg);
+        border: 1px solid #b8cff0;
+        border-radius: 6px;
+        padding: 10px 16px;
+        margin: 16px 32px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #setup-banner a {
+        color: var(--blue);
+      }
+      #setup-banner strong {
+        color: var(--blue);
+      }
+      .btn-inline {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        cursor: pointer;
+        padding: 3px 10px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-family: var(--font-mono);
+      }
+      .btn-inline.danger {
+        background: var(--red);
+        color: #fff;
+        border-color: var(--red);
+      }
+
+      /* VIOL RESULT */
+      #viol-result {
+        font-size: 12px;
+        font-family: var(--font-mono);
+        line-height: 1.8;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 14px;
+        background: var(--bg);
+      }
+
+      /* SCROLL */
+      .scrollable {
+        max-height: 280px;
+        overflow-y: auto;
+      }
+      .scrollable-sm {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="setup-banner">
+      <strong>Setup :</strong>
+      Accepter les certs →
+      <a href="https://localhost:3001" target="_blank">:3001</a>
+      <a href="https://localhost:3002" target="_blank">:3002</a>
+      <a href="https://localhost:3003" target="_blank">:3003</a>
+      <a href="https://localhost:3004" target="_blank">:3004</a>
+      (Avancé → Continuer)
+      <button class="btn-inline danger" onclick="coalitionReset()">
+        Reset coalition
+      </button>
+      <span id="reset-status" style="color: var(--muted)"></span>
+      <button
+        class="btn-inline"
+        onclick="this.parentElement.style.display = 'none'"
+        style="margin-left: auto"
+      >
+        Masquer
+      </button>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="brand">Shield<span>Net</span></span>
+        <div class="live-dot"></div>
+        <span
+          style="
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+          "
+          ><span id="node-count">—</span> nœuds actifs</span
+        >
+      </div>
+      <div class="topbar-right">
+        <span id="clock">—</span>
+        <span id="last-refresh" style="color: var(--faint)">màj —</span>
+      </div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav">
+      <div class="nav-tab active" onclick="showPage('overview')">
+        Vue d'ensemble
+      </div>
+      <div class="nav-tab" onclick="showPage('nodes')">Nœuds</div>
+      <div class="nav-tab" onclick="showPage('attacks')">Attaques</div>
+      <div class="nav-tab" onclick="showPage('sessions')">Sessions</div>
+      <div class="nav-tab" onclick="showPage('trust')">Confiance</div>
+      <div class="nav-tab" onclick="showPage('logs')">Logs</div>
+    </div>
+
+    <!-- ═══════════ PAGE: OVERVIEW ═══════════ -->
+    <div class="page active" id="page-overview">
+      <div id="attack-banner">
+        <div class="atk-label">⚠ Attaque DDoS en cours</div>
+        <div class="atk-info" id="attack-info">—</div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Résumé coalition</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-cell">
+          <div class="stat-val" id="s-total">—</div>
+          <div class="stat-lbl">Pairs total</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val green" id="s-active">—</div>
+          <div class="stat-lbl">Actifs</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val amber" id="s-gold">—</div>
+          <div class="stat-lbl">Gold</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val" id="s-silver">—</div>
+          <div class="stat-lbl">Silver</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val" id="s-bronze">—</div>
+          <div class="stat-lbl">Bronze</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val red" id="s-banned">—</div>
+          <div class="stat-lbl">Bannis</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val red" id="s-attacks">—</div>
+          <div class="stat-lbl">Attaques</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Métriques locales</div>
+      </div>
+      <div class="metrics-row">
+        <div class="stat-cell">
+          <div class="stat-val" id="m-load">—</div>
+          <div class="stat-lbl">Charge locale</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val green" id="m-avail">—</div>
+          <div class="stat-lbl">Gbps disponibles</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val" id="m-sess">—</div>
+          <div class="stat-lbl">Sessions actives</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val red" id="m-openatk">—</div>
+          <div class="stat-lbl">Attaques ouvertes</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Classement WSM</div>
+          <div id="wsm-list">
+            <div
+              style="
+                color: var(--muted);
+                text-align: center;
+                padding: 16px;
+                font-size: 12px;
+              "
+            >
+              En attente…
+            </div>
+          </div>
+          <div
+            style="
+              margin-top: 10px;
+              font-size: 10px;
+              color: var(--faint);
+              font-family: var(--font-mono);
+            "
+          >
+            Score = 0.52·C + 0.20·L + 0.20·T + 0.08·R &nbsp;|&nbsp; CR = 1.6%
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Distribution de confiance</div>
+          <div id="trust-dist"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PAGE: NŒUDS ═══════════ -->
+    <div class="page" id="page-nodes">
+      <div class="section-header">
+        <div class="section-title">Nœuds principaux</div>
+      </div>
+      <div class="cards-grid" id="nodes-grid"></div>
+
+      <div
+        class="section-header"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        "
+      >
+        <div class="section-title" style="margin: 0">
+          Tous les pairs — <span id="peers-table-count">0</span>
+        </div>
+        <div class="sim-bar" style="margin: 0">
+          <button id="btn-sim" class="btn-sm blue" onclick="simStart()">
+            + 100 nœuds
+          </button>
+          <button
+            id="btn-clean"
+            class="btn-sm red"
+            onclick="simClean()"
+            disabled
+          >
+            Nettoyer
+          </button>
+          <span
+            id="sim-status"
+            style="
+              font-size: 11px;
+              color: var(--muted);
+              font-family: var(--font-mono);
+            "
+          ></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="table-wrap scrollable">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Organisation</th>
+                <th>Type</th>
+                <th>Tier</th>
+                <th>Statut</th>
+                <th>Confiance</th>
+                <th>Score</th>
+                <th>Capacité</th>
+                <th>Charge</th>
+              </tr>
+            </thead>
+            <tbody id="peers-tbody">
+              <tr>
+                <td
+                  colspan="10"
+                  style="text-align: center; color: var(--muted); padding: 20px"
+                >
+                  En attente…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PAGE: ATTAQUES ═══════════ -->
+    <div class="page" id="page-attacks">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Configurer une attaque</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Protocole</label>
+              <select id="atk-protocol">
+                <option value="UDP">UDP</option>
+                <option value="TCP">TCP</option>
+                <option value="ICMP">ICMP</option>
+                <option value="DNS">DNS (UDP/53)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Port ciblé</label>
+              <input type="text" id="atk-port" value="80" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">IP / Réseau ciblé</label>
+            <input type="text" id="atk-target" value="192.168.100.0/24" />
+          </div>
+          <button
+            class="btn btn-danger"
+            id="btn-attack"
+            onclick="attackStart()"
+          >
+            Lancer l'attaque DDoS
+          </button>
+          <button
+            class="btn btn-success"
+            id="btn-end"
+            onclick="attackEnd()"
+            style="display: none; margin-top: 6px"
+          >
+            Terminer la mitigation
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Flux de réponse</div>
+          <div class="step" id="step-1">
+            <div class="step-num step-pending">1</div>
+            <div class="step-body">
+              <div class="step-title">Détection — anomalie trafic</div>
+              <div class="step-detail" id="step-1-detail">En attente…</div>
+            </div>
+          </div>
+          <div class="step" id="step-2">
+            <div class="step-num step-pending">2</div>
+            <div class="step-body">
+              <div class="step-title">Caractérisation + capacité locale</div>
+              <div class="step-detail" id="step-2-detail">En attente…</div>
+            </div>
+          </div>
+          <div class="step" id="step-3">
+            <div class="step-num step-pending">3</div>
+            <div class="step-body">
+              <div class="step-title">Escalade coalition — WSM</div>
+              <div class="step-detail" id="step-3-detail">En attente…</div>
+            </div>
+          </div>
+          <div class="step" id="step-4">
+            <div class="step-num step-pending">4</div>
+            <div class="step-body">
+              <div class="step-title">Mitigation distribuée active</div>
+              <div class="step-detail" id="step-4-detail">En attente…</div>
+            </div>
+          </div>
+          <div class="step" id="step-5" style="border-bottom: none">
+            <div class="step-num step-pending">5</div>
+            <div class="step-body">
+              <div class="step-title">Mise à jour scores PeerTrust</div>
+              <div class="step-detail" id="step-5-detail">En attente…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PAGE: SESSIONS ═══════════ -->
+    <div class="page" id="page-sessions">
+      <div class="panel" style="margin-bottom: 16px">
+        <div class="panel-title">
+          Sessions actives — <span id="active-sessions-count">0</span> /
+          <span id="all-sessions-count">0</span> total
+        </div>
+        <div class="table-wrap">
+          <table style="table-layout: fixed">
+            <thead>
+              <tr>
+                <th style="width: 20%">Pair victime</th>
+                <th style="width: 20%">Pair aidant</th>
+                <th style="width: 12%">Statut</th>
+                <th style="width: 8%; text-align: right">Alloc</th>
+                <th style="width: 14%; text-align: right">Vol. accepté</th>
+                <th style="width: 14%; text-align: right">Vol. réel</th>
+                <th style="width: 12%">Tunnel</th>
+              </tr>
+            </thead>
+            <tbody id="active-sessions-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div
+          class="panel-title"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>Historique des sessions</span>
+          <span
+            id="history-sessions-count"
+            style="font-size: 11px; color: var(--muted); font-weight: 400"
+          ></span>
+        </div>
+        <div class="table-wrap scrollable">
+          <table id="sessions-history-table" style="table-layout: fixed">
+            <thead>
+              <tr>
+                <th style="width: 10%">Session ID</th>
+                <th style="width: 12%">Victime</th>
+                <th style="width: 12%">Aidant</th>
+                <th style="width: 9%">Statut</th>
+                <th style="width: 7%; text-align: right">Alloc</th>
+                <th style="width: 10%; text-align: right">Vol. accepté</th>
+                <th style="width: 10%; text-align: right">Vol. réel</th>
+                <th style="width: 8%; text-align: right">Crédits</th>
+                <th style="width: 7%">Tunnel</th>
+                <th style="width: 15%; text-align: right">Date</th>
+              </tr>
+            </thead>
+            <tbody id="sessions-history-body">
+              <tr>
+                <td
+                  colspan="10"
+                  style="text-align: center; color: var(--muted); padding: 14px"
+                >
+                  Chargement…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PAGE: CONFIANCE ═══════════ -->
+    <div class="page" id="page-trust">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Appliquer une violation</div>
+          <div class="form-group">
+            <label class="form-label">Pair fautif</label>
+            <select id="viol-peer"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type de violation</label>
+            <select id="viol-type">
+              <option value="FREE_RIDING">FREE_RIDING</option>
+              <option value="FALSE_ALERT">FALSE_ALERT</option>
+              <option value="CAPACITY_OVERSTATE">CAPACITY_OVERSTATE</option>
+              <option value="BROKEN_PROMISE">BROKEN_PROMISE</option>
+              <option value="SUSPICIOUS_BEHAVIOR">SUSPICIOUS_BEHAVIOR</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Sévérité</label>
+              <select id="viol-severity">
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sanction</label>
+              <select id="viol-sanction">
+                <option value="WARNING">WARNING</option>
+                <option value="TEMP_SUSPENSION">TEMP_SUSPENSION</option>
+                <option value="PERMANENT_BAN">PERMANENT_BAN</option>
+              </select>
+            </div>
+          </div>
+          <button id="btn-viol" class="btn btn-dark" onclick="applyViolation()">
+            Appliquer la sanction
+          </button>
+        </div>
+        <div>
+          <div class="panel" style="height: 100%">
+            <div class="panel-title">Résultat</div>
+            <div
+              id="viol-result"
+              style="
+                color: var(--faint);
+                font-size: 12px;
+                font-family: var(--font-mono);
+              "
+            >
+              La sanction apparaîtra ici.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PAGE: LOGS ═══════════ -->
+    <div class="page" id="page-logs">
+      <div class="panel" style="margin-bottom: 16px">
+        <div class="panel-title">Journal d'audit</div>
+        <div id="audit-log" class="scrollable-sm">
+          <div
+            style="
+              color: var(--muted);
+              text-align: center;
+              padding: 16px;
+              font-size: 12px;
+            "
+          >
+            Chargement…
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom: 16px">
+        <div class="panel-title">Messages P2P</div>
+        <div id="msg-log" class="scrollable-sm">
+          <div
+            style="
+              color: var(--muted);
+              text-align: center;
+              padding: 12px;
+              font-size: 12px;
+            "
+          >
+            Chargement…
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Scalabilité — 20 → 100 nœuds</div>
+        <img
+          src="/scalability.png"
+          alt="Graphe de scalabilité"
+          style="width: 100%; border-radius: 4px; margin-top: 4px"
+          onerror="
+            this.parentElement.innerHTML +=
+              '<p style=\'color:var(--muted);font-size:11px;font-family:var(--font-mono);margin-top:8px\'>Non disponible — lancer : python tests/scalability_test.py --url https://localhost:3001</p>';
+            this.remove();
+          "
+        />
+      </div>
+    </div>
+
+    <div style="padding: 0 32px">
+      <div class="refresh-bar"><div class="refresh-fill"></div></div>
+      <div class="refresh-text">
+        Rafraîchissement automatique toutes les 3 s
+      </div>
+    </div>
+
+    <script>
+      // ── NAV ──────────────────────────────────────────────────────────────
+      function showPage(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-tab")
+          .forEach((t) => t.classList.remove("active"));
+        document.getElementById("page-" + id).classList.add("active");
+        const map = {
+          overview: 0,
+          nodes: 1,
+          attacks: 2,
+          sessions: 3,
+          trust: 4,
+          logs: 5,
+        };
+        document.querySelectorAll(".nav-tab")[map[id]].classList.add("active");
+      }
+
+      // ── CONFIG ────────────────────────────────────────────────────────────
+      const MAIN_NODES = [
+        {
+          name: "node-university",
+          port: 3001,
+          label: "Université",
+          type: "UNIVERSITY",
+          tier: "T2",
+        },
+        {
+          name: "node-datacenter",
+          port: 3004,
+          label: "Datacenter",
+          type: "DATACENTER",
+          tier: "T1",
+        },
+        { name: "node-isp", port: 3003, label: "FAI", type: "ISP", tier: "T1" },
+        { name: "node-pme", port: 3002, label: "PME", type: "PME", tier: "T3" },
+      ];
+      const PRIMARY_PORT = 3001;
+
+      // ── CLOCK ─────────────────────────────────────────────────────────────
+      function updateClock() {
+        document.getElementById("clock").textContent =
+          new Date().toLocaleTimeString("fr-FR", { hour12: false });
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // ── FETCH ─────────────────────────────────────────────────────────────
+      async function api(port, path, opts = {}) {
+        const base = port === PRIMARY_PORT ? "" : `https://localhost:${port}`;
+        const r = await fetch(`${base}/api/v1${path}`, {
+          method: opts.method || "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(opts.headers || {}),
+          },
+          body: opts.body ? JSON.stringify(opts.body) : undefined,
+          signal: AbortSignal.timeout(5000),
+        });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }
+      async function getToken() {
+        try {
+          const d = await api(PRIMARY_PORT, "/auth/token", {
+            method: "POST",
+            body: {
+              node_id: "node-university",
+              node_secret: "shieldnet-secret-key-2025",
+            },
+          });
+          return d.token || "";
+        } catch {
+          return "";
+        }
+      }
+
+      function tc(l) {
+        return (
+          {
+            GOLD: "gold",
+            SILVER: "silver",
+            BRONZE: "bronze",
+            SUSPECT: "suspect",
+            BANNED: "banned",
+          }[l] || ""
+        );
+      }
+
+      // ── NODE CARDS ────────────────────────────────────────────────────────
+      function renderCards(peersMap, trustMap) {
+        const grid = document.getElementById("nodes-grid");
+        grid.innerHTML = "";
+        let active = 0;
+        MAIN_NODES.forEach((cfg) => {
+          const peer = peersMap[cfg.name] || {};
+          const trust = trustMap[peer.peer_id] || trustMap[cfg.name] || {};
+          const level = trust.trust_level || "UNKNOWN";
+          const score =
+            trust.overall_score != null ? Number(trust.overall_score) : null;
+          const status = peer.status || (peer.peer_id ? "ACTIVE" : "OFFLINE");
+          if (status === "ACTIVE") active++;
+          const pct = score != null ? Math.round(score * 100) : 0;
+          const card = document.createElement("div");
+          card.className = `node-card ${tc(level)}`;
+          card.innerHTML = `
+      <div class="nc-type">${cfg.type} · ${cfg.tier}</div>
+      <div class="nc-name">${cfg.label}</div>
+      <div class="nc-org">${peer.organization_name || cfg.name}</div>
+      <div class="nc-status">
+        <div class="sdot ${status === "BANNED" ? "ban" : status !== "ACTIVE" ? "off" : ""}"></div>
+        <span>${status}</span>
+        ${peer.declared_available_gbps != null ? `<span style="margin-left:auto;color:var(--faint);font-family:var(--font-mono);font-size:11px">${Number(peer.declared_available_gbps).toFixed(1)} Gbps</span>` : ""}
+      </div>
+      <span class="tier-badge badge-${level}">${level}</span>
+      <div class="nc-score-row"><span>PeerTrust</span><span>${score != null ? score.toFixed(3) : "N/A"}</span></div>
+      <div class="nc-bar-bg"><div class="nc-bar-fill fill-${level}" style="width:${pct}%"></div></div>
+      <div class="nc-metrics">
+        <div>Charge <span>${peer.current_load_percent != null ? peer.current_load_percent + "%" : "—"}</span></div>
+        <div>Latence <span>${peer.measured_latency_ms != null ? peer.measured_latency_ms + " ms" : "—"}</span></div>
+      </div>`;
+          grid.appendChild(card);
+        });
+        document.getElementById("node-count").textContent = active;
+      }
+
+      // ── TABLE ─────────────────────────────────────────────────────────────
+      function renderTable(peers, trustMap) {
+        const tbody = document.getElementById("peers-tbody");
+        document.getElementById("peers-table-count").textContent = peers.length;
+        if (peers.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Aucun pair.</td></tr>';
+          return;
+        }
+        const sorted = [...peers].sort((a, b) => {
+          const ta = trustMap[a.peer_id]?.overall_score ?? 0.5;
+          const tb = trustMap[b.peer_id]?.overall_score ?? 0.5;
+          if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+          if (b.status === "ACTIVE" && a.status !== "ACTIVE") return 1;
+          return tb - ta;
+        });
+        tbody.innerHTML = sorted
+          .map((p, i) => {
+            const trust = trustMap[p.peer_id] || {};
+            const level = trust.trust_level || "UNKNOWN";
+            const score =
+              trust.overall_score != null
+                ? Number(trust.overall_score).toFixed(3)
+                : "—";
+            const stCls =
+              p.status === "ACTIVE"
+                ? "s-ok"
+                : p.status === "BANNED"
+                  ? "s-ban"
+                  : "s-off";
+            return `<tr>
+      <td style="color:var(--faint);font-family:var(--font-mono)">${i + 1}</td>
+      <td style="font-weight:500">${p.peer_name || "—"}</td>
+      <td style="color:var(--muted)">${p.organization_name || "—"}</td>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:11px">${p.organization_type || "—"}</td>
+      <td style="color:var(--faint);font-family:var(--font-mono)">${p.tier || "—"}</td>
+      <td class="${stCls}">${p.status || "—"}</td>
+      <td><span class="tl-badge tl-${level}">${level}</span></td>
+      <td style="font-family:var(--font-mono);color:var(--blue)">${score}</td>
+      <td style="color:var(--muted);font-family:var(--font-mono)">${p.declared_available_gbps != null ? Number(p.declared_available_gbps).toFixed(1) + " Gbps" : "—"}</td>
+      <td style="color:var(--muted);font-family:var(--font-mono)">${p.current_load_percent != null ? p.current_load_percent + "%" : "—"}</td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      // ── STATS ─────────────────────────────────────────────────────────────
+      function renderStats(peers, trustMap, attacks) {
+        const counts = { GOLD: 0, SILVER: 0, BRONZE: 0, SUSPECT: 0, BANNED: 0 };
+        let active = 0;
+        peers.forEach((p) => {
+          if (p.status === "ACTIVE") active++;
+          const l = trustMap[p.peer_id]?.trust_level;
+          if (l && counts[l] !== undefined) counts[l]++;
+        });
+        document.getElementById("s-total").textContent = peers.length;
+        document.getElementById("s-active").textContent = active;
+        document.getElementById("s-gold").textContent = counts.GOLD;
+        document.getElementById("s-silver").textContent = counts.SILVER;
+        document.getElementById("s-bronze").textContent = counts.BRONZE;
+        document.getElementById("s-banned").textContent = counts.BANNED;
+        document.getElementById("s-attacks").textContent = (
+          attacks || []
+        ).length;
+      }
+
+      // ── TRUST DIST ────────────────────────────────────────────────────────
+      function renderTrustDist(peers, trustMap) {
+        const el = document.getElementById("trust-dist");
+        const counts = { GOLD: 0, SILVER: 0, BRONZE: 0, SUSPECT: 0, BANNED: 0 };
+        const total = peers.length || 1;
+        peers.forEach((p) => {
+          const l = trustMap[p.peer_id]?.trust_level || "BRONZE";
+          if (counts[l] !== undefined) counts[l]++;
+        });
+        const COLORS = {
+          GOLD: "#c2922a",
+          SILVER: "#7a7a76",
+          BRONZE: "#a06030",
+          SUSPECT: "#b02020",
+          BANNED: "#6b1010",
+        };
+        el.innerHTML =
+          Object.entries(counts)
+            .map(([l, n]) => {
+              const pct = Math.round((n / total) * 100);
+              return `<div class="dist-row">
+      <div class="dist-label" style="color:${COLORS[l]}">${l}</div>
+      <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:${pct}%;background:${COLORS[l]}"></div></div>
+      <div class="dist-count">${n}</div>
+      <div class="dist-pct">${pct}%</div>
+    </div>`;
+            })
+            .join("") +
+          `<div style="margin-top:10px;font-size:11px;color:var(--faint);font-family:var(--font-mono)">Total : ${peers.length} pairs</div>`;
+      }
+
+      // ── WSM ───────────────────────────────────────────────────────────────
+      function renderWSM(peers) {
+        const el = document.getElementById("wsm-list");
+        if (!peers || peers.length === 0) {
+          el.innerHTML =
+            '<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">Aucun pair éligible.</div>';
+          return;
+        }
+        const show = peers.slice(0, 8);
+        const maxS = Math.max(...show.map((p) => p.wsm_score || 0), 0.001);
+        el.innerHTML = show
+          .map(
+            (p, i) => `
+    <div class="wsm-row">
+      <div class="wsm-rank">${i + 1}</div>
+      <div class="wsm-name">${p.peer?.peer_name || p.peer_name || "—"}</div>
+      <div class="wsm-bar-bg"><div class="wsm-bar-fill" style="width:${(((p.wsm_score || 0) / maxS) * 100).toFixed(1)}%"></div></div>
+      <div class="wsm-score">${(p.wsm_score || 0).toFixed(4)}</div>
+      <div class="wsm-alloc">${p.allocation_pct != null ? p.allocation_pct + "%" : ""}</div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ── ATTACK BANNER ─────────────────────────────────────────────────────
+      function renderAttack(attacks) {
+        const banner = document.getElementById("attack-banner");
+        const active = (attacks || []).filter((a) =>
+          [
+            "DETECTED",
+            "ANALYZING",
+            "MITIGATING_LOCAL",
+            "ESCALATED_TO_COALITION",
+          ].includes(a.status),
+        );
+        if (active.length > 0) {
+          const a = active[0];
+          banner.style.display = "block";
+          document.getElementById("attack-info").textContent =
+            `${a.severity || "?"} | ${a.volume_gbps || "??"} Gbps | ${a.target_ip_range || a.target_ip || "N/A"} | ${a.status}`;
+        } else {
+          banner.style.display = "none";
+        }
+      }
+
+      // ── METRICS ───────────────────────────────────────────────────────────
+      function renderMetrics(m) {
+        if (!m) return;
+        document.getElementById("m-load").textContent =
+          (m.current_load_pct ?? "—") + "%";
+        document.getElementById("m-avail").textContent =
+          (m.available_gbps ?? "—") + " Gbps";
+        document.getElementById("m-sess").textContent =
+          m.active_sessions ?? "—";
+        document.getElementById("m-openatk").textContent =
+          m.open_attacks ?? "—";
+      }
+
+      // ── MAIN REFRESH ──────────────────────────────────────────────────────
+      async function refresh() {
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const [peersRaw, trustRaw, attacksRaw, wsmRaw, metricsRaw, sessRaw] =
+            await Promise.allSettled([
+              api(PRIMARY_PORT, "/peers", { headers: hdr }),
+              api(PRIMARY_PORT, "/trust", { headers: hdr }),
+              api(PRIMARY_PORT, "/attacks", { headers: hdr }),
+              api(PRIMARY_PORT, "/trust/select-peers", {
+                method: "POST",
+                headers: hdr,
+                body: {},
+              }),
+              api(PRIMARY_PORT, "/metrics", { headers: hdr }),
+              api(PRIMARY_PORT, "/sessions/active", { headers: hdr }),
+            ]);
+          const peers = Array.isArray(peersRaw.value)
+            ? peersRaw.value
+            : peersRaw.value?.peers || [];
+          const trustArr = Array.isArray(trustRaw.value)
+            ? trustRaw.value
+            : trustRaw.value?.trust_scores || [];
+          const attacks = Array.isArray(attacksRaw.value)
+            ? attacksRaw.value
+            : attacksRaw.value?.attacks || [];
+          const wsmPeers =
+            wsmRaw.value?.ranked_peers ||
+            wsmRaw.value?.selected_peers ||
+            wsmRaw.value?.plan ||
+            [];
+          const trustMap = {};
+          trustArr.forEach((t) => {
+            if (t.peer_id) trustMap[t.peer_id] = t;
+            if (t.peer?.peer_id) trustMap[t.peer.peer_id] = t;
+            if (t.peer?.peer_name) trustMap[t.peer.peer_name] = t;
+            if (t.peer_name) trustMap[t.peer_name] = t;
+          });
+          const peersMap = {};
+          peers.forEach((p) => {
+            if (p.peer_name) peersMap[p.peer_name] = p;
+          });
+          renderCards(peersMap, trustMap);
+          renderTable(peers, trustMap);
+          renderStats(peers, trustMap, attacks);
+          renderTrustDist(peers, trustMap);
+          renderWSM(wsmPeers);
+          renderAttack(attacks);
+          renderMetrics(metricsRaw.value);
+          renderActiveSessions(
+            Array.isArray(sessRaw.value) ? sessRaw.value : [],
+          );
+          renderSessionHistory();
+          document.getElementById("last-refresh").textContent =
+            "màj " + new Date().toLocaleTimeString("fr-FR", { hour12: false });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      refresh();
+      setInterval(refresh, 3000);
+      populateViolPeers();
+      setInterval(populateViolPeers, 10000);
+
+      // ── SIMULATION 100 NŒUDS ─────────────────────────────────────────────
+      const ORG_TYPES = [
+        "UNIVERSITY",
+        "ISP",
+        "PME",
+        "DATACENTER",
+        "GOVERNMENT",
+      ];
+      const TIERS = ["T1", "T2", "T3"];
+      const COUNTRIES = ["DZ", "TN", "FR", "MA", "DE"];
+      let simPeerIds = [];
+      function uuid() {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      }
+
+      async function simStart() {
+        const btn = document.getElementById("btn-sim");
+        const status = document.getElementById("sim-status");
+        btn.disabled = true;
+        simPeerIds = [];
+        status.textContent = "Obtention du token…";
+        const token = await getToken();
+        if (!token) {
+          status.textContent = "Erreur token";
+          btn.disabled = false;
+          return;
+        }
+        status.textContent = "Enregistrement de 100 nœuds…";
+        const tasks = Array.from({ length: 100 }, (_, i) => {
+          const pid = uuid();
+          const cap = (Math.random() * 9.5 + 0.5).toFixed(2);
+          return fetch("/api/v1/peers/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              peer_id: pid,
+              peer_name: `vnode-${String(i).padStart(3, "0")}`,
+              organization_name: `Org-${i}`,
+              organization_type: ORG_TYPES[i % ORG_TYPES.length],
+              tier: TIERS[i % 3],
+              country_code: COUNTRIES[i % COUNTRIES.length],
+              api_endpoint_url: `https://vnode-${i}:8443`,
+              public_key: `DEMO_KEY_${pid}`,
+              max_scrubbing_capacity_gbps: parseFloat(cap),
+              declared_available_gbps: parseFloat((cap * 0.8).toFixed(2)),
+            }),
+            signal: AbortSignal.timeout(8000),
+          })
+            .then((r) => (r.ok ? pid : null))
+            .catch(() => null);
+        });
+        const results = await Promise.all(tasks);
+        simPeerIds = results.filter(Boolean);
+        status.textContent = `✓ ${simPeerIds.length} nœuds enregistrés`;
+        document.getElementById("btn-clean").disabled = false;
+        await refresh();
+      }
+
+      async function simClean() {
+        const btn = document.getElementById("btn-clean");
+        const status = document.getElementById("sim-status");
+        btn.disabled = true;
+        status.textContent = `Nettoyage de ${simPeerIds.length} nœuds…`;
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        await Promise.all(
+          simPeerIds.map((pid) =>
+            fetch(`/api/v1/peers/${pid}`, {
+              method: "DELETE",
+              headers: hdr,
+              signal: AbortSignal.timeout(5000),
+            }).catch(() => {}),
+          ),
+        );
+        simPeerIds = [];
+        status.textContent = "Nœuds virtuels supprimés.";
+        document.getElementById("btn-sim").disabled = false;
+        await refresh();
+      }
+
+      // ── ATTACK DEMO ───────────────────────────────────────────────────────
+      let currentAttackId = null;
+      let attackTimer = null;
+      let attackSeconds = 0;
+      let sessionIds = [];
+      function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+      function stepSet(n, state, detail) {
+        const el = document.getElementById(`step-${n}`);
+        const icon = el.querySelector(".step-num");
+        icon.className = `step-num step-${state}`;
+        icon.textContent = state === "done" ? "✓" : String(n);
+        if (detail !== undefined)
+          document.getElementById(`step-${n}-detail`).innerHTML = detail;
+      }
+      function stepsReset() {
+        for (let i = 1; i <= 5; i++) stepSet(i, "pending", "En attente…");
+      }
+
+      async function attackStart() {
+        const btnAtk = document.getElementById("btn-attack");
+        const btnEnd = document.getElementById("btn-end");
+        btnAtk.disabled = true;
+        stepsReset();
+        sessionIds = [];
+        showPage("attacks");
+        const protocol = document.getElementById("atk-protocol").value;
+        const port = document.getElementById("atk-port").value || "80";
+        const target =
+          document.getElementById("atk-target").value || "0.0.0.0/0";
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+
+        stepSet(1, "active", "Enregistrement de l'attaque en base…");
+        await sleep(700);
+        let attackId, nodeState, localNodeId;
+        try {
+          const sr = await fetch("/api/v1/status", { headers: hdr });
+          const sd = await sr.json();
+          localNodeId = sd.node_id;
+          const r = await fetch("/api/v1/simulation/attack/detect", {
+            method: "POST",
+            headers: { ...hdr, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              target_ip_range: target,
+              target_protocol: protocol,
+              target_port: parseInt(port) || null,
+              target_service: "Coalition ShieldNet",
+            }),
+          });
+          const d = await r.json();
+          if (!r.ok) {
+            stepSet(
+              1,
+              "done",
+              `<span style="color:var(--red)">Erreur ${r.status} : ${d.error || JSON.stringify(d)}</span>`,
+            );
+            btnAtk.disabled = false;
+            return;
+          }
+          attackId = d.attack?.attack_id || d.attack?.id;
+          nodeState = d.node_state || {};
+          currentAttackId = attackId;
+        } catch (e) {
+          stepSet(
+            1,
+            "done",
+            `<span style="color:var(--red)">Erreur : ${e.message}</span>`,
+          );
+          btnAtk.disabled = false;
+          return;
+        }
+        stepSet(
+          1,
+          "done",
+          `Cible : <strong>${target}</strong> | Proto : <strong>${protocol}</strong> | Port : <strong>${port}</strong>`,
+        );
+        await sleep(400);
+
+        stepSet(
+          2,
+          "active",
+          "Analyse trafic — identification vecteur, mesure volume…",
+        );
+        await sleep(1100);
+        const localCap = nodeState.local_capacity_gbps ?? 0;
+        const available = nodeState.available_gbps ?? 0;
+        stepSet(
+          2,
+          "done",
+          `Capacité locale : <strong>${localCap} Gbps</strong> | Disponible : <strong>${available} Gbps</strong> — Escalade vers coalition`,
+        );
+        await sleep(400);
+
+        stepSet(
+          3,
+          "active",
+          "Algorithme WSM — sélection et envoi des demandes…",
+        );
+        await sleep(900);
+        let wsmPlan = [];
+        try {
+          const r2 = await fetch("/api/v1/trust/select-peers", {
+            method: "POST",
+            headers: { ...hdr, "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          const d2 = await r2.json();
+          wsmPlan = d2.ranked_peers || d2.selected_peers || d2.plan || [];
+        } catch (e) {}
+        const topPeers = wsmPlan.slice(0, 3);
+        const requests = await Promise.all(
+          topPeers.map(async (p) => {
+            const peerId = p.peer?.peer_id || p.peer_id;
+            const alloc = p.allocation_pct || 33;
+            try {
+              const r3 = await fetch("/api/v1/help/request", {
+                method: "POST",
+                headers: { ...hdr, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  attack_id: attackId,
+                  helping_peer_id: peerId,
+                  requesting_node_id: localNodeId,
+                  allocation_pct: alloc,
+                  direction: "OUTBOUND_REQUEST",
+                  status: "REQUESTED",
+                }),
+              });
+              if (!r3.ok) return null;
+              const d3 = await r3.json();
+              const sid = d3.session_id || d3.id || d3.dataValues?.session_id;
+              return {
+                session_id: sid,
+                peer: p.peer || {},
+                alloc,
+                wsm: p.wsm_score || 0,
+              };
+            } catch {
+              return null;
+            }
+          }),
+        );
+        const validReqs = requests.filter(Boolean);
+        stepSet(
+          3,
+          "done",
+          `<strong>${wsmPlan.length}</strong> pairs évalués | <strong>${validReqs.length}</strong> session(s) créée(s)`,
+        );
+        await sleep(400);
+
+        stepSet(4, "active", "Activation tunnels GRE — redirection trafic…");
+        await sleep(800);
+        const activeSessions = [];
+        for (const req of validReqs) {
+          if (!req.session_id) continue;
+          const gbps = Math.round(available * (req.alloc / 100) * 10) / 10 || 1;
+          try {
+            const rA = await fetch(`/api/v1/help/${req.session_id}/accept`, {
+              method: "PUT",
+              headers: { ...hdr, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                accepted_volume_gbps: gbps,
+                tunnel_type: "GRE",
+                response_time_ms: Math.floor(Math.random() * 50 + 10),
+                responded_at: new Date().toISOString(),
+              }),
+            });
+            if (!rA.ok) continue;
+            await sleep(150);
+            const rR = await fetch("/api/v1/traffic/redirect", {
+              method: "POST",
+              headers: { ...hdr, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                session_id: req.session_id,
+                tunnel_type: "GRE",
+                volume_gbps: gbps,
+                activated_at: new Date().toISOString(),
+              }),
+            });
+            if (!rR.ok) continue;
+            activeSessions.push(req.session_id);
+          } catch {}
+        }
+        sessionIds = activeSessions;
+        stepSet(
+          4,
+          "done",
+          `<strong>${activeSessions.length}</strong> tunnel(s) GRE actif(s) — mitigation en cours`,
+        );
+        btnEnd.style.display = "block";
+        btnEnd.disabled = false;
+        attackSeconds = 0;
+        attackTimer = setInterval(() => {
+          attackSeconds++;
+          document.getElementById("step-4-detail").innerHTML =
+            `${activeSessions.length} tunnel(s) actif(s) — durée : <strong>${attackSeconds}s</strong>`;
+        }, 1000);
+        await refresh();
+        renderAuditLog();
+        renderMessageLog();
+      }
+
+      async function attackEnd() {
+        if (attackTimer) {
+          clearInterval(attackTimer);
+          attackTimer = null;
+        }
+        const btnEnd = document.getElementById("btn-end");
+        const btnAtk = document.getElementById("btn-attack");
+        btnEnd.disabled = true;
+        btnEnd.textContent = "Clôture…";
+        stepSet(
+          5,
+          "active",
+          "Clôture — crédits réciprocité + recalcul PeerTrust…",
+        );
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          let finalAttack = null;
+          if (currentAttackId) {
+            try {
+              const ro = await fetch("/api/v1/attack/over", {
+                method: "POST",
+                headers: { ...hdr, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  attack_id: currentAttackId,
+                  session_ids: sessionIds,
+                  attack_duration_seconds: attackSeconds,
+                  timestamp: new Date().toISOString(),
+                  status: "ENDED",
+                }),
+              });
+              finalAttack = await ro.json();
+            } catch {
+              try {
+                await fetch("/api/v1/simulation/attack/end", {
+                  method: "POST",
+                  headers: { ...hdr, "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    attack_id: currentAttackId,
+                    attack_duration_seconds: attackSeconds,
+                  }),
+                });
+              } catch {}
+            }
+          }
+          await sleep(200);
+          let activeCount = 0;
+          try {
+            let helpingPeerIds = [];
+            if (currentAttackId) {
+              try {
+                const atk = await fetch(`/api/v1/attacks/${currentAttackId}`, {
+                  headers: hdr,
+                }).then((r) => r.json());
+                helpingPeerIds = (atk.help_sessions || [])
+                  .map((s) => s.helping_peer_id)
+                  .filter(Boolean);
+              } catch {}
+            }
+            if (helpingPeerIds.length === 0) {
+              const pr = await fetch("/api/v1/peers", { headers: hdr });
+              const data = await pr.json();
+              const active = (Array.isArray(data) ? data : data.peers || [])
+                .filter((p) => p.status === "ACTIVE")
+                .slice(0, 3);
+              helpingPeerIds = active.map((p) => p.peer_id);
+            }
+            activeCount = helpingPeerIds.length;
+            await Promise.all(
+              helpingPeerIds.slice(0, 4).map((pid) =>
+                fetch(`/api/v1/trust/${pid}/recalculate`, {
+                  method: "POST",
+                  headers: hdr,
+                }).catch(() => {}),
+              ),
+            );
+          } catch {}
+          const finalSev =
+            finalAttack?.severity || finalAttack?.attack?.severity || "—";
+          const totalVol =
+            finalAttack?.total_filtered_gbps ??
+            finalAttack?.attack?.peak_volume_gbps ??
+            "?";
+          stepSet(
+            5,
+            "done",
+            `Durée : <strong>${attackSeconds}s</strong> | Volume filtré : <strong>${totalVol} Gbps</strong> | Sévérité : <strong>${finalSev}</strong> | ${activeCount} pairs mis à jour`,
+          );
+          currentAttackId = null;
+          sessionIds = [];
+          btnEnd.style.display = "none";
+          btnEnd.disabled = false;
+          btnEnd.textContent = "Terminer la mitigation";
+          btnAtk.disabled = false;
+          await refresh();
+          renderAuditLog();
+        } catch (e) {
+          console.error(e);
+          btnEnd.disabled = false;
+          btnEnd.textContent = "Terminer la mitigation";
+          btnAtk.disabled = false;
+        }
+      }
+
+      // ── RESET ─────────────────────────────────────────────────────────────
+      const COALITION_NODES = [
+        {
+          name: "node-university",
+          port: 3001,
+          cert: "university",
+          org: "Universite d Alger",
+          type: "UNIVERSITY",
+          tier: "T2",
+          capacity: 10.0,
+        },
+        {
+          name: "node-pme",
+          port: 3002,
+          cert: "pme",
+          org: "PME Algeroise",
+          type: "PME",
+          tier: "T3",
+          capacity: 5.0,
+        },
+        {
+          name: "node-isp",
+          port: 3003,
+          cert: "isp",
+          org: "Algerie Telecom ISP",
+          type: "ISP",
+          tier: "T1",
+          capacity: 20.0,
+        },
+        {
+          name: "node-datacenter",
+          port: 3004,
+          cert: "datacenter",
+          org: "Datacenter Oran",
+          type: "DATACENTER",
+          tier: "T1",
+          capacity: 15.0,
+        },
+      ];
+      async function nodeToken(port, name) {
+        try {
+          const r = await fetch(`https://localhost:${port}/api/v1/auth/token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              node_id: name,
+              node_secret: "shieldnet-secret-key-2025",
+            }),
+            signal: AbortSignal.timeout(5000),
+          });
+          const d = await r.json();
+          return d.token || "";
+        } catch {
+          return "";
+        }
+      }
+      async function coalitionReset() {
+        const btn = document.getElementById("btn-reset-coalition");
+        if (!btn) return;
+        const status = document.getElementById("reset-status");
+        btn.disabled = true;
+        const log = (msg, col = "#64748b") => {
+          if (status) {
+            status.style.color = col;
+            status.textContent = msg;
+          }
+        };
+        log("Reset BDD…");
+        const tok = await nodeToken(3001, "node-university");
+        const hdr = tok
+          ? {
+              Authorization: `Bearer ${tok}`,
+              "Content-Type": "application/json",
+            }
+          : { "Content-Type": "application/json" };
+        try {
+          await fetch("/api/v1/simulation/reset", {
+            method: "POST",
+            headers: hdr,
+            signal: AbortSignal.timeout(8000),
+          });
+        } catch (e) {
+          log("Erreur reset : " + e.message, "#b91c1c");
+          btn.disabled = false;
+          return;
+        }
+        await sleep(500);
+        log("Initialisation des nœuds…");
+        for (const node of COALITION_NODES) {
+          const t = await nodeToken(node.port, node.name);
+          const h = t
+            ? {
+                Authorization: `Bearer ${t}`,
+                "Content-Type": "application/json",
+              }
+            : { "Content-Type": "application/json" };
+          try {
+            await fetch(
+              `https://localhost:${node.port}/api/v1/simulation/node/init`,
+              {
+                method: "POST",
+                headers: h,
+                signal: AbortSignal.timeout(6000),
+                body: JSON.stringify({
+                  node_name: node.name,
+                  organization_name: node.org,
+                  organization_type: node.type,
+                  tier: node.tier,
+                  country_code: "DZ",
+                  api_endpoint_url: `https://localhost:${node.port}/api/v1`,
+                  public_key: `DEMO_KEY_${node.cert}`,
+                  max_scrubbing_capacity_gbps: node.capacity,
+                  current_load_percent: 20,
+                }),
+              },
+            );
+          } catch {}
+        }
+        await sleep(500);
+        log("Enregistrement croisé…");
+        const tasks = [];
+        for (const target of COALITION_NODES) {
+          const t = await nodeToken(target.port, target.name);
+          const h = t
+            ? {
+                Authorization: `Bearer ${t}`,
+                "Content-Type": "application/json",
+              }
+            : { "Content-Type": "application/json" };
+          for (const peer of COALITION_NODES) {
+            if (peer.name === target.name) continue;
+            tasks.push(
+              fetch(`https://localhost:${target.port}/api/v1/peers/register`, {
+                method: "POST",
+                headers: h,
+                signal: AbortSignal.timeout(6000),
+                body: JSON.stringify({
+                  peer_name: peer.name,
+                  organization_name: peer.org,
+                  organization_type: peer.type,
+                  tier: peer.tier,
+                  country_code: "DZ",
+                  api_endpoint_url: `https://node-${peer.cert}:8443/api/v1`,
+                  public_key: `DEMO_KEY_${peer.cert}`,
+                  max_scrubbing_capacity_gbps: peer.capacity,
+                  declared_available_gbps: peer.capacity * 0.8,
+                }),
+              }).catch(() => {}),
+            );
+          }
+        }
+        await Promise.all(tasks);
+        log("Coalition initialisée — 3 pairs actifs.", "#1d6b45");
+        btn.disabled = false;
+        await sleep(500);
+        await refresh();
+        renderAuditLog();
+        populateViolPeers();
+      }
+
+      // ── ACTIVE SESSIONS ───────────────────────────────────────────────────
+      async function renderActiveSessions(activeSessions) {
+        const el = document.getElementById("active-sessions-body");
+        const countA = document.getElementById("active-sessions-count");
+        const countT = document.getElementById("all-sessions-count");
+        if (!el) return;
+        if (countA) countA.textContent = activeSessions.length;
+        let allSessions = [...activeSessions];
+        if (currentAttackId) {
+          try {
+            const tok = await getToken();
+            const hdr2 = tok ? { Authorization: `Bearer ${tok}` } : {};
+            const r = await fetch(`/api/v1/attacks/${currentAttackId}`, {
+              headers: hdr2,
+            });
+            const d = await r.json();
+            const atkSessions = d.help_sessions || [];
+            const ids = new Set(activeSessions.map((s) => s.session_id));
+            for (const s of atkSessions) {
+              if (!ids.has(s.session_id)) allSessions.push(s);
+            }
+          } catch {}
+        }
+        if (countT) countT.textContent = allSessions.length;
+        const STAT_COL = {
+          ACTIVE: "var(--green)",
+          ACCEPTED: "var(--blue)",
+          REQUESTED: "var(--amber)",
+          COMPLETED: "var(--muted)",
+          NEGOTIATING: "#7c3aed",
+          FAILED: "var(--red)",
+        };
+        if (allSessions.length === 0) {
+          el.innerHTML =
+            '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:12px;font-size:12px">Lance une attaque pour voir les sessions.</td></tr>';
+          return;
+        }
+        el.innerHTML = allSessions
+          .map((s) => {
+            const victim =
+              s.requesting_node?.node_name ||
+              (s.requesting_node_id || "").slice(0, 12) ||
+              "?";
+            const helper =
+              s.helping_peer?.peer_name ||
+              (s.helping_peer_id || "").slice(0, 8) ||
+              "?";
+            const st = s.status || "?";
+            const col = STAT_COL[st] || "var(--muted)";
+            return `<tr>
+      <td style="color:var(--red);font-weight:500">${victim}</td>
+      <td style="color:var(--blue);font-weight:500">${helper}</td>
+      <td style="color:${col};font-weight:500;font-family:var(--font-mono);font-size:11px">${st}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${s.allocation_pct ? s.allocation_pct + "%" : "—"}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${s.accepted_volume_gbps ? s.accepted_volume_gbps + " Gbps" : "—"}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${s.actual_volume_gbps ? s.actual_volume_gbps + " Gbps" : "—"}</td>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:11px">${s.tunnel_type || "—"}</td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      // ── SESSION HISTORY ───────────────────────────────────────────────────
+      async function renderSessionHistory() {
+        const tbody = document.getElementById("sessions-history-body");
+        const countEl = document.getElementById("history-sessions-count");
+        if (!tbody) return;
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const data = await fetch("/api/v1/sessions?limit=100", {
+            headers: hdr,
+          }).then((r) => r.json());
+          const sessions = Array.isArray(data) ? data : data.sessions || [];
+          if (countEl) countEl.textContent = `${sessions.length} session(s)`;
+          if (sessions.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:14px">Aucune session.</td></tr>';
+            return;
+          }
+          const STAT_COL = {
+            ACTIVE: "var(--green)",
+            ACCEPTED: "var(--blue)",
+            REQUESTED: "var(--amber)",
+            COMPLETED: "var(--muted)",
+            NEGOTIATING: "#7c3aed",
+            FAILED: "var(--red)",
+            CANCELLED: "var(--faint)",
+          };
+          tbody.innerHTML = sessions
+            .map((s) => {
+              const sid = (s.session_id || "").slice(0, 8) + "…";
+              const victim =
+                s.requesting_node?.node_name ||
+                (s.requesting_node_id || "").slice(0, 8) ||
+                "?";
+              const helper =
+                s.helping_peer?.peer_name ||
+                (s.helping_peer_id || "").slice(0, 8) ||
+                "?";
+              const st = s.status || "?";
+              const col = STAT_COL[st] || "var(--muted)";
+              return `<tr>
+        <td style="font-family:var(--font-mono);color:var(--faint)">${sid}</td>
+        <td style="color:var(--red);font-weight:500">${victim}</td>
+        <td style="color:var(--blue);font-weight:500">${helper}</td>
+        <td style="color:${col};font-weight:500;font-family:var(--font-mono);font-size:11px">${st}</td>
+        <td style="text-align:right;font-family:var(--font-mono)">${s.allocation_pct != null ? s.allocation_pct + "%" : "—"}</td>
+        <td style="text-align:right;font-family:var(--font-mono)">${s.accepted_volume_gbps != null ? Number(s.accepted_volume_gbps).toFixed(2) + " Gbps" : "—"}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${s.actual_volume_gbps != null ? Number(s.actual_volume_gbps).toFixed(2) + " Gbps" : "—"}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--amber)">${s.credits_exchanged != null ? Number(s.credits_exchanged).toFixed(2) : "—"}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${s.tunnel_type || "—"}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--faint)">${s.created_at ? new Date(s.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—"}</td>
+      </tr>`;
+            })
+            .join("");
+        } catch {
+          tbody.innerHTML =
+            '<tr><td colspan="10" style="text-align:center;color:var(--red);padding:14px;font-size:12px">Erreur de chargement.</td></tr>';
+        }
+      }
+
+      // ── VIOLATION ─────────────────────────────────────────────────────────
+      async function populateViolPeers() {
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const data = await fetch("/api/v1/peers", { headers: hdr }).then(
+            (r) => r.json(),
+          );
+          const peers = (Array.isArray(data) ? data : data.peers || []).filter(
+            (p) => p.status !== "BANNED",
+          );
+          const sel = document.getElementById("viol-peer");
+          if (!sel) return;
+          sel.innerHTML = peers
+            .map(
+              (p) =>
+                `<option value="${p.peer_id}">${p.peer_name} — ${p.organization_type} (${p.tier})</option>`,
+            )
+            .join("");
+        } catch {}
+      }
+
+      async function applyViolation() {
+        const btn = document.getElementById("btn-viol");
+        const result = document.getElementById("viol-result");
+        btn.disabled = true;
+        result.innerHTML =
+          '<span style="color:var(--amber)">Application de la sanction…</span>';
+        const peerId = document.getElementById("viol-peer").value;
+        const peerName =
+          document.getElementById("viol-peer").selectedOptions[0]?.text ||
+          peerId;
+        const type = document.getElementById("viol-type").value;
+        const sev = document.getElementById("viol-severity").value;
+        const sanction = document.getElementById("viol-sanction").value;
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        try {
+          await fetch(`/api/v1/trust/${peerId}/violation`, {
+            method: "POST",
+            headers: { ...hdr, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              violation_type: type,
+              severity: sev,
+              description: `[Demo] ${type} — sévérité ${sev}`,
+              sanction_applied: sanction,
+              sanction_until:
+                sanction === "TEMP_SUSPENSION"
+                  ? new Date(Date.now() + 86400000).toISOString()
+                  : null,
+            }),
+          });
+          const d2 = await fetch(`/api/v1/trust/${peerId}/recalculate`, {
+            method: "POST",
+            headers: hdr,
+          }).then((r) => r.json());
+          const score =
+            typeof d2.overall_score === "number"
+              ? d2.overall_score.toFixed(3)
+              : "?";
+          const level = d2.trust_level ?? "?";
+          const col =
+            level === "BANNED"
+              ? "var(--red)"
+              : level === "SUSPECT"
+                ? "var(--amber)"
+                : level === "BRONZE"
+                  ? "#a06030"
+                  : "var(--blue)";
+          result.innerHTML = `Pair : <strong>${peerName.split("—")[0].trim()}</strong><br>Type : ${type} | Sévérité : ${sev}<br>Sanction : <strong style="color:var(--amber)">${sanction}</strong><br><br>Score → <strong style="color:${col}">${score}</strong> | Niveau : <strong style="color:${col}">${level}</strong>${level === "BANNED" ? '<br><span style="color:var(--red)">Pair banni — exclu de la coalition</span>' : ""}`;
+          await refresh();
+          renderAuditLog();
+          populateViolPeers();
+        } catch (e) {
+          result.innerHTML = `<span style="color:var(--red)">Erreur : ${e.message}</span>`;
+        }
+        btn.disabled = false;
+      }
+
+      // ── AUDIT LOG ─────────────────────────────────────────────────────────
+      async function renderAuditLog() {
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const r = await fetch("/api/v1/logs/audit?limit=15", {
+            headers: hdr,
+          });
+          const d = await r.json();
+          const events = d.events || [];
+          const el = document.getElementById("audit-log");
+          if (!el) return;
+          const SEV_COL = {
+            INFO: "var(--blue)",
+            WARNING: "var(--amber)",
+            CRITICAL: "var(--red)",
+          };
+          el.innerHTML =
+            events.length === 0
+              ? '<div style="color:var(--muted);text-align:center;padding:16px;font-size:12px">Aucun événement.</div>'
+              : events
+                  .map((e) => {
+                    const t = new Date(e.timestamp).toLocaleTimeString(
+                      "fr-FR",
+                      { hour12: false },
+                    );
+                    const c = SEV_COL[e.severity] || "var(--muted)";
+                    return `<div class="audit-row">
+        <span class="audit-t">${t}</span>
+        <span class="audit-sev" style="color:${c}">${e.severity || ""}</span>
+        <span class="audit-type">${e.event_type || ""}</span>
+        <span class="audit-desc">${e.description || ""}</span>
+      </div>`;
+                  })
+                  .join("");
+        } catch {}
+      }
+      setInterval(renderAuditLog, 5000);
+      renderAuditLog();
+
+      // ── MESSAGE LOG ───────────────────────────────────────────────────────
+      async function renderMessageLog() {
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const d = await fetch("/api/v1/logs/messages?limit=12", {
+            headers: hdr,
+          }).then((r) => r.json());
+          const msgs = d.messages || [];
+          const el = document.getElementById("msg-log");
+          if (!el) return;
+          const TYPE_COL = {
+            HELP_REQUEST: "var(--red)",
+            HELP_ACCEPT: "var(--green)",
+            HELP_REJECT: "var(--amber)",
+            TRAFFIC_REDIRECT: "#7c3aed",
+            ATTACK_OVER: "var(--green)",
+            HEARTBEAT: "var(--border-strong)",
+            HELLO: "var(--blue)",
+            CAPABILITY_ADV: "var(--blue)",
+            ALERT: "var(--red)",
+          };
+          el.innerHTML =
+            msgs.length === 0
+              ? '<div style="color:var(--muted);text-align:center;padding:12px;font-size:12px">Aucun message P2P.</div>'
+              : msgs
+                  .map((m) => {
+                    const t = new Date(m.timestamp).toLocaleTimeString(
+                      "fr-FR",
+                      { hour12: false },
+                    );
+                    const col = TYPE_COL[m.message_type] || "var(--muted)";
+                    const dir =
+                      m.direction === "SENT"
+                        ? '<span style="color:var(--green)">→</span>'
+                        : '<span style="color:var(--blue)">←</span>';
+                    const res =
+                      m.processing_result === "PROCESSED"
+                        ? '<span style="color:var(--green)">✓</span>'
+                        : m.processing_result === "REJECTED"
+                          ? '<span style="color:var(--red)">✗</span>'
+                          : "";
+                    return `<div class="audit-row">
+        <span class="audit-t">${t}</span>
+        <span style="width:20px;text-align:center;flex-shrink:0">${dir}</span>
+        <span style="color:${col};width:180px;flex-shrink:0;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.message_type || ""}</span>
+        <span style="width:18px;flex-shrink:0">${res}</span>
+        <span style="flex:1;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px">${m.rejection_reason || ""}</span>
+      </div>`;
+                  })
+                  .join("");
+        } catch {}
+      }
+      setInterval(renderMessageLog, 5000);
+      renderMessageLog();
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt, oneside]{report}
+\documentclass[12pt,a4paper]{report}
 
 % =============================================
 % PACKAGES
@@ -7,15 +7,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage{csquotes}
-\usepackage{lmodern}
 \usepackage{tabularx}
 \usepackage{geometry}
 \geometry{
     top=2.5cm,
     bottom=2.5cm,
-    left=3cm,
-    right=2.5cm,
-    headheight=15.5pt 
+    left=2.5cm,
+    right=2.5cm
 }
 
 % Graphiques et figures
@@ -37,37 +35,22 @@
 % Couleurs et liens
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=black,
-    citecolor=blue,
-    urlcolor=blue
-}
-
-% En-têtes et pieds de page
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\leftmark}
-\fancyhead[R]{\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
 
 % Bibliographie
 \usepackage[backend=biber, style=ieee, sorting=nyt]{biblatex}
 \addbibresource{references.bib}
 
-% Espacement
-\usepackage{setspace}
-\onehalfspacing
-
-% Table des matières — chapitres en grand
-\usepackage{tocloft}
-\renewcommand{\cftchapfont}{\large\bfseries}
-\renewcommand{\cftchappagefont}{\large\bfseries}
-\setlength{\cftbeforechapskip}{10pt}
-
 % Listings (code source)
 \usepackage{listings}
+
+% Définition du langage JSON pour listings
+\lstdefinelanguage{json}{
+  morestring=[b]",
+  stringstyle=\color{orange!80!black},
+  comment=[l]{//},
+  commentstyle=\color{gray}\itshape,
+  sensitive=false,
+}
 
 % Définition du langage JavaScript pour listings
 \lstdefinelanguage{JavaScript}{
@@ -104,7 +87,20 @@
     keepspaces=true,
     showspaces=false,
     showstringspaces=false,
-    tabsize=2
+    tabsize=2,
+    extendedchars=true,
+    literate=
+      {é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {ë}{{\"e}}1
+      {à}{{\`a}}1 {â}{{\^a}}1 {ä}{{\"a}}1
+      {î}{{\^i}}1 {ï}{{\"i}}1
+      {ô}{{\^o}}1 {ö}{{\"o}}1
+      {ù}{{\`u}}1 {û}{{\^u}}1 {ü}{{\"u}}1
+      {ç}{{\c{c}}}1 {œ}{{\oe}}1 {æ}{{\ae}}1
+      {É}{{\'E}}1 {È}{{\`E}}1 {Ê}{{\^E}}1
+      {À}{{\`A}}1 {Â}{{\^A}}1
+      {Î}{{\^I}}1 {Ô}{{\^O}}1 {Ù}{{\`U}}1 {Û}{{\^U}}1
+      {Ç}{{\c{C}}}1
+      {—}{{\textemdash}}1 {–}{{\textendash}}1
 }
 
 % TikZ
@@ -116,7 +112,8 @@
 \usepackage{pifont}
 
 % Glossaire / Acronymes
-\usepackage[acronym, toc]{glossaries}
+\usepackage[acronym,nonumberlist]{glossaries}
+\renewcommand{\glsnamefont}[1]{\textbf{\large #1}}
 \makeglossaries
 
 % Profondeur de la table des matières
@@ -163,25 +160,40 @@
 
 % ----- Pages préliminaires -----
 \pagenumbering{roman}
+\renewcommand{\thepage}{\textbf{\Roman{page}}}
 
+\cleardoublepage
+\thispagestyle{empty}
+\input{chapters/dedicace}
+
+\cleardoublepage
+\input{chapters/remerciements}
+
+\cleardoublepage
 \input{chapters/abstract}
 
 \tableofcontents
-\newpage
+\addcontentsline{toc}{chapter}{Table des matières}
+\cleardoublepage
+
+\printglossary[type=\acronymtype, title=Liste des acronymes]
+\addcontentsline{toc}{chapter}{Liste des acronymes}
+\cleardoublepage
+
+\input{chapters/abbreviations}
+\cleardoublepage
 
 \listoffigures
 \addcontentsline{toc}{chapter}{Liste des figures}
-\newpage
+\cleardoublepage
 
 \listoftables
 \addcontentsline{toc}{chapter}{Liste des tableaux}
-\newpage
-
-\printglossary[type=\acronymtype, title=Liste des acronymes]
-\newpage
+\cleardoublepage
 
 % ----- Corps du mémoire -----
 \pagenumbering{arabic}
+\setcounter{page}{1}
 
 \input{chapters/introduction}
 \input{chapters/chapter1}

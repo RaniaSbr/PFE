@@ -263,7 +263,10 @@ router.get("/attacks/:id", async (req, res) => {
         {
           model: HelpSession,
           as: "help_sessions",
-          include: [{ model: Peer, as: "helping_peer" }],
+          include: [
+            { model: Peer, as: "helping_peer" },
+            { model: LocalNodeConfig, as: "requesting_node" },
+          ],
         },
       ],
     });
@@ -383,6 +386,25 @@ router.post("/help/offer", async (req, res) => {
   }
 });
 
+// GET /sessions — toutes les sessions (historique complet)
+router.get("/sessions", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const sessions = await HelpSession.findAll({
+      include: [
+        { model: Attack, as: "attack" },
+        { model: Peer, as: "helping_peer" },
+        { model: LocalNodeConfig, as: "requesting_node" },
+      ],
+      order: [["created_at", "DESC"]],
+      limit,
+    });
+    return res.json(sessions);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /sessions/active  (doit être AVANT /sessions/:id pour éviter le conflit de route)
 router.get("/sessions/active", async (req, res) => {
   const ACTIVE = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
@@ -392,6 +414,7 @@ router.get("/sessions/active", async (req, res) => {
       include: [
         { model: Attack, as: "attack" },
         { model: Peer, as: "helping_peer" },
+        { model: LocalNodeConfig, as: "requesting_node" },
       ],
       order: [["created_at", "DESC"]],
     });

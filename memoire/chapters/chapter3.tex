@@ -46,7 +46,7 @@ Ce système est conçu autour de six exigences fondamentales~:
 \subsection{Diagrammes de cas d'utilisation}
 \label{subsec:uc}
 
-Le système ShieldNet est décrit par trois diagrammes de cas d'utilisation complémentaires, couvrant respectivement le protocole de mitigation collaborative, le moteur de confiance PeerTrust et le rôle complet du nœud pair dans la coalition. Les trois acteurs impliqués sont~: le \textbf{nœud local} (victime en situation d'attaque), le \textbf{nœud pair} (participant distant) et l'\textbf{administrateur} (responsable de la configuration locale).
+Le système est décrit par trois diagrammes de cas d'utilisation complémentaires, couvrant respectivement le protocole de mitigation collaborative, le moteur de confiance PeerTrust et le rôle complet du nœud pair dans la coalition. Les trois acteurs impliqués sont~: le \textbf{nœud local} (victime en situation d'attaque), le \textbf{nœud pair} (participant distant) et l'\textbf{administrateur} (responsable de la configuration locale).
 
 % --------------------------------------------------
 \subsubsection{Protocole de mitigation collaborative}
@@ -56,7 +56,7 @@ La Figure~\ref{fig:uc_mitigation} détaille les interactions entre le \textbf{n�
 
 Le nœud victime initie la séquence en \textbf{envoyant une requête d'aide} (\texttt{POST /help/request}), cas d'usage qui inclut obligatoirement la \textbf{sélection des pairs via l'algorithme WSM}~: chaque pair candidat est évalué selon quatre critères pondérés (capacité disponible, latence inversée, score de confiance, réciprocité). Le nœud pair peut alors \textbf{accepter} (\texttt{PUT /help/\{id\}/accept}) ou \textbf{rejeter} (\texttt{PUT /help/\{id\}/reject}) la session~; l'acceptation étend optionnellement vers l'\textbf{activation de la session} (\texttt{POST /traffic/redirect}), qui correspond au signal de démarrage de la redirection au niveau applicatif. La \textbf{clôture de l'attaque} (\texttt{POST /attack/over}), déclenchée par le nœud victime, inclut deux actions systématiques~: la \textbf{mise à jour des crédits de réciprocité} des deux nœuds dans leurs ledgers respectifs, et le \textbf{recalcul du score de confiance PeerTrust} $T(u)$ du pair assistant.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/uc_mitigation_collaborative.png}
 \caption{Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}
@@ -71,7 +71,7 @@ La Figure~\ref{fig:uc_trust} présente les cas d'usage du moteur de confiance, c
 
 La séquence principale est déclenchée par la \textbf{clôture d'une session d'aide}~: le nœud local \textbf{capture la crédibilité $Cr_i$} du réseau au moment de la session en interrogeant les pairs actifs (\texttt{GET /trust/\{node\_id\}} sur chaque pair), puis \textbf{calcule le score PeerTrust} $T(u) = \sum[S \cdot Cr_i \cdot D] / \sum[Cr_i \cdot D]$ et \textbf{met à jour le niveau de confiance} (GOLD $\geq$ 0,80~; SILVER $\geq$ 0,60~; BRONZE $\geq$ 0,40~; SUSPECT $\geq$ 0,20~; BANNED $<$ 0,20). Si le score calculé est inférieur à 0,20, la mise à jour du niveau étend automatiquement vers le \textbf{bannissement automatique} du pair (statut \texttt{BANNED}, membership \texttt{EXPELLED}). Indépendamment de ce flux, une \textbf{violation de comportement} détectée peut également déclencher le bannissement via le même mécanisme d'extension. Le \textbf{pair évalué} dispose d'un accès en lecture via \textbf{Consulter le score de confiance} (\texttt{GET /trust/\{id\}}). Enfin, l'administrateur ou le système peut \textbf{forcer le recalcul du score} (\texttt{POST /trust/\{id\}/recalculate}) à tout moment, ce cas d'usage incluant directement le calcul de $T(u)$.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/uc_moteur_confiance.png}
 \caption{Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}
@@ -92,12 +92,285 @@ Le groupe \textbf{Confiance} contient un seul cas d'usage~: \textbf{interroger l
 
 Le groupe \textbf{Sécurité} couvre l'\textbf{obtention d'un token JWT RS256} (\texttt{POST /auth/token}), prérequis à tout appel API authentifié.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/uc_role_pair.png}
 \caption{Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}
 \label{fig:uc_pair}
 \end{figure}
+
+% --------------------------------------------------
+\subsection{Documentation des cas d'utilisation}
+\label{subsec:cu_doc}
+% --------------------------------------------------
+
+Les tableaux suivants documentent les sept principaux cas d'utilisation du système, issus des trois diagrammes présentés ci-dessus.
+
+% ─── CU 1 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~1 : Obtenir un token JWT RS256}} \\
+\hline
+\textbf{ID} & 1 \\
+\hline
+\textbf{Description} & Le nœud (local ou pair) demande un token JWT signé RS256 afin d'accéder aux routes protégées de l'API. Le token est valide exactement 60~secondes. \\
+\hline
+\textbf{Acteurs primaires} & Nœud local, nœud pair \\
+\hline
+\textbf{Acteurs secondaires} & Module d'authentification (composant interne du nœud cible) \\
+\hline
+\textbf{Préconditions} & La clé privée RSA du nœud (\texttt{node.key}) est présente sur le système de fichiers. \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre lorsque le nœud doit appeler une route protégée de l'API.\newline
+\textbf{1.}\ Le nœud envoie \texttt{POST /api/v1/auth/token} avec son identifiant (\texttt{node\_id}).\newline
+\textbf{2.}\ Le module d'authentification lit la clé privée RS256 stockée localement (\texttt{node.key}).\newline
+\textbf{3.}\ Le système génère un JWT signé contenant \texttt{\{iss, node\_id, iat, exp\}} avec une durée de vie de 60~secondes.\newline
+\textbf{4.}\ Le token est retourné au nœud appelant (HTTP~200).\newline
+\textbf{5.}\ Le nœud inclut ce token dans l'en-tête \texttt{Authorization: Bearer <token>} pour toutes ses requêtes suivantes. \\
+\hline
+\textbf{Post-conditions} & Le nœud dispose d'un token RS256 valide pour 60~secondes. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Clé privée introuvable~:} le serveur retourne HTTP~500.\newline
+\textbf{Token expiré lors d'un appel ultérieur~:} le serveur retourne HTTP~401 ; le nœud doit redemander un token via ce même CU. \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Obtenir un token JWT RS256}.}
+\label{tab:cu1}
+\end{table}
+
+% ─── CU 2 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~2 : S'enregistrer dans la coalition}} \\
+\hline
+\textbf{ID} & 2 \\
+\hline
+\textbf{Description} & Un nœud pair rejoint la coalition en publiant son identité, sa clé publique RSA et ses capacités de scrubbing auprès du nœud local. \\
+\hline
+\textbf{Acteurs primaires} & Nœud pair \\
+\hline
+\textbf{Acteurs secondaires} & Nœud local (registre de la coalition) \\
+\hline
+\textbf{Préconditions} & Le nœud pair dispose d'une paire de clés RSA et connaît l'URL du nœud cible. Aucune authentification JWT n'est requise pour cette route (publique). \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre lorsque l'administrateur lance le démarrage d'un nouveau nœud pair.\newline
+\textbf{1.}\ Le pair envoie \texttt{POST /api/v1/peers/register} avec~: \texttt{peer\_id} (UUID), \texttt{peer\_name}, \texttt{public\_key} (PEM), type d'organisation, tier (T1/T2/T3) et capacité maximale de scrubbing (\texttt{max\_scrubbing\_capacity\_gbps}).\newline
+\textbf{2.}\ Le nœud local vérifie l'unicité du \texttt{peer\_id}.\newline
+\textbf{3.}\ Les informations du pair sont enregistrées en base avec le score de confiance initial de $0{,}50$ et le statut \texttt{ACTIVE}.\newline
+\textbf{4.}\ Le nœud local retourne une confirmation HTTP~201 au pair. \\
+\hline
+\textbf{Post-conditions} & Le pair est connu de la coalition avec le statut \texttt{ACTIVE} et un score de confiance initial de $0{,}50$. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Pair déjà enregistré (\texttt{peer\_id} existant)~:} le nœud retourne HTTP~409 (Conflict).\newline
+\textbf{Données obligatoires manquantes~:} le nœud retourne HTTP~400 (Bad Request). \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{S'enregistrer dans la coalition}.}
+\label{tab:cu2}
+\end{table}
+
+% ─── CU 3 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~3 : Envoyer un heartbeat}} \\
+\hline
+\textbf{ID} & 3 \\
+\hline
+\textbf{Description} & Un nœud pair signale périodiquement (toutes les 30~secondes) sa disponibilité et met à jour sa capacité disponible auprès du nœud local. \\
+\hline
+\textbf{Acteurs primaires} & Nœud pair \\
+\hline
+\textbf{Acteurs secondaires} & Nœud local (registre de la coalition) \\
+\hline
+\textbf{Préconditions} & Le nœud pair est enregistré (statut \texttt{ACTIVE}) et possède un token JWT valide (CU~1). \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU est déclenché automatiquement toutes les 30~secondes par le processus de monitoring du pair.\newline
+\textbf{1.}\ Le pair envoie \texttt{POST /api/v1/heartbeat} avec~: \texttt{peer\_id}, la charge actuelle (\texttt{reported\_load\_pct}), la capacité disponible (\texttt{reported\_available\_gbps}) et la latence aller-retour mesurée (\texttt{round\_trip\_time\_ms}).\newline
+\textbf{2.}\ Le nœud local met à jour le champ \texttt{last\_seen} du pair et ses métriques en temps réel.\newline
+\textbf{3.}\ Le nœud local retourne HTTP~200 avec le statut courant du pair. \\
+\hline
+\textbf{Post-conditions} & Le champ \texttt{last\_seen} est mis à jour~; la capacité disponible reflète l'état réel du pair. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Pair banni ou inconnu~:} le nœud retourne HTTP~403 (Forbidden).\newline
+\textbf{Token JWT expiré~:} le nœud retourne HTTP~401 ; le pair doit se réauthentifier (CU~1) avant de retenter. \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Envoyer un heartbeat}.}
+\label{tab:cu3}
+\end{table}
+
+% ─── CU 4 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~4 : Envoyer une requête d'aide (sélection WSM)}} \\
+\hline
+\textbf{ID} & 4 \\
+\hline
+\textbf{Description} & Le nœud victime, confronté à un volume d'attaque DDoS dépassant sa capacité locale, sélectionne automatiquement des pairs assistants via l'algorithme WSM et leur envoie une requête d'aide. \\
+\hline
+\textbf{Acteurs primaires} & Nœud victime (nœud local sous attaque) \\
+\hline
+\textbf{Acteurs secondaires} & Nœuds pairs candidats \\
+\hline
+\textbf{Préconditions} & Le nœud victime est authentifié (CU~1)~; au moins un pair est en statut \texttt{ACTIVE} dans la coalition. \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre lorsque le volume d'attaque DDoS dépasse la capacité de filtrage locale du nœud.\newline
+\textbf{1.}\ Le nœud victime appelle \texttt{POST /api/v1/trust/select-peers} pour déclencher la sélection WSM.\newline
+\textbf{2.}\ Le système calcule pour chaque pair candidat (statut \texttt{ACTIVE}, non banni) le score pondéré~:\newline
+\quad $\text{Score}(p) = 0{,}52 \cdot C_p + 0{,}20 \cdot L_p + 0{,}20 \cdot T_p + 0{,}08 \cdot R_p$\newline
+où $C_p$ est la capacité disponible, $L_p$ la latence inversée, $T_p$ le score de confiance et $R_p$ la réciprocité.\newline
+\textbf{3.}\ Les pairs sont classés par score décroissant.\newline
+\textbf{4.}\ Le nœud victime envoie \texttt{POST /api/v1/help/request} aux pairs les mieux classés, en précisant le volume requis (\texttt{volume\_requested\_gbps}).\newline
+\textbf{5.}\ Une session d'aide est créée côté pair avec le statut \texttt{PENDING}. \\
+\hline
+\textbf{Post-conditions} & Des sessions d'aide en statut \texttt{PENDING} existent chez les pairs sélectionnés. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Aucun pair disponible (tous saturés ou bannis)~:} le système retourne une liste vide~; le nœud victime gère l'attaque seul.\newline
+\textbf{Pair banni inclus dans la liste initiale~:} le pair banni est automatiquement exclu du classement WSM. \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Envoyer une requête d'aide (sélection WSM)}.}
+\label{tab:cu4}
+\end{table}
+
+% ─── CU 5 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~5 : Accepter ou rejeter une session d'aide}} \\
+\hline
+\textbf{ID} & 5 \\
+\hline
+\textbf{Description} & Un nœud pair, ayant reçu une requête d'aide (CU~4), évalue sa capacité disponible et accepte ou rejette la session. \\
+\hline
+\textbf{Acteurs primaires} & Nœud pair \\
+\hline
+\textbf{Acteurs secondaires} & Nœud victime \\
+\hline
+\textbf{Préconditions} & Une session d'aide en statut \texttt{PENDING} est associée au pair~; le pair est authentifié (CU~1). \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre dès réception d'une requête \texttt{POST /help/request} par le nœud pair.\newline
+\textbf{1.}\ Le pair consulte sa capacité disponible (\texttt{reported\_available\_gbps}) et sa charge actuelle (\texttt{reported\_load\_pct}).\newline
+\textbf{2.}\ Si la capacité est suffisante pour absorber le volume demandé~:\newline
+\quad \textbf{*}\ Le pair envoie \texttt{PUT /api/v1/help/\{id\}/accept}~; la session passe en statut \texttt{ACCEPTED}.\newline
+\quad \textbf{*}\ Le nœud victime est notifié~; la redirection du trafic peut démarrer.\newline
+\textbf{3.}\ Si la capacité est insuffisante~:\newline
+\quad \textbf{*}\ Le pair envoie \texttt{PUT /api/v1/help/\{id\}/reject}~; la session passe en statut \texttt{REJECTED}.\newline
+\quad \textbf{*}\ Le nœud victime est notifié du refus et peut consulter d'autres pairs candidats. \\
+\hline
+\textbf{Post-conditions} & La session est en statut \texttt{ACCEPTED} ou \texttt{REJECTED}~; le nœud victime est informé de la décision. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Session déjà traitée (statut non \texttt{PENDING})~:} le nœud retourne HTTP~409 (Conflict).\newline
+\textbf{Token JWT expiré~:} le nœud retourne HTTP~401. \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Accepter ou rejeter une session d'aide}.}
+\label{tab:cu5}
+\end{table}
+
+% ─── CU 6 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~6 : Clôturer l'attaque}} \\
+\hline
+\textbf{ID} & 6 \\
+\hline
+\textbf{Description} & À la fin de l'attaque DDoS, le nœud victime clôture la session d'aide, met à jour les crédits de réciprocité des deux nœuds et déclenche le recalcul du score de confiance PeerTrust de chaque pair assistant. \\
+\hline
+\textbf{Acteurs primaires} & Nœud victime \\
+\hline
+\textbf{Acteurs secondaires} & Nœuds pairs assistants, moteur de confiance PeerTrust \\
+\hline
+\textbf{Préconditions} & Au moins une session d'aide est en statut \texttt{IN\_PROGRESS}~; le nœud victime est authentifié (CU~1). \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre lorsque le nœud victime détecte la fin de l'attaque DDoS.\newline
+\textbf{1.}\ Le nœud victime envoie \texttt{POST /api/v1/attack/over} avec le \texttt{session\_id} et le volume réellement traité par le pair (\texttt{actual\_volume\_gbps}).\newline
+\textbf{2.}\ Le système calcule le ratio de satisfaction $S = \min(1{,}0,\ \textit{réel} / \textit{accepté})$ pour chaque pair assistant.\newline
+\textbf{3.}\ Les crédits de réciprocité sont mis à jour dans les ledgers respectifs du nœud victime et du pair assistant.\newline
+\textbf{4.}\ Le moteur de confiance recalcule le score PeerTrust $T(u)$ de chaque pair assistant (CU~7).\newline
+\textbf{5.}\ La session est marquée \texttt{COMPLETED}. \\
+\hline
+\textbf{Post-conditions} & Session en statut \texttt{COMPLETED}~; scores de confiance et crédits de réciprocité mis à jour. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Session introuvable~:} le système retourne HTTP~404.\newline
+\textbf{Volume réel nul ($S = 0$, pair n'a rien traité)~:} le score PeerTrust chute~; si $T(u) < 0{,}20$, le bannissement automatique est déclenché (CU~7). \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Clôturer l'attaque}.}
+\label{tab:cu6}
+\end{table}
+
+% ─── CU 7 ─────────────────────────────────────────────────────────────────────
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{CU~7 : Recalculer le score PeerTrust (bannissement automatique)}} \\
+\hline
+\textbf{ID} & 7 \\
+\hline
+\textbf{Description} & Le moteur de confiance recalcule le score PeerTrust $T(u)$ d'un pair à partir de l'historique de ses interactions. Si $T(u) < 0{,}20$, le bannissement automatique est déclenché. \\
+\hline
+\textbf{Acteurs primaires} & Moteur de confiance (système) \\
+\hline
+\textbf{Acteurs secondaires} & Pair évalué, pairs actifs (source de la crédibilité réseau $Cr$) \\
+\hline
+\textbf{Préconditions} & Au moins une interaction du pair est enregistrée en base~; ce CU est inclus par CU~6 ou déclenché manuellement via \texttt{POST /api/v1/trust/\{id\}/recalculate}. \\
+\hline
+\textbf{Enchaînement principal} &
+Ce CU démarre automatiquement à la clôture d'une session (CU~6) ou sur demande explicite.\newline
+\textbf{1.}\ Le système collecte la crédibilité réseau $Cr_i$ en interrogeant les pairs actifs (\texttt{GET /api/v1/trust/\{node\_id\}} sur chacun d'eux).\newline
+\textbf{2.}\ Le système calcule le score PeerTrust selon la formule de Xiong \& Liu~(2004)~:\newline
+\quad $T(u) = \displaystyle\sum_i [S_i \cdot Cr_i \cdot D_i] \;\big/\; \displaystyle\sum_i [Cr_i \cdot D_i]$\newline
+où $S_i = \min(1,\ \textit{réel}_i / \textit{accepté}_i)$ et $D_i$ est le poids de sévérité de l'attaque.\newline
+\textbf{3.}\ Le niveau de confiance est mis à jour selon les seuils~:\newline
+\quad \textbf{*}\ $T(u) \geq 0{,}80$ : niveau \texttt{GOLD}\newline
+\quad \textbf{*}\ $T(u) \geq 0{,}60$ : niveau \texttt{SILVER}\newline
+\quad \textbf{*}\ $T(u) \geq 0{,}40$ : niveau \texttt{BRONZE}\newline
+\quad \textbf{*}\ $T(u) \geq 0{,}20$ : niveau \texttt{SUSPECT}\newline
+\quad \textbf{*}\ $T(u) < 0{,}20$ : niveau \texttt{BANNED} $\rightarrow$ bannissement automatique\newline
+\textbf{4.}\ En cas de bannissement~: le statut du pair passe à \texttt{BANNED} et son membership à \texttt{EXPELLED}. \\
+\hline
+\textbf{Post-conditions} & Le score $T(u)$ et le niveau de confiance du pair sont persistés en base. \\
+\hline
+\textbf{Enchaînements alternatifs} &
+\textbf{Aucune interaction enregistrée~:} le score reste inchangé à sa valeur initiale ($0{,}50$).\newline
+\textbf{Pairs actifs inaccessibles pour $Cr$~:} la valeur par défaut $Cr_i = 1{,}0$ est utilisée (confiance pleine dans l'interaction locale). \\
+\hline
+\end{tabular}
+\caption{Documentation du cas d'utilisation \textit{Recalculer le score PeerTrust}.}
+\label{tab:cu7}
+\end{table}
 
 \subsection{Architecture générale}
 \label{sec:architecture_gen}
@@ -111,34 +384,39 @@ La solution proposée adopte une topologie \gls{p2p} \textbf{Pair-à-Pair}~: cha
     \item \textbf{Simplicité de déploiement~:} chaque nœud n'a besoin que d'une adresse d'entrée initiale pour rejoindre la coalition.
 \end{itemize}
 
-Chaque nœud est caractérisé par un \textbf{tier} (T1, T2, T3) reflétant sa capacité de scrubbing maximale~: T1 pour les datacenters et \gls{fai} à grande capacité, T2 pour les organisations de taille moyenne (universités, administrations), T3 pour les petites structures (PME, associations).
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-    node distance=2.5cm and 3cm,
     pair/.style={
         circle, draw, thick,
-        minimum size=1.9cm,
+        minimum size=1.8cm,
         align=center, font=\small
     },
     lien/.style={<->, thick, gray!60}
 ]
-\node[pair, fill=blue!12]    (univ) at (0,3)      {Université\\T2};
-\node[pair, fill=green!12]   (dc)   at (4.5,3)    {Datacenter\\T1};
-\node[pair, fill=orange!12]  (isp)  at (6.5,0)    {FAI\\T1};
-\node[pair, fill=yellow!18]  (pme)  at (3,-1.8)   {PME\\T3};
-\node[pair, fill=red!10]     (gov)  at (-1.5,0)   {Gouvernement\\T2};
+\node[pair, fill=blue!12]    (A) at (0,3.5)     {Pair A\\Université};
+\node[pair, fill=green!12]   (B) at (4,4)       {Pair B\\Datacenter};
+\node[pair, fill=orange!12]  (C) at (7,1.5)     {Pair C\\FAI};
+\node[pair, fill=yellow!18]  (D) at (5,-1.5)    {Pair D\\PME};
+\node[pair, fill=red!10]     (E) at (1.5,-2)    {Pair E\\Gouvernement};
+\node[pair, fill=violet!10]  (F) at (-2,1)      {Pair F\\Université};
+\node[pair, fill=cyan!10]    (G) at (2.5,1.5)   {Pair G\\Recherche};
 
-\draw[lien] (univ) -- (dc);
-\draw[lien] (dc)   -- (isp);
-\draw[lien] (isp)  -- (pme);
-\draw[lien] (pme)  -- (gov);
-\draw[lien] (gov)  -- (univ);
-\draw[lien] (univ) -- (pme);
-\draw[lien] (dc)   -- (gov);
+\draw[lien] (A) -- (B);
+\draw[lien] (B) -- (C);
+\draw[lien] (C) -- (D);
+\draw[lien] (D) -- (E);
+\draw[lien] (E) -- (F);
+\draw[lien] (F) -- (A);
+\draw[lien] (A) -- (G);
+\draw[lien] (B) -- (G);
+\draw[lien] (G) -- (D);
+\draw[lien] (G) -- (E);
+\draw[lien] (F) -- (G);
+\draw[lien] (C) -- (G);
 \end{tikzpicture}
-\caption{Coalition ~: cinq nœuds hétérogènes interconnectés en overlay \gls{p2p} plat.}
+\caption{Exemple de coalition~: sept nœuds hétérogènes interconnectés en overlay \gls{p2p} plat non structuré.}
 \label{fig:coalition}
 \end{figure}
 
@@ -169,7 +447,7 @@ La base de données PostgreSQL du système comporte quatorze tables. La Figure~\
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/ERD.png}
-\caption{Schéma entité-association de la base de données locale d'un nœud ShieldNet.}
+\caption{Schéma entité-association de la base de données locale d'un nœud.}
 \label{fig:erd}
 \end{figure}
 
@@ -221,29 +499,6 @@ Le nœud local est décrit par \texttt{LOCAL\_NODE\_CONFIG}, dont dépendent \te
 \subsubsection{Identifiants et intégrité référentielle}
 
 Toutes les clés primaires sont des \gls{uuid} version 4, générés localement par chaque nœud. Ce choix garantit l'unicité globale sans coordinateur centralisé et facilite la fusion éventuelle de registres entre nœuds lors de la découverte. Les suppressions en cascade sont configurées pour les entités dépendantes (sessions, scores de confiance, ledger) afin de maintenir l'intégrité référentielle lors du retrait d'un pair.
-
-\subsection{Diagramme de classes}
-\label{subsec:class_diagram}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/class_diagram.png}
-\caption{Diagramme de classes UML du système ShieldNet.}
-\label{fig:classdiagram}
-\end{figure}
-
-La Figure~\ref{fig:classdiagram} présente les quatorze entités du système et leurs associations, regroupées en quatre familles.
-
-\textbf{Nœud local (bleu).} \texttt{LOCAL\_NODE\_CONFIG} centralise l'identité et la configuration du nœud~: identifiant UUID, nom, type d'organisation, tier (T1/T2/T3), code pays, numéro ASN, plage IP protégée, URL et port d'API (défaut~: 8443), clé publique RSA, empreinte du certificat mTLS, capacité maximale de scrubbing en Gbps, charge courante en pourcentage et date d'adhésion à la coalition. Deux entités en dépendent~: \texttt{POLICY\_CONFIG} (seuils d'alerte à 70\,\%, d'escalade à 85\,\%, critique à 95\,\%, score de confiance minimal pour accepter de l'aide, pourcentage de capacité partageable, intervalle de heartbeat à 30\,s, flag d'offre automatique) et \texttt{SCRUBBING\_CAPABILITY} (capacité technique~: débit maximum, précision de filtrage $\in [0,1]$, statut actif).
-
-\textbf{Pairs (vert).} \texttt{PEERS} répertorie les nœuds connus de la coalition~: identité, tier, URL d'API, clé publique, empreinte de certificat, capacité déclarée et disponible en Gbps, latence mesurée en ms, statut opérationnel, statut de membership et date du dernier heartbeat. Chaque pair possède une entrée \texttt{PEER\_CAPABILITIES} (capacité déclarée et vérifiée).
-
-\textbf{Confiance et réciprocité (jaune).} \texttt{TRUST\_SCORES} conserve le score de confiance agrégé $T(u) \in [0,1]$ ainsi que des sous-scores détaillés (fiabilité, performance, réciprocité, stabilité), les compteurs de sessions acceptées/rejetées, le ratio de respect des promesses de capacité et l'uptime sur 30 jours. La relation avec \texttt{PEERS} est $(1,1)\text{--}(1,1)$~: chaque pair possède un unique score mis à jour en place. \texttt{RECIPROCITY\_LEDGER} maintient le solde bilatéral (crédits donnés, reçus, balance nette). \texttt{RECIPROCITY\_TRANSACTIONS} journalise chaque échange de crédits en Gbps, associé à la session d'aide correspondante.
-
-\textbf{Sessions et attaques (orange/violet).} \texttt{ATTACKS} enregistre chaque attaque détectée~: volume au pic, volume de débordement, capacité locale au moment de la détection, plage IP et service cible, sévérité, flag d'escalade et nombre de pairs mobilisés. \texttt{HELP\_SESSIONS} modélise chaque session d'aide inter-nœuds~: volume accepté, volume réellement filtré, crédibilité $Cr_i$ capturée à la clôture (\texttt{cr\_value}), type de tunnel (GRE/VXLAN/IPIP), note de qualité $\in [0,5]$ et crédits échangés.
-
-\textbf{Journaux (gris).} \texttt{HEARTBEAT\_LOG} conserve l'historique des heartbeats reçus avec la charge, la capacité disponible et le \gls{rtt} mesuré. \texttt{MESSAGE\_LOG} trace tous les messages échangés~: type, direction, validité de la signature JWT, résultat de traitement, et une auto-relation pour les messages de réponse. \texttt{AUDIT\_LOG} est autonome sans clé étrangère (colonnes \texttt{actor} et \texttt{target} en texte libre) afin que les entrées persistent même après suppression d'un pair. \texttt{TRUST\_VIOLATIONS} enregistre les comportements anormaux~: type, sévérité, sanction appliquée et date d'expiration.
-
 
 % --------------------------------------------------
 \subsection{Modèle de confiance~: PeerTrust adapté}
@@ -395,67 +650,15 @@ Le plafonnement par la capacité réelle du pair évite de lui demander plus qu'
 \subsection{Diagramme d'activités~: session de mitigation}
 \label{subsec:activites}
 
-La Figure~\ref{fig:activite} détaille le flux d'activités d'une session de mitigation complète, depuis la détection de l'attaque jusqu'à la mise à jour des scores de confiance.
+La Figure~\ref{fig:activite} illustre le flux d'activités d'une session de mitigation collaborative, réparti en deux couloirs~: le \textbf{nœud victime} et le \textbf{nœud pair}. Dès la détection d'une attaque \gls{ddos}, le nœud victime sélectionne les pairs candidats via l'algorithme \gls{wsm}. Si aucun pair n'est disponible, le nœud subit l'attaque sans aide extérieure. Dans le cas contraire, une demande d'aide est envoyée (\texttt{POST /help/request})~; le pair vérifie le score de confiance du demandeur ainsi que sa capacité disponible avant d'accepter ou de rejeter la session. En cas d'acceptation, un tunnel est établi (GRE/VXLAN/IPSec) et le trafic malveillant est scrubé côté pair. À la fin de l'attaque, le nœud victime notifie la clôture (\texttt{POST /attack/over})~; les crédits de réciprocité et les scores de confiance sont alors mis à jour.
 
 \begin{figure}[htbp]
 \centering
-\resizebox{0.62\textwidth}{!}{%
-\begin{tikzpicture}[
-  act/.style={draw=black!70, thick, rounded corners=4pt, fill=blue!8,
-              minimum width=5cm, minimum height=0.7cm,
-              align=center, font=\small},
-  dec/.style={draw=black!70, thick, diamond, fill=yellow!15,
-              minimum width=1.2cm, minimum height=1.2cm,
-              align=center, font=\scriptsize},
-  arr/.style={-{Stealth[length=2.5mm]}, thick},
-  lbl/.style={font=\scriptsize},
-  start/.style={circle, fill=black, minimum size=0.45cm, inner sep=0pt},
-  endd/.style={circle, draw=black, thick, fill=black, minimum size=0.45cm,
-               inner sep=0pt, double, double distance=2pt}
-]
-
-\node[start]  (debut)  at (0, 0) {};
-\node[act]    (det)    at (0,-1.4)  {Détecter une attaque DDoS};
-\node[act]    (wsm)    at (0,-3.0)  {Calculer scores WSM des pairs};
-\node[dec]    (pairs)  at (0,-4.8)  {\parbox{2.2cm}{\centering Pairs\\disponibles ?}};
-\node[act]    (req)    at (0,-6.8)  {Envoyer \texttt{POST /help/request}};
-\node[dec]    (acc)    at (0,-8.5)  {\parbox{2.2cm}{\centering Session\\acceptée ?}};
-\node[act]    (red)    at (0,-10.3) {Rediriger le trafic (GRE/BGP)};
-\node[act]    (mon)    at (0,-11.9) {Surveiller le trafic résiduel};
-\node[dec]    (fin)    at (0,-13.6) {\parbox{2.2cm}{\centering Attaque\\terminée ?}};
-\node[act]    (over)   at (0,-15.4) {Envoyer \texttt{POST /attack/over}};
-\node[act]    (cr)     at (0,-17.0) {Capturer $Cr_i$ de la session};
-\node[act]    (trust)  at (0,-18.6) {Recalculer $T(u)$ et sauvegarder};
-\node[endd]   (fin2)   at (0,-20.1) {};
-
-% Flèches directes
-\draw[arr] (debut) -- (det);
-\draw[arr] (det)   -- (wsm);
-\draw[arr] (wsm)   -- (pairs);
-\draw[arr] (pairs) -- node[lbl, right] {Oui} (req);
-\draw[arr] (req)   -- (acc);
-\draw[arr] (acc)   -- node[lbl, right] {Oui} (red);
-\draw[arr] (red)   -- (mon);
-\draw[arr] (mon)   -- (fin);
-\draw[arr] (fin)   -- node[lbl, right] {Oui} (over);
-\draw[arr] (over)  -- (cr);
-\draw[arr] (cr)    -- (trust);
-\draw[arr] (trust) -- (fin2);
-
-% Branche Non — aucun pair disponible
-\draw[arr] (pairs.east) -- ++(2.8,0) |- node[lbl, near start, above] {Non} (det.east);
-
-% Branche Non — session rejetée
-\draw[arr] (acc.east) -- ++(3.0,0) |- node[lbl, near start, above] {Non} (wsm.east);
-
-% Branche Non — attaque continue
-\draw[arr] (fin.west) -- ++(-2.8,0) |- node[lbl, near start, above] {Non} (mon.west);
-
-\end{tikzpicture}
-}
-\caption{Diagramme d'activités d'une session de mitigation collaborative.}
+\includegraphics[width=\textwidth]{figures/activity_diagram.png}
+\caption{Diagramme d'activités d'une session de mitigation collaborative (deux couloirs~: nœud victime et nœud pair).}
 \label{fig:activite}
 \end{figure}
+\clearpage
 
 % --------------------------------------------------
 \subsection{Mécanismes de sécurité}
@@ -485,29 +688,6 @@ Au-dessus de mTLS, chaque requête \gls{api} porte un \gls{jwt} \cite{rfc7519jwt
 
 Le \textit{payload} du \gls{jwt} contient~: \texttt{iss} (identifiant du nœud émetteur), \texttt{node\_id} et \texttt{exp} (timestamp d'expiration). Le middleware d'authentification valide séquentiellement~: décodage sans vérification pour extraire \texttt{iss}, récupération de la clé publique correspondante, puis vérification cryptographique de la signature.
 
-\begin{figure}[htbp]
-\centering
-\begin{tikzpicture}[
-    box/.style={rectangle, draw, rounded corners, minimum width=3cm,
-                minimum height=0.8cm, align=center, font=\small, fill=gray!8},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-    lab/.style={font=\scriptsize}
-]
-\node[box, fill=blue!10] (nodeA) at (0,0) {Nœud A (émetteur)};
-\node[box, fill=green!10](nodeB) at (8,0) {Nœud B (récepteur)};
-
-\draw[arr] (nodeA.east) -- node[lab, above, align=center]
-    {HTTPS (mTLS) + \texttt{Authorization: Bearer <JWT RS256>}} (nodeB.west);
-
-\node[box, fill=yellow!10] (mtls) at (4,-1.5) {Couche TLS 1.3 (mTLS)};
-\node[box, fill=orange!10] (jwt)  at (4,-2.8) {Couche JWT RS256 (applicatif)};
-
-\draw[arr, dashed] (4,-0.45) -- (mtls.north);
-\draw[arr, dashed] (mtls.south) -- (jwt.north);
-\end{tikzpicture}
-\caption{Double couche de sécurité~: mTLS au niveau transport, JWT RS256 au niveau applicatif.}
-\label{fig:securite}
-\end{figure}
 
 \subsection{Interface API REST}
 \label{sec:api}

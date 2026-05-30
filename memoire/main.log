@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  21 MAY 2026 11:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  28 MAY 2026 03:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -129,42 +129,7 @@ Package csquotes Info: ... configuration file loaded successfully.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.cfg
 File: csquotes.cfg 
-)) (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\lmodern.sty
-Package: lmodern 2015/05/01 v1.6.1 Latin Modern Fonts
-LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> OT1/lmr/m/n on input line 22.
-LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
-(Font)                  OML/cmm/m/it --> OML/lmm/m/it on input line 23.
-LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
-(Font)                  OMS/cmsy/m/n --> OMS/lmsy/m/n on input line 24.
-LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
-(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 25.
-LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 26.
-LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
-(Font)                  OML/cmm/b/it --> OML/lmm/b/it on input line 27.
-LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
-(Font)                  OMS/cmsy/b/n --> OMS/lmsy/b/n on input line 28.
-LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
-(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 29.
-LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 31.
-LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> OT1/lmss/m/n on input line 32.
-LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> OT1/lmr/m/it on input line 33.
-LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 34.
-LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
-(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 35.
-LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> OT1/lmss/bx/n on input line 36.
-LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> OT1/lmr/bx/it on input line 37.
-LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 38.
-)
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
+)) (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
 Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
@@ -530,27 +495,6 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip62
 )
-Package hyperref Info: Option `colorlinks' set `true' on input line 45.
-
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
-Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
-
-\f@nch@headwidth=\skip63
-\f@nch@offset@elh=\skip64
-\f@nch@offset@erh=\skip65
-\f@nch@offset@olh=\skip66
-\f@nch@offset@orh=\skip67
-\f@nch@offset@elf=\skip68
-\f@nch@offset@erf=\skip69
-\f@nch@offset@olf=\skip70
-\f@nch@offset@orf=\skip71
-\f@nch@height=\skip72
-\f@nch@footalignment=\skip73
-\f@nch@widthL=\skip74
-\f@nch@widthC=\skip75
-\f@nch@widthR=\skip76
-\@temptokenb=\toks33
-)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/biblatex\biblatex.sty
 Package: biblatex 2025/07/10 v3.21 programmable bibliographies (PK/MW)
 
@@ -607,14 +551,14 @@ Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
 \blx@sectionciteorderinternal@0=\count383
 \blx@entrysetcounter=\count384
 \blx@biblioinstance=\count385
-\labelnumberwidth=\skip77
-\labelalphawidth=\skip78
-\biblabelsep=\skip79
-\bibitemsep=\skip80
-\bibnamesep=\skip81
-\bibinitsep=\skip82
-\bibparsep=\skip83
-\bibhang=\skip84
+\labelnumberwidth=\skip63
+\labelalphawidth=\skip64
+\biblabelsep=\skip65
+\bibitemsep=\skip66
+\bibnamesep=\skip67
+\bibinitsep=\skip68
+\bibparsep=\skip69
+\bibhang=\skip70
 \blx@bcfin=\read3
 \blx@bcfout=\write3
 \blx@langwohyphens=\language80
@@ -699,20 +643,20 @@ Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
 \c@savedoriglanguage=\count454
 \c@pageref=\count455
 \c@savedpageref=\count456
-\shorthandwidth=\skip85
-\shortjournalwidth=\skip86
-\shortserieswidth=\skip87
-\shorttitlewidth=\skip88
-\shortauthorwidth=\skip89
-\shorteditorwidth=\skip90
-\locallabelnumberwidth=\skip91
-\locallabelalphawidth=\skip92
-\localshorthandwidth=\skip93
-\localshortjournalwidth=\skip94
-\localshortserieswidth=\skip95
-\localshorttitlewidth=\skip96
-\localshortauthorwidth=\skip97
-\localshorteditorwidth=\skip98
+\shorthandwidth=\skip71
+\shortjournalwidth=\skip72
+\shortserieswidth=\skip73
+\shorttitlewidth=\skip74
+\shortauthorwidth=\skip75
+\shorteditorwidth=\skip76
+\locallabelnumberwidth=\skip77
+\locallabelalphawidth=\skip78
+\localshorthandwidth=\skip79
+\localshortjournalwidth=\skip80
+\localshortserieswidth=\skip81
+\localshorttitlewidth=\skip82
+\localshortauthorwidth=\skip83
+\localshorteditorwidth=\skip84
 Package biblatex Info: Trying to load compatibility code...
 Package biblatex Info: ... file 'blx-compat.def' found.
 
@@ -815,61 +759,18 @@ Package: xparse 2025-10-09 L3 Experimental document command parser
 )
 Package: blx-case-expl3 2025/07/10 v3.21 expl3 case changing code for biblatex
 ))
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/setspace\setspace.sty
-Package: setspace 2022/12/04 v6.7b set line spacing
-)
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/tocloft\tocloft.sty
-Package: tocloft 2017/08/31 v2.3i parameterised ToC, etc., typesetting
-Package tocloft Info: The document has chapter divisions on input line 51.
-\cftparskip=\skip99
-\cftbeforetoctitleskip=\skip100
-\cftaftertoctitleskip=\skip101
-\cftbeforepartskip=\skip102
-\cftpartnumwidth=\skip103
-\cftpartindent=\skip104
-\cftbeforechapskip=\skip105
-\cftchapindent=\skip106
-\cftchapnumwidth=\skip107
-\cftbeforesecskip=\skip108
-\cftsecindent=\skip109
-\cftsecnumwidth=\skip110
-\cftbeforesubsecskip=\skip111
-\cftsubsecindent=\skip112
-\cftsubsecnumwidth=\skip113
-\cftbeforesubsubsecskip=\skip114
-\cftsubsubsecindent=\skip115
-\cftsubsubsecnumwidth=\skip116
-\cftbeforeparaskip=\skip117
-\cftparaindent=\skip118
-\cftparanumwidth=\skip119
-\cftbeforesubparaskip=\skip120
-\cftsubparaindent=\skip121
-\cftsubparanumwidth=\skip122
-\cftbeforeloftitleskip=\skip123
-\cftafterloftitleskip=\skip124
-\cftbeforefigskip=\skip125
-\cftfigindent=\skip126
-\cftfignumwidth=\skip127
-\c@lofdepth=\count469
-\c@lotdepth=\count470
-\cftbeforelottitleskip=\skip128
-\cftafterlottitleskip=\skip129
-\cftbeforetabskip=\skip130
-\cfttabindent=\skip131
-\cfttabnumwidth=\skip132
-)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lst@mode=\count471
+\lst@mode=\count469
 \lst@gtempboxa=\box64
-\lst@token=\toks34
-\lst@length=\count472
+\lst@token=\toks33
+\lst@length=\count470
 \lst@currlwidth=\dimen268
-\lst@column=\count473
-\lst@pos=\count474
+\lst@column=\count471
+\lst@pos=\count472
 \lst@lostspace=\dimen269
 \lst@width=\dimen270
-\lst@newlines=\count475
-\lst@lineno=\count476
+\lst@newlines=\count473
+\lst@lineno=\count474
 \lst@maxwidth=\dimen271
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
@@ -877,8 +778,8 @@ File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
-\c@lstnumber=\count477
-\lst@skipnumbers=\count478
+\c@lstnumber=\count475
+\lst@skipnumbers=\count476
 \lst@framebox=\box65
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
@@ -899,7 +800,7 @@ sty
 y
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
 -common.tex
-\pgfutil@everybye=\toks35
+\pgfutil@everybye=\toks34
 \pgfutil@tempdima=\dimen272
 \pgfutil@tempdimb=\dimen273
 )
@@ -924,12 +825,12 @@ Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
 .code.tex
-\pgfkeys@pathtoks=\toks36
-\pgfkeys@temptoks=\toks37
+\pgfkeys@pathtoks=\toks35
+\pgfkeys@temptoks=\toks36
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
 libraryfiltered.code.tex
-\pgfkeys@tmptoks=\toks38
+\pgfkeys@tmptoks=\toks37
 ))
 \pgf@x=\dimen274
 \pgf@y=\dimen275
@@ -943,14 +844,14 @@ libraryfiltered.code.tex
 \pgf@yd=\dimen283
 \w@pgf@writea=\write4
 \r@pgf@reada=\read4
-\c@pgf@counta=\count479
-\c@pgf@countb=\count480
-\c@pgf@countc=\count481
-\c@pgf@countd=\count482
-\t@pgf@toka=\toks39
-\t@pgf@tokb=\toks40
-\t@pgf@tokc=\toks41
-\pgf@sys@id@count=\count483
+\c@pgf@counta=\count477
+\c@pgf@countb=\count478
+\c@pgf@countc=\count479
+\c@pgf@countd=\count480
+\t@pgf@toka=\toks38
+\t@pgf@tokb=\toks39
+\t@pgf@tokc=\toks40
+\pgf@sys@id@count=\count481
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.c
 fg
@@ -969,8 +870,8 @@ File: pgfsys-common-pdf.def 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
 ssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfsyssoftpath@smallbuffer@items=\count484
-\pgfsyssoftpath@bigbuffer@items=\count485
+\pgfsyssoftpath@smallbuffer@items=\count482
+\pgfsyssoftpath@bigbuffer@items=\count483
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
 sprotocol.code.tex
@@ -987,11 +888,11 @@ code.tex)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparse
 r.code.tex
 \pgfmath@dimen=\dimen284
-\pgfmath@count=\count486
+\pgfmath@count=\count484
 \pgfmath@box=\box67
-\pgfmath@toks=\toks42
-\pgfmath@stack@operand=\toks43
-\pgfmath@stack@operation=\toks44
+\pgfmath@toks=\toks41
+\pgfmath@stack@operand=\toks42
+\pgfmath@stack@operation=\toks43
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
 ions.code.tex)
@@ -1015,7 +916,7 @@ ions.integerarithmetics.code.tex)
 code.tex)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat
 .code.tex
-\c@pgfmathroundto@lastzeros=\count487
+\c@pgfmathroundto@lastzeros=\count485
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.
 tex)
@@ -1055,7 +956,7 @@ File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfpic=\box68
 \pgf@hbox=\box69
 \pgf@layerbox@main=\box70
-\pgf@picture@serial@count=\count488
+\pgf@picture@serial@count=\count486
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 egraphicstate.code.tex
@@ -1090,8 +991,8 @@ File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 eshade.code.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@max=\dimen308
-\pgf@sys@shading@range@num=\count489
-\pgf@shadingcount=\count490
+\pgf@sys@shading@range@num=\count487
+\pgf@shadingcount=\count488
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 eimage.code.tex
@@ -1151,8 +1052,8 @@ code.tex
 Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
 \pgffor@iter=\dimen311
 \pgffor@skip=\dimen312
-\pgffor@stack=\toks45
-\pgffor@toks=\toks46
+\pgffor@stack=\toks44
+\pgffor@toks=\toks45
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z\tikz.code.tex
@@ -1161,7 +1062,7 @@ Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
 aryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@plot@mark@count=\count491
+\pgf@plot@mark@count=\count489
 \pgfplotmarksize=\dimen313
 )
 \tikz@lastx=\dimen314
@@ -1176,19 +1077,19 @@ File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \tikz@figbox@bg=\box74
 \tikz@tempbox=\box75
 \tikz@tempbox@bg=\box76
-\tikztreelevel=\count492
-\tikznumberofchildren=\count493
-\tikznumberofcurrentchild=\count494
-\tikz@fig@count=\count495
+\tikztreelevel=\count490
+\tikznumberofchildren=\count491
+\tikznumberofcurrentchild=\count492
+\tikz@fig@count=\count493
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
 matrix.code.tex
 File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfmatrixcurrentrow=\count496
-\pgfmatrixcurrentcolumn=\count497
-\pgf@matrix@numberofcolumns=\count498
+\pgfmatrixcurrentrow=\count494
+\pgfmatrixcurrentcolumn=\count495
+\pgf@matrix@numberofcolumns=\count496
 )
-\tikz@expandcount=\count499
+\tikz@expandcount=\count497
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z/libraries\tikzlibrarytopaths.code.tex
@@ -1253,7 +1154,7 @@ decorations.code.tex
 \pgfdecoratedinputsegmentcompleteddistance=\dimen328
 \pgfdecoratedinputsegmentremainingdistance=\dimen329
 \pgf@decorate@distancetomove=\dimen330
-\pgf@decorate@repeatstate=\count500
+\pgf@decorate@repeatstate=\count498
 \pgfdecorationsegmentamplitude=\dimen331
 \pgfdecorationsegmentlength=\dimen332
 )
@@ -1288,16 +1189,16 @@ Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkeyval.tex
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkvutils.tex
-\XKV@toks=\toks47
-\XKV@tempa@toks=\toks48
+\XKV@toks=\toks46
+\XKV@tempa@toks=\toks47
 )
-\XKV@depth=\count501
+\XKV@depth=\count499
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/mfirstuc\mfirstuc.sty
 Package: mfirstuc 2025/04/03 v2.09 (NLCT)
-\@glsmfirst=\toks49
-\@glsmrest=\toks50
+\@glsmfirst=\toks48
+\@glsmrest=\toks49
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/xfor\xfor.sty
 Package: xfor 2009/02/05 v1.05 (NLCT)
@@ -1323,12 +1224,12 @@ File: glossaries-french.ldf 2016/12/12 v1.1
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/datatool\datatool-base.
 sty
 Package: datatool-base 2025/12/04 v3.4.3 (NLCT)
-\l__datatool_tmpa_int=\count502
-\l__datatool_tmpb_int=\count503
-\l__datatool_tmpc_int=\count504
-\l__datatool_tmpd_int=\count505
-\l__datatool_count_int=\count506
-\l__datatool_tmp_datatype_int=\count507
+\l__datatool_tmpa_int=\count500
+\l__datatool_tmpb_int=\count501
+\l__datatool_tmpc_int=\count502
+\l__datatool_tmpd_int=\count503
+\l__datatool_count_int=\count504
+\l__datatool_tmp_datatype_int=\count505
 \l__datatool_tmpa_dim=\dimen333
 \l__datatool_tmpb_dim=\dimen334
 
@@ -1336,48 +1237,48 @@ Package: datatool-base 2025/12/04 v3.4.3 (NLCT)
 def
 File: datatool-l3fp.def 2025/12/04 v3.4.3 (NLCT)
 )
-\@dtl@toks=\toks51
-\@dtl@tmpcount=\count508
-\dtl@tmplength=\skip133
+\@dtl@toks=\toks50
+\@dtl@tmpcount=\count506
+\dtl@tmplength=\skip85
 \l__datatool_measure_box=\box98
-\dtl@sortresult=\count509
+\dtl@sortresult=\count507
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/datatool\datatool-utf8.
 ldf
 File: datatool-utf8.ldf 2025/12/04 v3.4.3 (NLCT)
 )
-\@dtl@datatype=\count510
-\c_datatool_unknown_int=\count511
-\l__datatool_year_int=\count512
-\l__datatool_month_int=\count513
-\l__datatool_day_int=\count514
-\l__datatool_hour_int=\count515
-\l__datatool_minute_int=\count516
-\l__datatool_second_int=\count517
-\l__datatool_tzhour_int=\count518
-\l__datatool_tzminute_int=\count519
-\l__datatool_julian_int=\count520
-\l__datatool_local_julian_int=\count521
-\l__datatool_prefix_int=\count522
-\l__datatool_suffix_int=\count523
-\@dtl@foreach@level=\count524
+\@dtl@datatype=\count508
+\c_datatool_unknown_int=\count509
+\l__datatool_year_int=\count510
+\l__datatool_month_int=\count511
+\l__datatool_day_int=\count512
+\l__datatool_hour_int=\count513
+\l__datatool_minute_int=\count514
+\l__datatool_second_int=\count515
+\l__datatool_tzhour_int=\count516
+\l__datatool_tzminute_int=\count517
+\l__datatool_julian_int=\count518
+\l__datatool_local_julian_int=\count519
+\l__datatool_prefix_int=\count520
+\l__datatool_suffix_int=\count521
+\@dtl@foreach@level=\count522
 
 
 Package tracklang Warning: No `datatool' support for dialect `french'  on input
  line 9924.
 
-\dtl@codeA=\count525
-\dtl@codeB=\count526
+\dtl@codeA=\count523
+\dtl@codeB=\count524
 )
-\gls@level=\count527
-\@gls@tmpb=\toks52
-\gls@tmplen=\skip134
+\gls@level=\count525
+\@gls@tmpb=\toks51
+\gls@tmplen=\skip86
 \l__glossaries_tmpa_dim=\dimen335
 \l__glossaries_tmpb_dim=\dimen336
-\glskeylisttok=\toks53
-\glslabeltok=\toks54
-\glsshorttok=\toks55
-\glslongtok=\toks56
+\glskeylisttok=\toks52
+\glslabeltok=\toks53
+\glsshorttok=\toks54
+\glslongtok=\toks55
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-hypernav.sty
@@ -1386,13 +1287,13 @@ Package: glossary-hypernav 2025/11/09 v4.9 (NLCT)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-list.sty
 Package: glossary-list 2025/11/09 v4.9 (NLCT)
-\glslistdottedwidth=\skip135
+\glslistdottedwidth=\skip87
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-long.sty
 Package: glossary-long 2025/11/09 v4.9 (NLCT)
-\glsdescwidth=\skip136
-\glspagelistwidth=\skip137
+\glsdescwidth=\skip88
+\glspagelistwidth=\skip89
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-super.sty
@@ -1401,11 +1302,11 @@ Package: glossary-super 2025/11/09 v4.9 (NLCT)
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/supertabular\supertabul
 ar.sty
 Package: supertabular 2025/06/26 v4.2d the supertabular environment
-\c@tracingst=\count528
+\c@tracingst=\count526
 \ST@wd=\dimen337
-\ST@rightskip=\skip138
-\ST@leftskip=\skip139
-\ST@parfillskip=\skip140
+\ST@rightskip=\skip90
+\ST@leftskip=\skip91
+\ST@parfillskip=\skip92
 \ST@pageleft=\dimen338
 \ST@headht=\dimen339
 \ST@tailht=\dimen340
@@ -1420,7 +1321,7 @@ Package: supertabular 2025/06/26 v4.2d the supertabular environment
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/glossaries/styles\gloss
 ary-tree.sty
 Package: glossary-tree 2025/11/09 v4.9 (NLCT)
-\l__glossaries_tree_max_known_level_int=\count529
+\l__glossaries_tree_max_known_level_int=\count527
 \l__glossaries_tree_offset_dim=\dimen347
 \l__glossaries_tree_namewidth_dim=\dimen348
 \l__glossaries_tree_symbolwidth_dim=\dimen349
@@ -1430,52 +1331,48 @@ Package: glossary-tree 2025/11/09 v4.9 (NLCT)
 \l__glossaries_tree_symbolwidth_padding_dim=\dimen353
 \l__glossaries_tree_namesymbolwidth_dim=\dimen354
 \l__glossaries_tree_namesymbolwidth_padding_dim=\dimen355
-\l__glossaries_tree_level_int=\count530
-\glstreeindent=\skip141
+\l__glossaries_tree_level_int=\count528
+\glstreeindent=\skip93
 ))
 \glswrite=\write5
 \glo@main@file=\write6
 \openout6 = `main.glo'.
 
-Package glossaries Info: Writing glossary file main.glo on input line 120.
+Package glossaries Info: Writing glossary file main.glo on input line 117.
 \glo@acronym@file=\write7
 \openout7 = `main.acn'.
 
-Package glossaries Info: Writing glossary file main.acn on input line 120.
+Package glossaries Info: Writing glossary file main.acn on input line 117.
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
 Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'french'.
-LaTeX Font Info:    Trying to load font information for T1+lmr on input line 16
-2.
-
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmr.fd
-File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) (main.aux
+ (main.aux
 Package babel Info: 'french' activates 'french' shorthands.
 (babel)             Reported on input line 19.
 )
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 162.
-LaTeX Font Info:    ... okay on input line 162.
-LaTeX Info: Redefining \degres on input line 162.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 159.
+LaTeX Font Info:    ... okay on input line 159.
+LaTeX Info: Redefining \degres on input line 159.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -1484,16 +1381,16 @@ LaTeX Info: Redefining \degres on input line 162.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(85.35826pt, 441.01773pt, 71.13188pt)
+* h-part:(L,W,R)=(71.13188pt, 455.24411pt, 71.13188pt)
 * v-part:(T,H,B)=(71.13188pt, 702.78308pt, 71.13188pt)
 * \paperwidth=597.50787pt
 * \paperheight=845.04684pt
-* \textwidth=441.01773pt
+* \textwidth=455.24411pt
 * \textheight=702.78308pt
-* \oddsidemargin=13.08827pt
-* \evensidemargin=13.08827pt
-* \topmargin=-41.6381pt
-* \headheight=15.5pt
+* \oddsidemargin=-1.1381pt
+* \evensidemargin=-1.1381pt
+* \topmargin=-38.1381pt
+* \headheight=12.0pt
 * \headsep=25.0pt
 * \topskip=12.0pt
 * \footskip=30.0pt
@@ -1514,17 +1411,17 @@ LaTeX Info: Redefining \degres on input line 162.
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count531
+\scratchcounter=\count529
 \scratchdimen=\dimen356
 \scratchbox=\box100
-\nofMPsegments=\count532
-\nofMParguments=\count533
-\everyMPshowfont=\toks57
-\MPscratchCnt=\count534
+\nofMPsegments=\count530
+\nofMParguments=\count531
+\everyMPshowfont=\toks56
+\MPscratchCnt=\count532
 \MPscratchDim=\dimen357
-\MPnumerator=\count535
-\makeMPintoPDFobject=\count536
-\everyMPtoPDFconversion=\toks58
+\MPnumerator=\count533
+\makeMPintoPDFobject=\count534
+\everyMPtoPDFconversion=\toks57
 )
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
 ase.sty
@@ -1546,7 +1443,7 @@ Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 )
 Package caption Info: supertabular package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 162.
+Package hyperref Info: Link coloring OFF on input line 159.
 
 (main.out) (main.out)
 \@outlinefile=\write8
@@ -1566,550 +1463,604 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
  (main.bbl)
-Package biblatex Info: Reference section=0 on input line 162.
-Package biblatex Info: Reference segment=0 on input line 162.
-\c@lstlisting=\count537
- (chapters/abstract.tex [1
+Package biblatex Info: Reference section=0 on input line 159.
+Package biblatex Info: Reference segment=0 on input line 159.
+\c@lstlisting=\count535
+ (chapters/dedicace.tex) [1
 
 \openout5 = `main.ist'.
 
 
-{C:/Users/21355/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/2135
-5/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}] [2
+
+{C:/Users/21355/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (chapters/re
+merciements.tex) [2
+
+
+]
+(chapters/abstract.tex [3
+
+
+] [4
 
 ]) (main.toc
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 2
-.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 12.
 
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
-File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
-.
-
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
-File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-2.
-
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
-File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-2.
-
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
-File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 2.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 2.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 2.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 2.
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 2.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 12.
+
 
 (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-[3]
-Package babel Info: 'french' activates 'french' shorthands.
-(babel)             Reported on input line 69.
- [4] [5])
+[5
+
+] [6] [7])
 \tf@toc=\write9
 \openout9 = `main.toc'.
 
- [6] (main.lof
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 6
-.
+ [8]
+No file main.acr.
+[9
 
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-))
+] (chapters/abbreviations.tex
+ignored: Infinite glue shrinkage found in box being split [
+10
+
+
+]) [11] (main.lof
+Overfull \hbox (12.70306pt too wide) in paragraph at lines 8--8
+ [][] [][]\T1/cmr/m/n/12 Architecture de ré-fé-rence du pro-to-cole [][]DDoS Op
+en Threat Si-gna-ling (DOTS)[] : 
+ []
+
+)
 \tf@lof=\write10
 \openout10 = `main.lof'.
 
- [7]
-[8] (main.lot)
+ [12
+
+
+] (main.lot)
 \tf@lot=\write11
 \openout11 = `main.lot'.
 
- [9{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.e
-nc}{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}]
+ [13
 
-No file main.acr.
-[10] (chapters/introduction.tex [1
+
+] (chapters/introduction.tex
+Overfull \hbox (14.06143pt too wide) in paragraph at lines 11--12
+\T1/cmr/m/n/12 prin-ci-pales me-naces af-fec-tant la dis-po-ni-bi-lité des ser-
+vices nu-mé-riques. Ces at-taques consistent
+ []
+
+[1
+
 
 ] [2] [3]) (chapters/chapter1.tex [4]
 Chapitre 1.
-
-Overfull \hbox (15.3964pt too wide) in paragraph at lines 16--16
-[]\T1/lmr/bx/n/17.28 Les at-taques par déni de ser-vice dis-tri-bué (DDoS) 
- []
-
 [5
 
 ] [6]
 Underfull \hbox (badness 10000) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 3--4 (Ré-
+[]|\T1/cmr/m/n/10.95 Épuiser les tables
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 3--4 (Ré-
+[]|\T1/cmr/m/n/10.95 Épuiser les res-
  []
 
 
-Underfull \hbox (badness 7433) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Saturer la bande
+Underfull \hbox (badness 6859) in paragraph at lines 133--133
+[]|\T1/cmr/m/n/10.95 Très élevé (Gbps--
  []
 
 
-Underfull \hbox (badness 3039) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Épuiser les tables
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Épuiser les res-
- []
-
-
-Underfull \hbox (badness 1708) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Très élevé (Gbps--
- []
-
-
-Underfull \hbox (badness 1024) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Élevée (tra-fic lé-gi-
+Underfull \hbox (badness 5008) in paragraph at lines 133--133
+[]|\T1/cmr/m/n/10.95 Élevée (tra-fic lé-gi-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Filtrage, \T1/lmr/m/it/10.95 black-ho-
+[]|\T1/cmr/m/n/10.95 Analyse com-por-te-
+ []
+
+[7]
+Overfull \hbox (12.8246pt too wide) in paragraph at lines 152--153
+[]\T1/cmr/bx/n/12 Détection : \T1/cmr/m/n/12 une ano-ma-lie dans le tra-fic dé-
+clenche une alerte (ana-lyse Net-Flow/sFlow,
  []
 
 
-Underfull \hbox (badness 1931) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 SYN co-okies, \T1/lmr/m/it/10.95 rate
- []
-
-
-Underfull \hbox (badness 2426) in paragraph at lines 133--133
-[]|\T1/lmr/m/n/10.95 Analyse com-por-te-
- []
-
-[7{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.en
-c}] [8]
-Overfull \hbox (16.48726pt too wide) in paragraph at lines 187--188
+Overfull \hbox (1.02043pt too wide) in paragraph at lines 187--188
  [][] 
  []
 
-[9] [10] [11]
+[8] [9] [10]
 Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/bx/n/10.95 Couches pro-té-
+[]|\T1/cmr/bx/n/10.95 Couches pro-té-
  []
 
 
-Underfull \hbox (badness 2096) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 348 Tbps (ré-seau
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 Always-on (au-to-
+Underfull \hbox (badness 7869) in paragraph at lines 367--367
+[]|\T1/cmr/m/n/10.95 348 Tbps (ré-seau
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 Élastique (in-fra
- []
-
-
-Underfull \hbox (badness 4013) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 Always-on + sur
+[]|\T1/cmr/m/n/10.95 Élastique (in-fra
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 Élastique (in-fra
+[]|\T1/cmr/m/n/10.95 Élastique (in-fra
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 Élastique (in-fra
+[]|\T1/cmr/m/n/10.95 Élastique (in-fra
+ []
+
+
+Underfull \hbox (badness 4739) in paragraph at lines 367--367
+[]|\T1/cmr/m/n/10.95 20+ Tbps (scrub-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 L7
+[]|\T1/cmr/m/n/10.95 On-demand (BGP
  []
 
-
-Underfull \hbox (badness 1675) in paragraph at lines 367--367
-[]|\T1/lmr/m/n/10.95 On-demand (BGP
- []
-
-[12]
-Overfull \hbox (5.25357pt too wide) in paragraph at lines 384--385
-\T1/lmr/m/n/12 poin-ter vers l'in-fra-struc-ture de mi-ti-ga-tion. Tech-nique u
-ti-li-sée par les CDN (Cloud-
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 414--414
+[]|\T1/cmr/bx/n/10.95 Avantage
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/bx/n/10.95 Avantage
- []
-
-
-Underfull \hbox (badness 1546) in paragraph at lines 414--414
-[]|\T1/lmr/bx/n/10.95 Limite prin-
+[]|\T1/cmr/m/n/10.95 Filtrage fin
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Filtrage fin
+[]|\T1/cmr/m/n/10.95 Distribution
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Coût, la-tence
+[]|\T1/cmr/m/n/10.95 Proximité,
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Distribution
+[]|\T1/cmr/m/n/10.95 Capacité mas-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Limitée
+\T1/cmr/m/n/10.95 sive, as-a-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Proximité,
+[]|\T1/cmr/m/n/10.95 Dépendance,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Goulot
+Underfull \hbox (badness 2846) in paragraph at lines 414--414
+\T1/cmr/m/n/10.95 coût, confi-den-
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 414--414
-\T1/lmr/m/n/10.95 d'étran-gle-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Supprime le
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Capacité
- []
-
-
-Underfull \hbox (badness 3803) in paragraph at lines 414--414
-\T1/lmr/m/n/10.95 mas-sive, as-a-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 414--414
-[]|\T1/lmr/m/n/10.95 Dépendance,
- []
-
-[13] [14] [15] [16] [17]) (chapters/chapter2.tex [18]
+[12] [13] [14]) (chapters/chapter2.tex [15]
 Chapitre 2.
-
-Overfull \hbox (3.84152pt too wide) in paragraph at lines 29--30
-[][][][]\T1/lmr/m/n/12 DOTS[][] re-pose sur une ar-chi-tec-ture client--serveur
- asy-mé-trique com-pre-nant un \T1/lmr/bx/n/12 DOTS
- []
-
-[19
-
-]
-<figures/do.png, id=977, 513.92pt x 538.01pt>
+<figures/do.png, id=1005, 513.92pt x 538.01pt>
 File: figures/do.png Graphic file (type png)
 <use figures/do.png>
 Package pdftex.def Info: figures/do.png  used on input line 36.
-(pdftex.def)             Requested size: 189.56712pt x 198.45662pt.
+(pdftex.def)             Requested size: 195.68372pt x 204.85846pt.
+[16
 
-Underfull \hbox (badness 1194) in paragraph at lines 38--38
-\T1/lmr/m/n/12 le ca-nal de si-gna-li-sa-tion (CoAP/DTLS/UDP) et le ca-nal de d
-on-nées (RES-T-
+] [17 <./figures/do.png>]
+Overfull \hbox (3.03389pt too wide) in paragraph at lines 74--75
+[]\T1/cmr/m/n/12 Récupérer les \T1/cmr/bx/n/12 té-lé-mé-tries \T1/cmr/m/n/12 d'
+at-taque (RFC 9244) : bande pas-sante en-trante, nombre
  []
 
-[20 <./figures/do.png>]
-Overfull \hbox (3.56181pt too wide) in paragraph at lines 83--84
-[]\T1/lmr/bx/n/12 Modèle hié-rar-chique strict : [][][]\T1/lmr/m/n/12 DOTS[][] 
-est fon-da-men-ta-le-ment asy-mé-trique (client
+
+Overfull \hbox (8.96082pt too wide) in paragraph at lines 106--107
+[]\T1/cmr/bx/n/12 Vecteur d'at-taque : \T1/cmr/m/n/12 type iden-ti-fié (ex. : \
+T1/cmtt/m/n/12 DNS_AMPLIFICATION\T1/cmr/m/n/12 , \T1/cmtt/m/n/12 NTP_AMPLIFICAT
+ION\T1/cmr/m/n/12 ,
  []
 
-[21]
-Overfull \hbox (23.29553pt too wide) in paragraph at lines 106--107
-[]\T1/lmr/bx/n/12 Vecteur d'at-taque : \T1/lmr/m/n/12 type iden-ti-fié (ex. : \
-T1/lmtt/m/n/12 DNS_AMPLIFICATION\T1/lmr/m/n/12 , \T1/lmtt/m/n/12 NTP_AMPLIFICAT
-ION\T1/lmr/m/n/12 ,
+[18]
+Overfull \hbox (5.5862pt too wide) in paragraph at lines 120--121
+\T1/cmr/m/n/12 par-ti-ci-pant, ce mo-dule se connecte aux ou-tils de dé-tec-tio
+n exis-tants (Net-Flow/IPFIX
  []
 
-[22]
-<figures/clearing_house.png, id=1020, 1167.36125pt x 479.7925pt>
+<figures/clearing_house.png, id=1050, 1167.36125pt x 479.7925pt>
 File: figures/clearing_house.png Graphic file (type png)
 <use figures/clearing_house.png>
 Package pdftex.def Info: figures/clearing_house.png  used on input line 135.
-(pdftex.def)             Requested size: 441.01773pt x 181.26147pt.
+(pdftex.def)             Requested size: 455.24411pt x 187.10367pt.
 
-Overfull \hbox (27.5449pt too wide) in paragraph at lines 147--148
-[]\T1/lmr/bx/n/12 Partage pas-sif sans or-ches-tra-tion : \T1/lmr/m/n/12 Le sys
--tème se li-mite au par-tage d'\T1/lmr/bx/n/12 intelligence
+Overfull \hbox (13.20917pt too wide) in paragraph at lines 147--148
+[]\T1/cmr/bx/n/12 Partage pas-sif sans or-ches-tra-tion : \T1/cmr/m/n/12 Le sys
+-tème se li-mite au par-tage d'\T1/cmr/bx/n/12 intelligence
  []
 
-[23 <./figures/clearing_house.png>] [24]
-<figures/nawas.png, id=1043, 1309.89375pt x 498.36188pt>
+[19] [20 <./figures/clearing_house.png>]
+<figures/nawas.png, id=1073, 1309.89375pt x 498.36188pt>
 File: figures/nawas.png Graphic file (type png)
 <use figures/nawas.png>
 Package pdftex.def Info: figures/nawas.png  used on input line 186.
-(pdftex.def)             Requested size: 374.86775pt x 142.62015pt.
- [25 <./figures/nawas.png>] [26]
-<figures/defcom.png, id=1063, 612.03656pt x 576.65437pt>
+(pdftex.def)             Requested size: 386.96027pt x 147.2208pt.
+ [21 <./figures/nawas.png>]
+Overfull \hbox (3.43741pt too wide) in paragraph at lines 206--206
+[]\T1/cmr/bx/n/17.28 DefCOM --- \T1/cmr/bx/it/17.28 Dis-tri-bu-ted Co-ope-ra-ti
+ve Over-lay De-
+ []
+
+[22]
+<figures/defcom.png, id=1099, 612.03656pt x 576.65437pt>
 File: figures/defcom.png Graphic file (type png)
 <use figures/defcom.png>
 Package pdftex.def Info: figures/defcom.png  used on input line 257.
-(pdftex.def)             Requested size: 330.76329pt x 311.63509pt.
-
-[27] [28 <./figures/defcom.png>]
-Overfull \hbox (1.83513pt too wide) in paragraph at lines 276--277
-\T1/lmr/m/n/12 Aucun mé-ca-nisme de \T1/lmr/bx/n/12 ré-pu-ta-tion\T1/lmr/m/n/12
- , de \T1/lmr/bx/n/12 vé-ri-fi-ca-tion cryp-to-gra-phique des mes-
- []
-
-[29]) (chapters/chapter3.tex [30]
+(pdftex.def)             Requested size: 341.43307pt x 321.69238pt.
+ [23] [24 <./figures/defcom.png>]) (chapters/chapter3.tex [25]
 Chapitre 3.
-[31
+[26
 
 ]
-Overfull \hbox (4.54504pt too wide) in paragraph at lines 42--43
-[]\T1/lmr/bx/n/12 Traçabilité com-plète : \T1/lmr/m/n/12 chaque évé-ne-ment si-
-gni-fi-ca-tif (chan-ge-ment de confiance,
+Overfull \hbox (38.6546pt too wide) in paragraph at lines 57--58
+[]\T1/cmr/m/n/12 Le n÷ud vic-time ini-tie la sé-quence en \T1/cmr/bx/n/12 en-vo
+yant une re-quête d'aide \T1/cmr/m/n/12 (\T1/cmtt/m/n/12 POST /help/request\T1/
+cmr/m/n/12 ),
  []
 
 
-Overfull \hbox (0.1575pt too wide) in paragraph at lines 57--58
-\T1/lmr/m/n/12 peut alors \T1/lmr/bx/n/12 ac-cep-ter \T1/lmr/m/n/12 (\T1/lmtt/m
-/n/12 PUT /help/{id}/accept\T1/lmr/m/n/12 ) ou \T1/lmr/bx/n/12 re-je-ter \T1/lm
-r/m/n/12 (\T1/lmtt/m/n/12 PUT /help/{id}/reject\T1/lmr/m/n/12 )
+Overfull \hbox (5.06824pt too wide) in paragraph at lines 57--58
+\T1/cmtt/m/n/12 /help/{id}/accept\T1/cmr/m/n/12 ) ou \T1/cmr/bx/n/12 re-je-ter 
+\T1/cmr/m/n/12 (\T1/cmtt/m/n/12 PUT /help/{id}/reject\T1/cmr/m/n/12 ) la ses-si
+on ; l'ac-cep-ta-tion étend
  []
 
-[32]
-<figures/uc_mitigation_collaborative.png, id=1131, 807.015pt x 752.8125pt>
+<figures/uc_mitigation_collaborative.png, id=1146, 807.015pt x 752.8125pt>
 File: figures/uc_mitigation_collaborative.png Graphic file (type png)
 <use figures/uc_mitigation_collaborative.png>
 Package pdftex.def Info: figures/uc_mitigation_collaborative.png  used on input
  line 61.
-(pdftex.def)             Requested size: 441.01773pt x 411.39465pt.
- [33 <./figures/uc_mitigation_collaborative.png>]
-<figures/uc_moteur_confiance.png, id=1139, 928.46875pt x 858.20625pt>
+(pdftex.def)             Requested size: 455.24411pt x 424.6736pt.
+[27]
+<figures/uc_moteur_confiance.png, id=1160, 928.46875pt x 858.20625pt>
 File: figures/uc_moteur_confiance.png Graphic file (type png)
 <use figures/uc_moteur_confiance.png>
 Package pdftex.def Info: figures/uc_moteur_confiance.png  used on input line 76
 .
-(pdftex.def)             Requested size: 441.01773pt x 407.6522pt.
-
-Overfull \hbox (31.1505pt too wide) in paragraph at lines 93--94
-[]\T1/lmr/m/n/12 Le groupe \T1/lmr/bx/n/12 Sé-cu-rité \T1/lmr/m/n/12 couvre l'\
-T1/lmr/bx/n/12 obtention d'un to-ken JWT RS256 \T1/lmr/m/n/12 (\T1/lmtt/m/n/12 
-POST /auth/token\T1/lmr/m/n/12 ),
+(pdftex.def)             Requested size: 455.24411pt x 420.79974pt.
+ [28 <./figures/uc_mitigation_collaborative.png>] [29 <./figures/uc_moteur_conf
+iance.png>]
+Overfull \hbox (16.8126pt too wide) in paragraph at lines 93--94
+[]\T1/cmr/m/n/12 Le groupe \T1/cmr/bx/n/12 Sé-cu-rité \T1/cmr/m/n/12 couvre l'\
+T1/cmr/bx/n/12 obtention d'un to-ken JWT RS256 \T1/cmr/m/n/12 (\T1/cmtt/m/n/12 
+POST /auth/token\T1/cmr/m/n/12 ),
  []
 
-<figures/uc_role_pair.png, id=1141, 761.84625pt x 1030.85126pt>
+<figures/uc_role_pair.png, id=1173, 761.84625pt x 1030.85126pt>
 File: figures/uc_role_pair.png Graphic file (type png)
 <use figures/uc_role_pair.png>
 Package pdftex.def Info: figures/uc_role_pair.png  used on input line 97.
-(pdftex.def)             Requested size: 441.01773pt x 596.73016pt.
-[34{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.e
-nc}] [35 <./figures/uc_moteur_confiance.png>]
-Overfull \hbox (33.94235pt too wide) in paragraph at lines 154--155
-[]\T1/lmr/bx/n/12 Clôture : \T1/lmr/m/n/12 à la fin de l'at-taque, le n÷ud vic-
-time no-ti-fie la clô-ture (\T1/lmtt/m/n/12 POST /attack/over\T1/lmr/m/n/12 ),
+(pdftex.def)             Requested size: 455.24411pt x 615.98308pt.
+[30]
+Underfull \hbox (badness 10000) in paragraph at lines 121--121
+[]|\T1/cmr/bx/n/12 Acteurs pri-
  []
 
 
-LaTeX Warning: File `figures/ERD.png' not found on input line 171.
-
-
-! Package pdftex.def Error: File `figures/ERD.png' not found: using draft setti
-ng.
-
-See the pdftex.def package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.171 ...aphics[width=\textwidth]{figures/ERD.png}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-[36] [37 <./figures/uc_role_pair.png>]
-Overfull \hbox (67.59335pt too wide) in paragraph at lines 176--177
-\T1/lmr/m/n/12 to-rique des com-por-te-ments anor-maux), \T1/lmtt/m/n/12 HEARTB
-EAT_LOG \T1/lmr/m/n/12 (si-gnaux de pré-sence), \T1/lmtt/m/n/12 RECIPROCITY_LED
-GER
+Underfull \hbox (badness 10000) in paragraph at lines 123--123
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
  []
 
 
-Overfull \hbox (1.37703pt too wide) in paragraph at lines 176--177
-\T1/lmr/m/n/12 auto-relation \T1/lmtt/m/n/12 (0,1)--(0,N) \T1/lmr/m/n/12 pour l
-es mes-sages de ré-ponse). La table \T1/lmtt/m/n/12 PEER_CAPABILITIES
+Underfull \hbox (badness 10000) in paragraph at lines 127--127
+[]|\T1/cmr/bx/n/12 Enchaînement
  []
 
 
-Overfull \hbox (33.7806pt too wide) in paragraph at lines 178--179
-[]\T1/lmr/m/n/12 Le n÷ud lo-cal est dé-crit par \T1/lmtt/m/n/12 LOCAL_NODE_CONF
-IG\T1/lmr/m/n/12 , dont dé-pendent \T1/lmtt/m/n/12 SCRUBBING_CAPABILITY
+Underfull \hbox (badness 10000) in paragraph at lines 137--137
+[]|\T1/cmr/bx/n/12 Enchaînements
  []
 
-[38] [39] [40]
-<figures/class_diagram.png, id=1189, 2316.655pt x 2428.07124pt>
-File: figures/class_diagram.png Graphic file (type png)
-<use figures/class_diagram.png>
-Package pdftex.def Info: figures/class_diagram.png  used on input line 230.
-(pdftex.def)             Requested size: 441.01773pt x 462.22752pt.
- [41 <./figures/class_diagram.png>]
-Overfull \hbox (10.01483pt too wide) in paragraph at lines 241--242
-\T1/lmr/m/n/12 tient le solde bi-la-té-ral (cré-dits don-nés, re-çus, ba-lance 
-nette). \T1/lmtt/m/n/12 RECIPROCITY_TRANSACTIONS
+[31 <./figures/uc_role_pair.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 158--158
+[]|\T1/cmr/bx/n/12 Acteurs pri-
  []
 
-[42] [43] [44] [45] [46]
-Overfull \hbox (50.59898pt too wide) in paragraph at lines 474--475
-[]\T1/lmr/m/n/12 L'empreinte du cer-ti-fi-cat de chaque pair est sto-ckée dans 
-le champ \T1/lmtt/m/n/12 certificate_fingerprint
+
+Underfull \hbox (badness 10000) in paragraph at lines 160--160
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
  []
 
-[47] [48] [49]) (chapters/chapter4.tex [50]
+
+Underfull \hbox (badness 10000) in paragraph at lines 164--164
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 173--173
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 174.
+[32]
+Underfull \hbox (badness 10000) in paragraph at lines 194--194
+[]|\T1/cmr/bx/n/12 Acteurs pri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 200--200
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 3758) in paragraph at lines 201--205
+\T1/cmr/bx/n/12 1. \T1/cmr/m/n/12 Le pair en-voie \T1/cmtt/m/n/12 POST /api/v1/
+heartbeat \T1/cmr/m/n/12 avec :
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 208--208
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+[33]
+Underfull \hbox (badness 10000) in paragraph at lines 229--229
+[]|\T1/cmr/bx/n/12 Acteurs pri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 231--231
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 235--235
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 236--244
+\T1/cmr/bx/n/12 1. \T1/cmr/m/n/12 Le n÷ud vic-time ap-pelle \T1/cmtt/m/n/12 POS
+T
+ []
+
+
+Underfull \hbox (badness 2418) in paragraph at lines 236--244
+\T1/cmtt/m/n/12 /api/v1/trust/select-peers \T1/cmr/m/n/12 pour dé-clen-cher la 
+sé-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 247--247
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+[34]
+Underfull \hbox (badness 10000) in paragraph at lines 268--268
+[]|\T1/cmr/bx/n/12 Acteurs pri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 270--270
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 274--274
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 3514) in paragraph at lines 275--283
+[]|\T1/cmr/m/n/12 Ce CU dé-marre dès ré-cep-tion d'une re-quête \T1/cmtt/m/n/12
+ POST
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 275--283
+\T1/cmr/bx/n/12 1. \T1/cmr/m/n/12 Le pair consulte sa ca-pa-cité dis-po-nible
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 275--283
+\T1/cmr/m/n/12 (\T1/cmtt/m/n/12 reported_available_gbps\T1/cmr/m/n/12 ) et sa c
+harge ac-tuelle
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 286--286
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+[35]
+Underfull \hbox (badness 10000) in paragraph at lines 307--307
+[]|\T1/cmr/bx/n/12 Acteurs pri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 313--313
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 1496) in paragraph at lines 314--320
+\T1/cmr/bx/n/12 2. \T1/cmr/m/n/12 Le sys-tème cal-cule le ra-tio de sa-tis-fac-
+tion $\OML/cmm/m/it/12 S \OT1/cmr/m/n/12 =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 323--323
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+[36]
+Underfull \hbox (badness 10000) in paragraph at lines 344--344
+[]|\T1/cmr/bx/n/12 Acteurs pri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 346--346
+[]|\T1/cmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 350--350
+[]|\T1/cmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 366--366
+[]|\T1/cmr/bx/n/12 Enchaînements
+ []
+
+[37] [38]
+Overfull \hbox (19.60481pt too wide) in paragraph at lines 432--433
+[]\T1/cmr/bx/n/12 Clôture : \T1/cmr/m/n/12 à la fin de l'at-taque, le n÷ud vic-
+time no-ti-fie la clô-ture (\T1/cmtt/m/n/12 POST /attack/over\T1/cmr/m/n/12 ),
+ []
+
+[39]
+<figures/ERD.png, id=1228, 2315.65125pt x 2428.07124pt>
+File: figures/ERD.png Graphic file (type png)
+<use figures/ERD.png>
+Package pdftex.def Info: figures/ERD.png  used on input line 449.
+(pdftex.def)             Requested size: 455.24411pt x 477.34364pt.
+ [40 <./figures/ERD.png>]
+Overfull \hbox (19.44278pt too wide) in paragraph at lines 456--457
+[]\T1/cmr/m/n/12 Le n÷ud lo-cal est dé-crit par \T1/cmtt/m/n/12 LOCAL_NODE_CONF
+IG\T1/cmr/m/n/12 , dont dé-pendent \T1/cmtt/m/n/12 SCRUBBING_CAPABILITY
+ []
+
+[41] [42] [43] [44]
+<figures/activity_diagram.png, id=1277, 1064.97874pt x 1105.12875pt>
+File: figures/activity_diagram.png Graphic file (type png)
+<use figures/activity_diagram.png>
+Package pdftex.def Info: figures/activity_diagram.png  used on input line 657.
+(pdftex.def)             Requested size: 455.24411pt x 472.39687pt.
+ [45] [46 <./figures/activity_diagram.png>]
+Overfull \hbox (36.25812pt too wide) in paragraph at lines 677--678
+[]\T1/cmr/m/n/12 L'empreinte du cer-ti-fi-cat de chaque pair est sto-ckée dans 
+le champ \T1/cmtt/m/n/12 certificate_fingerprint
+ []
+
+[47
+
+] [48]) (chapters/chapter4.tex [49]
 Chapitre 4.
 
-Underfull \hbox (badness 5726) in paragraph at lines 43--43
-[]|\T1/lmr/m/n/10.95 Modèle évé-ne-men-tiel adapté aux I/O
+Underfull \hbox (badness 1087) in paragraph at lines 43--43
+[]|\T1/cmr/m/n/10.95 ACID, sup-port na-tif UUID, types ENUM,
  []
 
 
-Underfull \hbox (badness 1137) in paragraph at lines 43--43
-\T1/lmr/m/n/10.95 concur-rentes (heart-beats, re-quêtes inter-
+Underfull \hbox (badness 1490) in paragraph at lines 43--43
+[]|\T1/cmr/m/n/10.95 Déploiement re-pro-duc-tible ; iso-la-tion ré-seau
  []
 
-
-Overfull \hbox (22.38884pt too wide) in paragraph at lines 71--72
- [][] 
- []
-
-[51
+[50
 
 ]
-Overfull \hbox (8.74095pt too wide) in paragraph at lines 164--165
-[]\T1/lmr/m/n/12 Le mo-dule \T1/lmtt/m/n/12 utils/trustManager.js \T1/lmr/m/n/1
-2 im-plé-mente la for-mule Peer-Trust (Équa-tion [][]3.1[][]).
+<figures/shieldnet_directory_tree.png, id=1334, 1445.4pt x 843.15pt>
+File: figures/shieldnet_directory_tree.png Graphic file (type png)
+<use figures/shieldnet_directory_tree.png>
+Package pdftex.def Info: figures/shieldnet_directory_tree.png  used on input li
+ne 52.
+(pdftex.def)             Requested size: 455.24411pt x 265.55505pt.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 66.
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 67.
+ [51 <./figures/shieldnet_directory_tree.png>]
+Overfull \hbox (33.94464pt too wide) in paragraph at lines 134--135
+[]\T1/cmr/m/n/12 La fonc-tion \T1/cmtt/m/n/12 recalculateAndSave(peer_id) \T1/c
+mr/m/n/12 re-cal-cule le score, le per-siste dans \T1/cmtt/m/n/12 TRUST_SCORES
  []
 
 [52]
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 166.
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 167.
- [53]
-Overfull \hbox (58.04561pt too wide) in paragraph at lines 238--239
-[]\T1/lmr/m/n/12 Si le ni-veau de-vient BAN-NED : le pair est mar-qué \T1/lmtt/
-m/n/12 status = BANNED \T1/lmr/m/n/12 et \T1/lmtt/m/n/12 membership_status
+Overfull \hbox (43.70375pt too wide) in paragraph at lines 138--139
+[]\T1/cmr/m/n/12 Si le ni-veau de-vient BAN-NED : le pair est mar-qué \T1/cmtt/
+m/n/12 status = BANNED \T1/cmr/m/n/12 et \T1/cmtt/m/n/12 membership_status
  []
 
 
-Overfull \hbox (79.87578pt too wide) in paragraph at lines 239--240
-[]\T1/lmr/m/n/12 Tout chan-ge-ment de ni-veau dé-clenche une en-trée dans \T1/l
-mtt/m/n/12 AUDIT_LOG \T1/lmr/m/n/12 (type \T1/lmtt/m/n/12 TRUST_LEVEL_CHANGED\T
-1/lmr/m/n/12 ). 
+Overfull \hbox (65.52893pt too wide) in paragraph at lines 139--140
+[]\T1/cmr/m/n/12 Tout chan-ge-ment de ni-veau dé-clenche une en-trée dans \T1/c
+mtt/m/n/12 AUDIT_LOG \T1/cmr/m/n/12 (type \T1/cmtt/m/n/12 TRUST_LEVEL_CHANGED\T
+1/cmr/m/n/12 ). 
  []
 
 
-Overfull \hbox (37.67549pt too wide) in paragraph at lines 240--241
-[]\T1/lmr/m/n/12 Un ban-nis-se-ment au-to-ma-tique gé-nère une en-trée de sé-vé
--rité CRI-TI-CAL (\T1/lmtt/m/n/12 PEER_BANNED\T1/lmr/m/n/12 ). 
+Overfull \hbox (23.3406pt too wide) in paragraph at lines 140--141
+[]\T1/cmr/m/n/12 Un ban-nis-se-ment au-to-ma-tique gé-nère une en-trée de sé-vé
+-rité CRI-TI-CAL (\T1/cmtt/m/n/12 PEER_BANNED\T1/cmr/m/n/12 ). 
  []
 
 
-Overfull \hbox (42.99573pt too wide) in paragraph at lines 249--250
-[]\T1/lmr/m/n/12 Le mo-dule \T1/lmtt/m/n/12 utils/peerSelector.js \T1/lmr/m/n/1
-2 im-plé-mente l'Équa-tion [][]3.2[][]. La fonc-tion \T1/lmtt/m/n/12 selectPeer
-s()
+Overfull \hbox (28.5969pt too wide) in paragraph at lines 149--150
+[]\T1/cmr/m/n/12 Le mo-dule \T1/cmtt/m/n/12 utils/peerSelector.js \T1/cmr/m/n/1
+2 im-plé-mente l'Équa-tion []3.2[]. La fonc-tion \T1/cmtt/m/n/12 selectPeers()
  []
 
-[54] [55] [56]
-Overfull \hbox (0.17531pt too wide) in paragraph at lines 353--354
-[]\T1/lmr/bx/n/12 Tests fonc-tion-nels \T1/lmr/m/n/12 (\T1/lmtt/m/n/12 tests/fu
-nctional_test.py\T1/lmr/m/n/12 ) : vé-ri-fi-ca-tion de chaque end-
- []
-
-
-Overfull \hbox (55.45488pt too wide) in paragraph at lines 370--388
+[53] [54] [55] [56] [57] [58]
+Overfull \hbox (38.50087pt too wide) in paragraph at lines 463--481
  [][] 
  []
 
-[57] [58]) (chapters/conclusion.tex [59] [60
+<figures/shieldnet_scalability.png, id=1634, 1076.3412pt x 356.532pt>
+File: figures/shieldnet_scalability.png Graphic file (type png)
+<use figures/shieldnet_scalability.png>
+Package pdftex.def Info: figures/shieldnet_scalability.png  used on input line 
+485.
+(pdftex.def)             Requested size: 455.24411pt x 150.7978pt.
+) (chapters/conclusion.tex) [59 <./figures/shieldnet_scalability.png>] [60]
+[61
 
-]
-Overfull \hbox (23.87419pt too wide) in paragraph at lines 52--53
-[]\T1/lmr/bx/n/12 Intégration avec les pro-to-coles exis-tants : \T1/lmr/m/n/12
- une pas-se-relle vers [][][]DOTS[][] (RFC 8782)
- []
-
-[61]) [62] [63
-
-]
-Overfull \hbox (9.39993pt too wide) in paragraph at lines 194--194
-[]\T1/lmr/m/n/12 C. []\T1/lmr/m/sc/12 Rossow[]\T1/lmr/m/n/12 , ^^S   Am-pli-fi-
-ca-tion Hell : Re-vi-si-ting Net-work Pro-to-cols for DDoS Abuse, ^^T
- []
-
-
-Overfull \hbox (17.06207pt too wide) in paragraph at lines 194--194
-\T1/lmr/m/n/12 mai 2026, 2024. adresse : [][]$\T1/lmtt/m/n/12 https : / / storm
-wall . network / resources / instructions /
- []
-
-[64] (chapters/appendix.tex) [65] (main.aux)
+] (chapters/appendix.tex) [62] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 055087D809AB5E98DA91585355CC795F;26165.
+(rerunfilecheck)             Checksum: F3529488345BE6278800E26F170EF422;27055.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 46552 strings out of 467867
- 925595 string characters out of 5418335
- 2082279 words of memory out of 5000000
- 74299 multiletter control sequences out of 15000+600000
- 723299 words of font info for 97 fonts, out of 8000000 for 9000
+ 45590 strings out of 467867
+ 906897 string characters out of 5418335
+ 2076791 words of memory out of 5000000
+ 73227 multiletter control sequences out of 15000+600000
+ 652357 words of font info for 95 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,16n,94p,2489b,2358s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,16n,94p,2524b,2305s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 pdfTeX warning (dest): name{glo:tls} has been referenced but does not exist, re
-placed by a fixed one
-
-
-pdfTeX warning (dest): name{glo:rtt} has been referenced but does not exist, re
 placed by a fixed one
 
 
@@ -2212,33 +2163,43 @@ placed by a fixed one
 pdfTeX warning (dest): name{glo:ddos} has been referenced but does not exist, r
 eplaced by a fixed one
 
-<C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb>
-<C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb>
-<C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb
-><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pf
-b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pf
-b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pf
-b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pf
-b><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi8.pfb
-><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb>
-<C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><
-C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:
-/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/U
-sers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/U
-sers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/U
-sers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri8.pfb><C:/Us
-ers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Us
-ers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb><C:/Use
-rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Use
-rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Use
-rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb><C:/Use
-rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt8.pfb><C:/User
-s/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtti10.pfb><C:/Use
-rs/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam
-10.pfb>
-Output written on main.pdf (75 pages, 2811283 bytes).
+ <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecit10
+00.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\
+ectt1000.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/d
+pi600\ecrm0600.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappe
+n/ec/dpi600\ecbi1728.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/j
+knappen/ec/dpi600\ectt0800.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/lj
+four/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts
+/pk/ljfour/jknappen/ec/dpi600\ecti0800.pk> <C:\Users\21355\AppData\Local\MiKTeX
+\fonts/pk/ljfour/jknappen/ec/dpi600\ecbi1440.pk> <C:\Users\21355\AppData\Local\
+MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\21355\AppData\
+Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1200.pk> <C:\Users\21355\Ap
+pData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\21
+355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Us
+ers\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> 
+<C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbi120
+0.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\e
+cbx1440.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dp
+i600\ecbx1728.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen
+/ec/dpi600\ectt1200.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljfour/jk
+nappen/ec/dpi600\ecrm1200.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/pk/ljf
+our/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\21355\AppData\Local\MiKTeX\fonts/
+pk/ljfour/jknappen/ec/dpi600\ecti1200.pk> <C:\Users\21355\AppData\Local\MiKTeX\
+fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk><C:/Users/21355/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/21355/AppData
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/2135
+5/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/U
+sers/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.p
+fb><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
+/cmr10.pfb><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmr12.pfb><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmr8.pfb><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmsy10.pfb><C:/Users/21355/AppData/Local/Programs/MiKTe
+X/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/21355/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on main.pdf (75 pages, 3039263 bytes).
 PDF statistics:
- 1709 PDF objects out of 1728 (max. 8388607)
- 459 named destinations out of 1000 (max. 500000)
- 1021 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 2926 PDF objects out of 2984 (max. 8388607)
+ 598 named destinations out of 1000 (max. 500000)
+ 1076 words of extra memory for PDF output out of 10000 (max. 10000000)
 
