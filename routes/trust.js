@@ -113,7 +113,7 @@ router.get("/trust", async (req, res) => {
         {
           model: Peer,
           as: "peer",
-          attributes: ["peer_id", "peer_name", "organization_name", "tier", "status"],
+          attributes: ["peer_id", "peer_name", "organization_name", "status"],
         },
       ],
       order: [["overall_score", "DESC"]],

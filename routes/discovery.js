@@ -26,12 +26,11 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [peer_name, organization_name, organization_type, tier, country_code, api_endpoint_url, public_key]
+ *             required: [peer_name, organization_name, organization_type, country_code, api_endpoint_url, public_key]
  *             properties:
  *               peer_name: { type: string }
  *               organization_name: { type: string }
  *               organization_type: { type: string, enum: [UNIVERSITY, ISP, DATACENTER, PME, GOVERNMENT, RESEARCH] }
- *               tier: { type: string, enum: [T1, T2, T3] }
  *               country_code: { type: string }
  *               api_endpoint_url: { type: string }
  *               public_key: { type: string }
@@ -359,9 +358,6 @@ router.post("/peers/discover", async (req, res) => {
       membership_status: { [Op.ne]: "EXPELLED" },
     };
 
-    if (req.body.preferred_tier) {
-      where.tier = req.body.preferred_tier;
-    }
 
     const peers = await Peer.findAll({
       where,

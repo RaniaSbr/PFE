@@ -10,7 +10,7 @@
  *   2. Générer un JWT RS256 (60s) pour s'authentifier
  *   3. Envoyer POST /heartbeat à chaque pair via HTTPS + certificat client
  *   4. Mesurer le round-trip time (RTT)
- *   5. Marquer les pairs injoignables comme UNREACHABLE après N échecs
+ *   5. Marquer les pairs injoignables comme INACTIVE après N échecs
  */
 
 "use strict";
@@ -75,9 +75,9 @@ async function incrementMissed(peer) {
   const update = { consecutive_missed_heartbeats: missed };
 
   if (missed >= MAX_MISSED && peer.status !== "BANNED") {
-    update.status = "UNREACHABLE";
+    update.status = "INACTIVE";
     console.warn(
-      `[Heartbeat] ${peer.peer_name} marqué UNREACHABLE (${missed} échecs consécutifs)`
+      `[Heartbeat] ${peer.peer_name} marqué INACTIVE (${missed} échecs consécutifs)`
     );
   }
 
@@ -105,7 +105,7 @@ async function sendHeartbeats() {
 
     // Récupérer tous les pairs actifs ou injoignables (pas les bannis)
     const peers = await Peer.findAll({
-      where: { status: ["ACTIVE", "UNREACHABLE", "PROBATION"] },
+      where: { status: ["ACTIVE", "INACTIVE", "MAINTENANCE"] },
     });
 
     if (peers.length === 0) {

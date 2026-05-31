@@ -17,7 +17,7 @@ const fs  = require("fs");
 const jwt = require("jsonwebtoken");
 const { Peer, LocalNodeConfig } = require("../models");
 
-const JWT_EXPIRES_IN = "60s";
+const JWT_EXPIRES_IN = "15m";
 
 // ─── Clés du nœud local ──────────────────────────────────────────────────────
 

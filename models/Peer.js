@@ -1,6 +1,5 @@
 const {
   MEMBERSHIP_STATUSES,
-  NODE_TIERS,
   ORGANIZATION_TYPES,
   PEER_STATUSES,
   RELATIONSHIP_TYPES,
@@ -25,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       organization_type: {
         type: DataTypes.ENUM(...ORGANIZATION_TYPES),
-        allowNull: false,
-      },
-      tier: {
-        type: DataTypes.ENUM(...NODE_TIERS),
         allowNull: false,
       },
       country_code: {

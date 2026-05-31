@@ -70,12 +70,8 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       target_protocol: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(16),
         allowNull: true,
-        validate: {
-          min: 0,
-          max: 255,
-        },
       },
       coalition_helped: {
         type: DataTypes.BOOLEAN,

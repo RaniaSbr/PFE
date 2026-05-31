@@ -23,7 +23,7 @@ const { generateToken } = require("../middleware/auth");
 const router = express.Router();
 
 const JWT_SECRET    = process.env.JWT_SECRET    || "shieldnet-secret-key-2025";
-const JWT_EXPIRES_IN = "60s";
+const JWT_EXPIRES_IN = "15m";
 
 /**
  * @swagger

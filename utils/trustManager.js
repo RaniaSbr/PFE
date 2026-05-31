@@ -77,10 +77,12 @@ async function fetchCrFromPeer(peer, localNodeId) {
 async function fetchCrFromNetwork(localNodeId, excludePeerId) {
   const { Op } = require("sequelize");
 
+  const { Op: Op2 } = require("sequelize");
   const peers = await Peer.findAll({
     where: {
       status: ["ACTIVE", "INACTIVE"],
-      peer_id: { [Op.ne]: excludePeerId },
+      peer_id:           { [Op.ne]:   excludePeerId },
+      api_endpoint_url:  { [Op2.like]: "%localhost%" },
     },
     attributes: ["peer_id", "api_endpoint_url"],
   });

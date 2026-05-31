@@ -37,7 +37,6 @@ const router = express.Router();
  *               node_name: { type: string }
  *               organization_name: { type: string }
  *               organization_type: { type: string, enum: [UNIVERSITY, ISP, DATACENTER, PME, GOVERNMENT, RESEARCH] }
- *               tier: { type: string, enum: [T1, T2, T3] }
  *               country_code: { type: string }
  *               api_endpoint_url: { type: string }
  *               public_key: { type: string }
@@ -134,7 +133,6 @@ router.post("/simulation/node/init", async (req, res) => {
       "node_name",
       "organization_name",
       "organization_type",
-      "tier",
       "country_code",
       "api_endpoint_url",
       "public_key",
@@ -209,17 +207,19 @@ router.post("/simulation/attack/detect", async (req, res) => {
 
     // Le volume n'est pas connu à la détection — seule la congestion est observable.
     // actual_volume_gbps sera renseigné par les pairs à la fin de la mitigation.
+    const peakVolume = Number(req.body.volume_gbps || 0);
+    const overflow   = Math.max(0, peakVolume - available);
     const attack = await Attack.create({
       detected_at: req.body.timestamp || new Date(),
       status: "DETECTED",
-      peak_volume_gbps: 0,             // inconnu à la détection — sera mis à jour via /attack/over
+      peak_volume_gbps:            peakVolume,
       local_capacity_at_detection: available,
-      overflow_volume_gbps: 0,        // inconnu à la détection
-      target_ip_range: req.body.target_ip_range ?? null,
-      target_service: req.body.target_service ?? null,
-      target_port: req.body.target_port ?? null,
-      target_protocol: req.body.target_protocol ?? null,
-      severity: "LOW",                 // calculée a posteriori dans /attack/over
+      overflow_volume_gbps:        overflow,
+      target_ip_range:   req.body.target_ip_range   ?? null,
+      target_service:    req.body.target_service    ?? null,
+      target_port:       req.body.target_port       ?? null,
+      target_protocol:   req.body.target_protocol   ?? null,
+      severity:          req.body.severity           || "LOW",
       coalition_helped: false,
     });
 
@@ -320,7 +320,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
     // S = actual_gbps / accepted_gbps    D = poids de sévérité (LOW=0.25 … CRITICAL=1.0)
     const SEVERITY_D = { LOW: 0.25, MEDIUM: 0.50, HIGH: 0.75, CRITICAL: 1.00 };
     const ORG_TYPES  = ["UNIVERSITY","ISP","DATACENTER","PME","GOVERNMENT","STARTUP","NGO","OTHER"];
-    const TIERS      = ["T1","T1","T2","T2","T3"];
+    const CAPS       = [5, 10, 15, 20];
     const TUNNELS    = ["GRE","VXLAN","IPSEC","BGP_FLOWSPEC"];
 
     const PROFILES = [
@@ -382,8 +382,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
     for (const profile of PROFILES) {
       for (let i = 0; i < profile.count; i++, idx++) {
         const orgType = ORG_TYPES[(idx - 1) % ORG_TYPES.length];
-        const tier    = TIERS[(idx - 1) % TIERS.length];
-        const cap     = tier === "T1" ? 20 : tier === "T2" ? 10 : 5;
+        const cap     = CAPS[(idx - 1) % CAPS.length];
 
         // Légère variation de S pour que chaque pair ait un score distinct
         const jitter = (Math.random() - 0.5) * 0.04;
@@ -392,7 +391,6 @@ router.post("/simulation/seed-peers", async (req, res) => {
           peer_name:                  `sim-${String(idx).padStart(3,"0")}`,
           organization_name:          `${orgType} Sim-${idx}`,
           organization_type:          orgType,
-          tier,
           country_code:               "DZ",
           api_endpoint_url:           `https://sim-${idx}.shieldnet.local/api/v1`,
           public_key:                 `SIMKEY_${idx}`,

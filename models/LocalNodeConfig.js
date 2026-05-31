@@ -1,4 +1,4 @@
-const { ORGANIZATION_TYPES, NODE_TIERS, LOCAL_NODE_STATUSES } = require("./enums");
+const { ORGANIZATION_TYPES, LOCAL_NODE_STATUSES } = require("./enums");
 
 module.exports = (sequelize, DataTypes) => {
   const LocalNodeConfig = sequelize.define(
@@ -19,10 +19,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       organization_type: {
         type: DataTypes.ENUM(...ORGANIZATION_TYPES),
-        allowNull: false,
-      },
-      tier: {
-        type: DataTypes.ENUM(...NODE_TIERS),
         allowNull: false,
       },
       country_code: {

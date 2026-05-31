@@ -586,6 +586,9 @@ router.post("/attack/over", async (req, res) => {
         }
 
         const volume = session.actual_volume_gbps || session.accepted_volume_gbps || 0;
+
+        await session.update({ credits_exchanged: volume });
+
         const [ledger] = await ReciprocityLedger.findOrCreate({
           where: { peer_id: session.helping_peer_id },
           defaults: { peer_id: session.helping_peer_id, credits_received: 0, credits_given: 0, balance: 0 },
