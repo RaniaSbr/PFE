@@ -377,12 +377,7 @@ où $S_i = \min(1,\ \textit{réel}_i / \textit{accepté}_i)$ et $D_i$ est le poi
 
 \subsubsection{Topologie de la coalition}
 
-La solution proposée adopte une topologie \gls{p2p} \textbf{Pair-à-Pair}~: chaque nœud maintient localement un registre des pairs connus, sans table de hachage distribuée (\gls{dht}) ni super-pair central. Ce choix a été retenu pour trois raisons~:
-\begin{itemize}
-    \item \textbf{Hétérogénéité des participants~:} universités, PME, opérateurs et datacenters ont des capacités très variables~; une topologie plate évite de favoriser arbitrairement certains nœuds.
-    \item \textbf{Résilience~:} la disparition d'un pair n'affecte pas la connectivité des autres.
-    \item \textbf{Simplicité de déploiement~:} chaque nœud n'a besoin que d'une adresse d'entrée initiale pour rejoindre la coalition.
-\end{itemize}
+La solution proposée adopte une topologie \gls{p2p} \textbf{Pair-à-Pair}~: chaque nœud maintient localement un registre des pairs connus, sans table de hachage distribuée (\gls{dht}) ni super-pair central. Ce choix a été retenu pour trois raisons complémentaires. L'\textbf{hétérogénéité des participants} d'abord~: universités, PME, opérateurs et datacenters ont des capacités très variables, et une topologie plate évite de favoriser arbitrairement certains nœuds. La \textbf{résilience} ensuite~: la disparition d'un pair n'affecte pas la connectivité des autres. La \textbf{simplicité de déploiement} enfin~: chaque nœud n'a besoin que d'une adresse d'entrée initiale pour rejoindre la coalition.
 
 
 \begin{figure}[htbp]
@@ -440,20 +435,15 @@ Le flux d'une session d'aide suit quatre phases distinctes~:
 \subsection{Modèle de données}
 \label{sec:modele_donnees}
 
-\subsubsection{Schéma entité-association}
+Le système adopte un \textbf{modèle de données relationnel}, implémenté via PostgreSQL. Ce choix est motivé par les contraintes propres au système~: les relations entre pairs, sessions d'aide, scores de confiance et transactions de réciprocité forment un graphe d'entités fortement interdépendantes, pour lequel l'intégrité référentielle garantie par les clés étrangères et les contraintes de cascade est indispensable. Les types natifs de PostgreSQL (\texttt{UUID}, \texttt{ENUM}, \texttt{FLOAT}) et le support des transactions ACID assurent de plus la cohérence des scores calculés lors des clôtures de sessions concurrentes. Un modèle non-relationnel (document ou clé-valeur) aurait rendu ces garanties plus difficiles à maintenir sans mécanismes compensatoires complexes.
 
-La base de données PostgreSQL du système comporte quatorze tables. La Figure~\ref{fig:erd} en présente le schéma entité-association principal~; le Tableau~\ref{tab:tables} décrit le rôle de chaque entité.
+\subsubsection{Modèle de données}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/ERD.png}
-\caption{Schéma entité-association de la base de données locale d'un nœud.}
-\label{fig:erd}
-\end{figure}
+La base de données PostgreSQL locale de chaque nœud comporte quatorze tables, réparties en trois groupes fonctionnels~: la configuration du nœud local, la gestion des pairs et de la confiance, et les sessions de mitigation. Ces trois groupes sont représentés par les diagrammes de classes présentés en fin de section~; le Tableau~\ref{tab:tables} décrit le rôle de chaque entité.
 
-Le schéma entité-association (Figure~\ref{fig:erd}) représente les quatorze tables de la base de données PostgreSQL locale de chaque nœud. L'entité centrale est \texttt{PEERS}, qui référence les pairs connus de la coalition~; elle est reliée par des suppressions en cascade à \texttt{TRUST\_SCORES} (un score agrégé par pair, mis à jour en place), \texttt{TRUST\_VIOLATIONS} (historique des comportements anormaux), \texttt{HEARTBEAT\_LOG} (signaux de présence), \texttt{RECIPROCITY\_LEDGER} (solde crédit/débit unique par pair) et \texttt{MESSAGE\_LOG} (journal des échanges, avec une auto-relation \texttt{(0,1)--(0,N)} pour les messages de réponse). La table \texttt{PEER\_CAPABILITIES} complète ce profil pair avec les capacités déclarées et vérifiées.
+L'entité centrale est \texttt{PEERS}, qui référence les pairs connus de la coalition. Elle est reliée par des suppressions en cascade à \texttt{TRUST\_SCORES} (un score agrégé par pair, mis à jour en place), \texttt{TRUST\_VIOLATIONS} (historique des comportements anormaux), \texttt{HEARTBEAT\_LOG} (signaux de présence), \texttt{RECIPROCITY\_LEDGER} (solde crédit/débit unique par pair) et \texttt{MESSAGE\_LOG} (journal des échanges, avec une auto-relation pour les messages de réponse). La table \texttt{PEER\_CAPABILITIES} complète ce profil avec les capacités déclarées et vérifiées du pair.
 
-Le nœud local est décrit par \texttt{LOCAL\_NODE\_CONFIG}, dont dépendent \texttt{SCRUBBING\_CAPABILITY} (capacités techniques, relation \texttt{(1,1)--(0,1)}) et \texttt{POLICY\_CONFIG} (paramètres de politique locale~: confiance minimale, partage de capacité, intervalle de heartbeat). Les sessions de mitigation sont modélisées par \texttt{HELP\_SESSIONS}, reliée à \texttt{ATTACKS} par une clé étrangère en cascade et au pair assistant (\texttt{PEERS}) avec une contrainte \texttt{RESTRICT}. Chaque session peut générer plusieurs transactions dans \texttt{RECIPROCITY\_TRANSACTIONS}, liée à la fois à \texttt{HELP\_SESSIONS} (SET NULL) et à \texttt{PEERS} (CASCADE). Enfin, \texttt{AUDIT\_LOG} est une table autonome sans clé étrangère~: ses colonnes \texttt{actor} et \texttt{target} sont de type texte libre, ce qui garantit la persistance des entrées même après suppression d'un pair.
+Le nœud local est décrit par \texttt{LOCAL\_NODE\_CONFIG}, dont dépendent \texttt{SCRUBBING\_CAPABILITY} (capacités techniques de filtrage) et \texttt{POLICY\_CONFIG} (paramètres de politique locale~: confiance minimale, partage de capacité, intervalle de heartbeat). Les sessions de mitigation sont modélisées par \texttt{HELP\_SESSIONS}, reliée à \texttt{ATTACKS} par une clé étrangère en cascade et au pair assistant via une contrainte \texttt{RESTRICT}. Chaque session peut générer plusieurs transactions dans \texttt{RECIPROCITY\_TRANSACTIONS}, liée à la fois à \texttt{HELP\_SESSIONS} (SET NULL) et à \texttt{PEERS} (CASCADE). Enfin, \texttt{AUDIT\_LOG} est une table autonome sans clé étrangère~: ses colonnes \texttt{actor} et \texttt{target} sont de type texte libre, garantissant la persistance des entrées même après suppression d'un pair.
 
 \begin{table}[htbp]
 \centering
@@ -506,12 +496,7 @@ Toutes les clés primaires sont des \gls{uuid} version 4, générés localement 
 
 \subsubsection{Motivation du choix de PeerTrust}
 
-La littérature propose plusieurs modèles de réputation pour les systèmes \gls{p2p}. Le modèle PeerTrust \cite{xiong2004peertrust} a été retenu pour trois raisons~:
-\begin{itemize}
-    \item Il intègre nativement un \textbf{facteur contextuel} $D(u,i)$ permettant de pondérer les transactions selon leur importance (ici, la sévérité de l'attaque).
-    \item Il inclut un mécanisme de \textbf{crédibilité} $Cr(p)$ qui réduit l'influence des évaluateurs peu fiables.
-    \item Sa formule est suffisamment simple pour être recalculée en temps réel après chaque session.
-\end{itemize}
+La littérature propose plusieurs modèles de réputation pour les systèmes \gls{p2p}. Le modèle PeerTrust \cite{xiong2004peertrust} a été retenu pour trois raisons~: il intègre nativement un \textbf{facteur contextuel} $D(u,i)$ permettant de pondérer les transactions selon leur importance (ici, la sévérité de l'attaque)~; il inclut un mécanisme de \textbf{crédibilité} $Cr(p)$ qui réduit l'influence des évaluateurs peu fiables~; et sa formule est suffisamment simple pour être recalculée en temps réel après chaque session.
 
 \subsubsection{Formule T(u) et ses paramètres}
 
@@ -523,15 +508,7 @@ T(u) = \frac{\displaystyle\sum_{i=1}^{n} S(u,i) \cdot Cr_i \cdot D(u,i)}
             {\displaystyle\sum_{i=1}^{n} Cr_i \cdot D(u,i)}
 \end{equation}
 
-où $n$ est le nombre de sessions complétées, et les trois paramètres sont définis comme suit~:
-
-\begin{itemize}
-    \item $S(u,i) = \min\!\left(1,\;\dfrac{V_{\text{réel}}}{V_{\text{accepté}}}\right)$ est la \textbf{satisfaction normalisée} de la session $i$~: rapport entre le volume effectivement filtré et le volume promis par le pair. $S \in [0,1]$.
-
-    \item $Cr_i$ est la \textbf{crédibilité historique} du nœud local au moment de la session $i$~: moyenne des scores que les pairs actifs du réseau attribuent au nœud local, capturée à la clôture de la session et persistée dans le champ \texttt{cr\_value} de la table \texttt{HELP\_SESSIONS}. Cette approche garantit que chaque session est évaluée avec la crédibilité en vigueur à l'époque des faits.
-
-    \item $D(u,i)$ est le \textbf{facteur contextuel} lié à la sévérité de l'attaque de la session $i$. Les valeurs retenues sont présentées dans le Tableau~\ref{tab:severity}.
-\end{itemize}
+où $n$ est le nombre de sessions complétées. Le paramètre $S(u,i) = \min\!\left(1,\;\dfrac{V_{\text{réel}}}{V_{\text{accepté}}}\right)$ représente la \textbf{satisfaction normalisée} de la session $i$~: rapport entre le volume effectivement filtré et le volume promis par le pair, avec $S \in [0,1]$. Le paramètre $Cr_i$ est la \textbf{crédibilité historique} du nœud local au moment de la session $i$~: moyenne des scores que les pairs actifs du réseau attribuent au nœud local, capturée à la clôture de la session et persistée dans le champ \texttt{cr\_value} de la table \texttt{HELP\_SESSIONS}. Cette approche garantit que chaque session est évaluée avec la crédibilité en vigueur à l'époque des faits. Enfin, $D(u,i)$ est le \textbf{facteur contextuel} lié à la sévérité de l'attaque de la session $i$, dont les valeurs retenues sont présentées dans le Tableau~\ref{tab:severity}.
 
 \begin{table}[htbp]
 \centering
@@ -551,13 +528,7 @@ CRITICAL & 1.00 & $> 100$~Gbps \\
 \end{tabular}
 \end{table}
 
-Les seuils de volume et les valeurs de $D(u,i)$ constituent des \textbf{choix de conception} motivés par deux considérations~:
-
-\begin{itemize}
-    \item \textbf{Seuils de volume~:} les bornes $< 1$~Gbps, 1--9~Gbps, 10--99~Gbps et $\geq 100$~Gbps sont directement inspirées de la classification par sévérité utilisée par StormWall \cite{stormwall2024severity}, fournisseur industriel de protection \gls{ddos}, qui définit quatre niveaux (\textit{Low}, \textit{Medium}, \textit{High}, \textit{Very High}) sur ces mêmes bornes volumétriques. Le niveau \textit{Very High} de StormWall est renommé CRITICAL dans notre système pour refléter son caractère maximal.
-
-    \item \textbf{Valeurs de $D(u,i)$~:} elles forment une \textbf{progression arithmétique régulière de pas 0,25}, ancrée à $D = 1{,}00$ pour CRITICAL (poids maximal) et à $D = 0{,}25$ pour LOW (poids minimal non nul, afin que même les sessions mineures contribuent au score). Ce choix s'inscrit dans le cadre de Xiong et Liu \cite{xiong2004peertrust}, qui laissent explicitement la définition de $D(u,i)$ à l'appréciation du concepteur, en précisant qu'il doit refléter l'importance relative de la transaction dans son contexte opérationnel.
-\end{itemize}
+Les seuils de volume et les valeurs de $D(u,i)$ constituent des \textbf{choix de conception} motivés par deux considérations. Les \textbf{seuils de volume} retenus ($< 1$~Gbps, 1--9~Gbps, 10--99~Gbps et $\geq 100$~Gbps) sont directement inspirés de la classification par sévérité utilisée par StormWall \cite{stormwall2024severity}, fournisseur industriel de protection \gls{ddos}, qui définit quatre niveaux (\textit{Low}, \textit{Medium}, \textit{High}, \textit{Very High}) sur ces mêmes bornes volumétriques~; le niveau \textit{Very High} de StormWall est renommé CRITICAL dans ce système pour refléter son caractère maximal. Les \textbf{valeurs de $D(u,i)$} forment quant à elles une progression arithmétique régulière de pas 0,25, ancrée à $D = 1{,}00$ pour CRITICAL (poids maximal) et à $D = 0{,}25$ pour LOW (poids minimal non nul, afin que même les sessions mineures contribuent au score). Ce choix s'inscrit dans le cadre de Xiong et Liu \cite{xiong2004peertrust}, qui laissent explicitement la définition de $D(u,i)$ à l'appréciation du concepteur, en précisant qu'il doit refléter l'importance relative de la transaction dans son contexte opérationnel.
 
 La normalisation par $\sum Cr_i \cdot D(u,i)$ garantit $T(u) \in [0,1]$ sans troncature artificielle, en s'inspirant du schéma de normalisation de l'équation~3 de Xiong et Liu \cite{xiong2004peertrust}. Une session avec une sévérité CRITICAL a un poids quatre fois supérieur à une session LOW~: aider lors d'une attaque massive est valorisé davantage.
 
@@ -596,13 +567,7 @@ Lorsqu'un nœud doit sélectionner des pairs assistants, il calcule pour chaque 
 \text{Score}(p) = w_C \cdot C_p + w_L \cdot L_p' + w_T \cdot T_p + w_R \cdot R_p
 \end{equation}
 
-Les quatre critères sont définis comme suit~:
-\begin{itemize}
-    \item $C_p = \dfrac{\text{cap\_disp}(p)}{\max_j(\text{cap\_disp}(j))}$~: capacité disponible normalisée.
-    \item $L_p' = 1 - \dfrac{L_p - L_{\min}}{L_{\max} - L_{\min}}$~: latence normalisée inversée (une latence faible donne un score élevé).
-    \item $T_p$~: score de confiance PeerTrust du pair $p$.
-    \item $R_p = \dfrac{\text{crédits\_reçus}}{\text{crédits\_reçus} + \text{crédits\_donnés} + \varepsilon}$~: réciprocité bilatérale~; $\varepsilon = 10^{-6}$ pour éviter la division par zéro.
-\end{itemize}
+Les quatre critères sont définis comme suit~: $C_p = \dfrac{\text{cap\_disp}(p)}{\max_j(\text{cap\_disp}(j))}$ est la capacité disponible normalisée~; $L_p' = 1 - \dfrac{L_p - L_{\min}}{L_{\max} - L_{\min}}$ est la latence normalisée inversée (une latence faible donne un score élevé)~; $T_p$ est le score de confiance PeerTrust du pair $p$~; et $R_p = \dfrac{\text{crédits\_reçus}}{\text{crédits\_reçus} + \text{crédits\_donnés} + \varepsilon}$ est la réciprocité bilatérale, avec $\varepsilon = 10^{-6}$ pour éviter la division par zéro.
 
 \subsubsection{Pondération AHP}
 
@@ -668,23 +633,13 @@ La Figure~\ref{fig:activite} illustre le flux d'activités d'une session de miti
 
 Toutes les communications entre nœuds transitent sur \gls{tls} 1.3 \cite{rfc8446tls13} en mode \textbf{mutuel} (\gls{mtls})~: le serveur présente son certificat au client, mais le client doit également présenter le sien. Ce mécanisme garantit que seuls les nœuds disposant d'un certificat valide (délivré lors de l'enregistrement dans la coalition) peuvent établir une connexion.
 
-Chaque nœud stocke~:
-\begin{itemize}
-    \item \texttt{certs/node.key}~: clé privée RSA du nœud local.
-    \item \texttt{certs/node.crt}~: certificat auto-signé du nœud local.
-\end{itemize}
+Chaque nœud stocke sa clé privée RSA (\texttt{certs/node.key}) et son certificat auto-signé (\texttt{certs/node.crt}).
 
 L'empreinte du certificat de chaque pair est stockée dans le champ \texttt{certificate\_fingerprint} de la table \texttt{PEERS} pour vérification lors de la connexion.
 
 \subsubsection{Authentification applicative~: JWT RS256}
 
-Au-dessus de mTLS, chaque requête \gls{api} porte un \gls{jwt} \cite{rfc7519jwt} signé en RS256 \cite{rfc7518jwa}. L'architecture asymétrique choisie présente des avantages importants par rapport à un HMAC partagé~:
-
-\begin{itemize}
-    \item \textbf{Pas de secret partagé~:} chaque nœud signe avec sa clé privée~; les autres vérifient avec sa clé publique (stockée dans \texttt{PEERS.public\_key}). La compromission d'un nœud n'expose pas les autres.
-    \item \textbf{Non-répudiation~:} la signature RS256 lie le token à l'identité du nœud émetteur.
-    \item \textbf{Courte durée de vie~:} les tokens expirent après 60 secondes, limitant la fenêtre d'exploitation en cas d'interception.
-\end{itemize}
+Au-dessus de mTLS, chaque requête \gls{api} porte un \gls{jwt} \cite{rfc7519jwt} signé en RS256 \cite{rfc7518jwa}. L'architecture asymétrique choisie présente des avantages importants par rapport à un HMAC partagé. Elle garantit d'abord l'\textbf{absence de secret partagé}~: chaque nœud signe avec sa propre clé privée, les autres vérifiant avec sa clé publique (stockée dans \texttt{PEERS.public\_key}), de sorte que la compromission d'un nœud n'expose pas les autres. Elle assure également la \textbf{non-répudiation}~: la signature RS256 lie le token à l'identité du nœud émetteur. Enfin, les tokens ont une \textbf{courte durée de vie} de 60 secondes, ce qui limite la fenêtre d'exploitation en cas d'interception.
 
 Le \textit{payload} du \gls{jwt} contient~: \texttt{iss} (identifiant du nœud émetteur), \texttt{node\_id} et \texttt{exp} (timestamp d'expiration). Le middleware d'authentification valide séquentiellement~: décodage sans vérification pour extraire \texttt{iss}, récupération de la clé publique correspondante, puis vérification cryptographique de la signature.
 
@@ -696,11 +651,7 @@ Le \textit{payload} du \gls{jwt} contient~: \texttt{iss} (identifiant du nœud �
 
 Le style architectural retenu pour l'interface de communication inter-nœuds est \textbf{REST} (\textit{Representational State Transfer}), introduit par Fielding \cite{fielding2000rest}. Ce choix repose sur trois propriétés fondamentales qui correspondent aux contraintes du système~:
 
-\begin{itemize}
-    \item \textbf{Sans état (\textit{stateless})~:} chaque requête HTTP porte toutes les informations nécessaires à son traitement (identité du nœud dans le JWT, paramètres dans le corps). Aucun nœud serveur ne maintient de session active côté client, ce qui est cohérent avec la topologie P2P décentralisée où aucun nœud n'a de rôle privilégié.
-    \item \textbf{Interface uniforme~:} les ressources métier (pairs, attaques, sessions d'aide, scores de confiance) sont identifiées par des URI stables et manipulées via les verbes HTTP sémantiques — \texttt{POST} pour créer, \texttt{PUT} pour mettre à jour, \texttt{GET} pour consulter — ce qui rend l'API intuitive et interopérable entre nœuds hétérogènes.
-    \item \textbf{Interopérabilité~:} le transport HTTP/JSON est supporté nativement par tous les langages et environnements, facilitant l'intégration future de nœuds développés sur des plateformes différentes.
-\end{itemize}
+Son caractère \textbf{sans état (\textit{stateless})} d'abord~: chaque requête HTTP porte toutes les informations nécessaires à son traitement (identité du nœud dans le JWT, paramètres dans le corps), sans qu'aucun nœud serveur ne maintienne de session active côté client, ce qui est cohérent avec la topologie P2P décentralisée où aucun nœud n'a de rôle privilégié. Son \textbf{interface uniforme} ensuite~: les ressources métier (pairs, attaques, sessions d'aide, scores de confiance) sont identifiées par des URI stables et manipulées via les verbes HTTP sémantiques (\texttt{POST} pour créer, \texttt{PUT} pour mettre à jour, \texttt{GET} pour consulter), ce qui rend l'API intuitive et interopérable entre nœuds hétérogènes. Son \textbf{interopérabilité} enfin~: le transport HTTP/JSON est supporté nativement par tous les langages et environnements, facilitant l'intégration future de nœuds développés sur des plateformes différentes.
 
 Les alternatives GraphQL (sur-ingénierie pour des requêtes fixes), gRPC (couplage fort via Protocol Buffers) et WebSocket (connexion persistante inadaptée à des échanges ponctuels) ont été écartées car leurs avantages ne compensent pas la complexité qu'elles introduiraient dans un contexte P2P à faible coordination.
 

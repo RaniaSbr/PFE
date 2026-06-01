@@ -42,14 +42,7 @@ Dans ce cadre, l'idée d'une défense collaborative et distribuée --- reposant 
 
 Les attaques \gls{ddos} atteignent aujourd'hui des volumes et une complexité qui dépassent les capacités de mitigation d'infrastructures isolées. Face à cette menace, les organisations utilisent principalement des solutions centralisées~: \textit{scrubbing centers} ou services cloud de mitigation.
 
-Ces architectures présentent plusieurs limitations techniques~:
-\begin{itemize}
-    \item dépendance aux prestataires externes~;
-    \item coûts élevés pour les PME et collectivités~;
-    \item latence due à la redirection du trafic~;
-    \item points uniques de défaillance (\gls{spof})~;
-    \item absence de mutualisation des ressources de défense.
-\end{itemize}
+Ces architectures présentent plusieurs limitations techniques~: dépendance aux prestataires externes, coûts élevés pour les PME et collectivités, latence due à la redirection du trafic, points uniques de défaillance (\gls{spof}) et absence de mutualisation des ressources de défense.
 
 De plus, la défense reste individuelle. Les mécanismes actuels se limitent au partage d'informations, sans mutualisation opérationnelle des capacités de mitigation ni coordination des contre-mesures. En cas d'attaque distribuée touchant plusieurs cibles simultanément, chaque organisation réagit de son côté, ce qui réduit l'efficacité globale.
 
@@ -86,23 +79,9 @@ Pour atteindre cet objectif, le travail consiste à~:
 \section*{Périmètre du travail}
 \addcontentsline{toc}{section}{Périmètre du travail}
 
-Ce travail se concentre exclusivement sur les \textbf{échanges inter-nœuds} au sein d'une coalition de défense déjà constituée. Plus précisément, le périmètre couvre~:
+Ce travail se concentre exclusivement sur les \textbf{échanges inter-nœuds} au sein d'une coalition de défense déjà constituée. Plus précisément, le périmètre couvre la conception et l'implémentation de l'\textbf{API REST} exposée par chaque nœud pour la coordination collaborative, le \textbf{protocole d'aide} entre nœuds (signalement d'attaque, demande et acceptation de sessions de mitigation, redirection de trafic, clôture), le \textbf{mécanisme de confiance} fondé sur PeerTrust (calcul des scores, détection des violations, exclusion automatique) ainsi que la \textbf{sécurisation des communications} inter-nœuds par mTLS et JWT RS256.
 
-\begin{itemize}
-    \item la conception et l'implémentation de l'\textbf{API REST} exposée par chaque nœud pour la coordination collaborative~;
-    \item le \textbf{protocole d'aide} entre nœuds~: signalement d'attaque, demande et acceptation de sessions de mitigation, redirection de trafic, clôture~;
-    \item le \textbf{mécanisme de confiance} fondé sur PeerTrust~: calcul des scores, détection des violations, exclusion automatique~;
-    \item la \textbf{sécurisation des communications} inter-nœuds par mTLS et JWT RS256.
-\end{itemize}
-
-Les aspects suivants sont explicitement \textbf{hors périmètre}~:
-
-\begin{itemize}
-    \item la formation du réseau P2P (bootstrap, découverte initiale des pairs, protocoles de routage overlay)~;
-    \item la détection technique des attaques DDoS au niveau réseau (analyse de trafic, deep packet inspection)~;
-    \item le filtrage et le nettoyage effectif du trafic (scrubbing) au sein de chaque nœud~;
-    \item la gestion des tunnels de redirection au niveau infrastructure (configuration GRE, BGP Flowspec).
-\end{itemize}
+Les aspects suivants sont explicitement \textbf{hors périmètre}~: la formation du réseau P2P (bootstrap, découverte initiale des pairs, protocoles de routage overlay), la détection technique des attaques DDoS au niveau réseau (analyse de trafic, deep packet inspection), le filtrage et le nettoyage effectif du trafic (scrubbing) au sein de chaque nœud, ainsi que la gestion des tunnels de redirection au niveau infrastructure (configuration GRE, BGP Flowspec).
 
 % -------------------------------------------------------
 % Organisation du rapport
@@ -111,20 +90,6 @@ Les aspects suivants sont explicitement \textbf{hors périmètre}~:
 \section*{Organisation du rapport}
 \addcontentsline{toc}{section}{Organisation du rapport}
 
-Le présent mémoire est structuré en quatre chapitres~:
-
-\begin{itemize}
-    \item \textbf{Chapitre~1~: Contexte et concepts fondamentaux.}
-    Ce chapitre présente les fondements théoriques des attaques \gls{ddos}, la taxonomie des vecteurs d'attaque et les mécanismes de mitigation existants (\textit{scrubbing centers}, CDN, pare-feu, RTBH, services cloud), ainsi que les principes des architectures pair-à-pair applicables à la coordination inter-n\oe{}uds.
-
-    \item \textbf{Chapitre~2~: État de l'art.}
-    Ce chapitre analyse les principales approches collaboratives et distribuées de défense contre les attaques \gls{ddos}~: le protocole de signalisation \gls{dots}, la DDoS Clearing House, la mutualisation opérationnelle NaWas/NBIP et l'overlay coopératif DefCOM. Une synthèse comparative identifie les lacunes motivant la contribution de ce mémoire.
-
-    \item \textbf{Chapitre~3~: Conception et Architecture du système.}
-    Ce chapitre décrit les décisions de conception du système~: topologie \gls{p2p} de la coalition, modèle de données, mécanisme de confiance fondé sur PeerTrust, algorithme de sélection des pairs par \gls{wsm} avec pondération \gls{ahp}, protocoles de sécurité mTLS et JWT RS256, et interface \gls{api} \gls{rest}.
-
-    \item \textbf{Chapitre~4~: Implémentation et Évaluation.}
-    Ce chapitre présente la réalisation concrète du prototype~: pile technologique, implémentation du gestionnaire de confiance et du sélecteur de pairs, configuration de la sécurité, et résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
-\end{itemize}
+Le présent mémoire est structuré en quatre chapitres. \textbf{Le premier chapitre} présente les fondements théoriques des attaques \gls{ddos}, la taxonomie des vecteurs d'attaque et les mécanismes de mitigation existants (\textit{scrubbing centers}, CDN, pare-feu, RTBH, services cloud), ainsi que les principes des architectures pair-à-pair applicables à la coordination inter-n\oe{}uds. \textbf{Le deuxième chapitre} analyse les principales approches collaboratives et distribuées de défense contre les attaques \gls{ddos}~: le protocole de signalisation \gls{dots}, la DDoS Clearing House, la mutualisation opérationnelle NaWas/NBIP et l'overlay coopératif DefCOM~; une synthèse comparative identifie les lacunes motivant la contribution de ce mémoire. \textbf{Le troisième chapitre} décrit les décisions de conception du système~: topologie \gls{p2p} de la coalition, modèle de données, mécanisme de confiance fondé sur PeerTrust, algorithme de sélection des pairs par \gls{wsm} avec pondération \gls{ahp}, protocoles de sécurité mTLS et JWT RS256, et interface \gls{api} \gls{rest}. \textbf{Le quatrième chapitre} présente la réalisation concrète du prototype~: pile technologique, implémentation du gestionnaire de confiance et du sélecteur de pairs, configuration de la sécurité, et résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
 
 Enfin, une \textbf{conclusion générale} synthétise les contributions du travail et propose des perspectives d'évolution.

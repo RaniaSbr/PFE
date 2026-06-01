@@ -24,21 +24,21 @@
 \contentsline {subsubsection}{\numberline {1.2.3.2}Attaques sur les protocoles réseau}{6}{subsubsection.1.2.3.2}%
 \contentsline {subsubsection}{\numberline {1.2.3.3}Attaques applicatives (couche~7)}{7}{subsubsection.1.2.3.3}%
 \contentsline {subsection}{\numberline {1.2.4}Impact et données statistiques}{7}{subsection.1.2.4}%
-\contentsline {section}{\numberline {1.3}Infrastructure de mitigation DDoS}{8}{section.1.3}%
+\contentsline {section}{\numberline {1.3}Infrastructure de mitigation DDoS}{7}{section.1.3}%
 \contentsline {subsection}{\numberline {1.3.1}Les \textit {scrubbing centers}~: définition et rôle}{8}{subsection.1.3.1}%
 \contentsline {subsection}{\numberline {1.3.2}Les réseaux de diffusion de contenu (CDN) comme bouclier anti-DDoS}{8}{subsection.1.3.2}%
 \contentsline {subsection}{\numberline {1.3.3}Les pare-feu et systèmes de prévention d'intrusion (IPS)}{9}{subsection.1.3.3}%
 \contentsline {subsubsection}{\numberline {1.3.3.1}Pare-feu traditionnels et nouvelle génération (NGFW)}{9}{subsubsection.1.3.3.1}%
-\contentsline {subsubsection}{\numberline {1.3.3.2}Systèmes de prévention d'intrusion (IPS)}{10}{subsubsection.1.3.3.2}%
+\contentsline {subsubsection}{\numberline {1.3.3.2}Systèmes de prévention d'intrusion (IPS)}{9}{subsubsection.1.3.3.2}%
 \contentsline {subsection}{\numberline {1.3.4}Le \textit {blackholing} et le RTBH (\textit {Remote Triggered Black Hole})}{10}{subsection.1.3.4}%
-\contentsline {subsection}{\numberline {1.3.5}Les services de mitigation cloud (\textit {Cloud-based DDoS Protection})}{11}{subsection.1.3.5}%
-\contentsline {subsection}{\numberline {1.3.6}Techniques de redirection du trafic}{12}{subsection.1.3.6}%
+\contentsline {subsection}{\numberline {1.3.5}Les services de mitigation cloud (\textit {Cloud-based DDoS Protection})}{10}{subsection.1.3.5}%
+\contentsline {subsection}{\numberline {1.3.6}Techniques de redirection du trafic}{11}{subsection.1.3.6}%
 \contentsline {subsection}{\numberline {1.3.7}Synthèse et comparaison des infrastructures de mitigation}{12}{subsection.1.3.7}%
-\contentsline {subsection}{\numberline {1.3.8}Limites des approches centralisées}{13}{subsection.1.3.8}%
+\contentsline {subsection}{\numberline {1.3.8}Limites des approches centralisées}{12}{subsection.1.3.8}%
 \contentsline {section}{\numberline {1.4}Architecture pair-à-pair pour la coordination inter-n\oe {}uds}{13}{section.1.4}%
 \contentsline {subsection}{\numberline {1.4.1}Définition et pertinence du modèle pair-à-pair}{13}{subsection.1.4.1}%
-\contentsline {subsection}{\numberline {1.4.2}Topologies et protocoles P2P applicables à la mitigation}{14}{subsection.1.4.2}%
-\contentsline {subsection}{\numberline {1.4.3}Défis du P2P appliqué à la sécurité réseau}{15}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.2}Topologies et protocoles P2P applicables à la mitigation}{13}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}Défis du P2P appliqué à la sécurité réseau}{14}{subsection.1.4.3}%
 \contentsline {section}{\numberline {1.5}Conclusion}{15}{section.1.5}%
 \contentsline {chapter}{\numberline {2}Étude bibliographique}{16}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Introduction}{16}{section.2.1}%
@@ -53,7 +53,7 @@
 \contentsline {subsection}{\numberline {2.3.2}Architecture et fonctionnement}{18}{subsection.2.3.2}%
 \contentsline {subsubsection}{\numberline {2.3.2.1}Le \textit {DDoS Fingerprint}~: structure et contenu}{18}{subsubsection.2.3.2.1}%
 \contentsline {subsubsection}{\numberline {2.3.2.2}Architecture logicielle}{19}{subsubsection.2.3.2.2}%
-\contentsline {subsection}{\numberline {2.3.3}Limites identifiées}{19}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.3}Limites identifiées}{20}{subsection.2.3.3}%
 \contentsline {section}{\numberline {2.4}NaWas / NBIP --- Centre national de \textit {scrubbing} mutualisé}{20}{section.2.4}%
 \contentsline {subsection}{\numberline {2.4.1}Contexte et architecture}{20}{subsection.2.4.1}%
 \contentsline {subsubsection}{\numberline {2.4.1.1}Mécanisme de redirection BGP}{20}{subsubsection.2.4.1.1}%
@@ -64,64 +64,70 @@
 \contentsline {subsubsection}{\numberline {2.5.1.2}Mécanisme de \textit {Rate Limiting} coopératif}{22}{subsubsection.2.5.1.2}%
 \contentsline {subsubsection}{\numberline {2.5.1.3}Protocole de communication overlay}{23}{subsubsection.2.5.1.3}%
 \contentsline {subsection}{\numberline {2.5.2}Limites identifiées}{23}{subsection.2.5.2}%
-\contentsline {section}{\numberline {2.6}Synthèse comparative}{25}{section.2.6}%
-\contentsline {section}{\numberline {2.7}Conclusion}{25}{section.2.7}%
-\contentsline {chapter}{\numberline {3}Conception et Architecture du système}{26}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Introduction}{26}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Conception préliminaire}{26}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Périmètre du système}{26}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Objectifs et exigences du système}{27}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Diagrammes de cas d'utilisation}{27}{subsection.3.2.3}%
-\contentsline {subsubsection}{\numberline {3.2.3.1}Protocole de mitigation collaborative}{27}{subsubsection.3.2.3.1}%
-\contentsline {subsubsection}{\numberline {3.2.3.2}Moteur de confiance PeerTrust}{28}{subsubsection.3.2.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.3.3}Rôle du nœud pair dans la coalition}{29}{subsubsection.3.2.3.3}%
-\contentsline {subsection}{\numberline {3.2.4}Documentation des cas d'utilisation}{32}{subsection.3.2.4}%
-\contentsline {subsection}{\numberline {3.2.5}Architecture générale}{39}{subsection.3.2.5}%
-\contentsline {subsubsection}{\numberline {3.2.5.1}Topologie de la coalition}{39}{subsubsection.3.2.5.1}%
-\contentsline {subsubsection}{\numberline {3.2.5.2}Cycle de vie d'une session de mitigation}{39}{subsubsection.3.2.5.2}%
-\contentsline {section}{\numberline {3.3}Conception technique détaillée}{40}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Modèle de données}{40}{subsection.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.1.1}Schéma entité-association}{40}{subsubsection.3.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.3.1.2}Identifiants et intégrité référentielle}{41}{subsubsection.3.3.1.2}%
-\contentsline {subsection}{\numberline {3.3.2}Modèle de confiance~: PeerTrust adapté}{41}{subsection.3.3.2}%
-\contentsline {subsubsection}{\numberline {3.3.2.1}Motivation du choix de PeerTrust}{41}{subsubsection.3.3.2.1}%
-\contentsline {subsubsection}{\numberline {3.3.2.2}Formule T(u) et ses paramètres}{41}{subsubsection.3.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.3.2.3}Niveaux de confiance}{43}{subsubsection.3.3.2.3}%
-\contentsline {subsection}{\numberline {3.3.3}Algorithme de sélection des pairs~: WSM}{43}{subsection.3.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.3.1}Critères de sélection}{43}{subsubsection.3.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.3.2}Pondération AHP}{44}{subsubsection.3.3.3.2}%
-\contentsline {subsubsection}{\numberline {3.3.3.3}Répartition proportionnelle du flux}{44}{subsubsection.3.3.3.3}%
-\contentsline {subsection}{\numberline {3.3.4}Diagramme d'activités~: session de mitigation}{45}{subsection.3.3.4}%
-\contentsline {subsection}{\numberline {3.3.5}Mécanismes de sécurité}{47}{subsection.3.3.5}%
-\contentsline {subsubsection}{\numberline {3.3.5.1}Transport sécurisé~: mTLS}{47}{subsubsection.3.3.5.1}%
-\contentsline {subsubsection}{\numberline {3.3.5.2}Authentification applicative~: JWT RS256}{47}{subsubsection.3.3.5.2}%
-\contentsline {subsection}{\numberline {3.3.6}Interface API REST}{47}{subsection.3.3.6}%
-\contentsline {subsubsection}{\numberline {3.3.6.1}Style architectural}{47}{subsubsection.3.3.6.1}%
-\contentsline {subsubsection}{\numberline {3.3.6.2}Endpoints}{48}{subsubsection.3.3.6.2}%
-\contentsline {section}{\numberline {3.4}Conclusion}{48}{section.3.4}%
-\contentsline {chapter}{\numberline {4}Implémentation et Évaluation}{50}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Introduction}{50}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Environnement technique}{50}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Pile technologique}{50}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Structure du projet}{51}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Implémentation du gestionnaire de confiance}{51}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Calcul de T(u) avec Cr historique}{51}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Capture de la crédibilité à la clôture}{52}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Persistance et sanctions automatiques}{53}{subsection.4.3.3}%
-\contentsline {section}{\numberline {4.4}Implémentation de la sélection des pairs}{53}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Calcul du score WSM}{53}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Plan de répartition proportionnelle}{53}{subsection.4.4.2}%
-\contentsline {section}{\numberline {4.5}Mécanismes de sécurité}{54}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}JWT RS256~: génération et vérification}{54}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}mTLS~: configuration côté serveur}{54}{subsection.4.5.2}%
-\contentsline {section}{\numberline {4.6}Protocole de communication inter-nœuds}{55}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Authentification}{55}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}Heartbeat}{55}{subsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.6.3}Détection d'une attaque}{56}{subsection.4.6.3}%
-\contentsline {subsection}{\numberline {4.6.4}Demande et réponse d'aide}{56}{subsection.4.6.4}%
-\contentsline {subsection}{\numberline {4.6.5}Redirection du trafic et clôture}{57}{subsection.4.6.5}%
-\contentsline {section}{\numberline {4.7}Tests et évaluation}{58}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}Protocole de test}{58}{subsection.4.7.1}%
-\contentsline {subsection}{\numberline {4.7.2}Résultats des tests de scalabilité}{59}{subsection.4.7.2}%
-\contentsline {section}{\numberline {4.8}Conclusion}{59}{section.4.8}%
-\contentsline {chapter}{Bibliographie}{61}{chapter*.49}%
+\contentsline {section}{\numberline {2.6}PeerTrust --- Modèle de confiance pour communautés pair-à-pair}{24}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Contexte et motivation}{24}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Paramètres de confiance et métrique générale}{24}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {2.6.3}Architecture d'implémentation distribuée}{25}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {2.6.4}Limites identifiées dans le contexte DDoS}{26}{subsection.2.6.4}%
+\contentsline {section}{\numberline {2.7}Synthèse comparative}{26}{section.2.7}%
+\contentsline {section}{\numberline {2.8}Conclusion}{28}{section.2.8}%
+\contentsline {chapter}{\numberline {3}Conception et Architecture du système}{29}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introduction}{29}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Conception préliminaire}{29}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Périmètre du système}{29}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Objectifs et exigences du système}{30}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Diagrammes de cas d'utilisation}{30}{subsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.3.1}Protocole de mitigation collaborative}{30}{subsubsection.3.2.3.1}%
+\contentsline {subsubsection}{\numberline {3.2.3.2}Moteur de confiance PeerTrust}{31}{subsubsection.3.2.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.3.3}Rôle du nœud pair dans la coalition}{32}{subsubsection.3.2.3.3}%
+\contentsline {subsection}{\numberline {3.2.4}Documentation des cas d'utilisation}{35}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Architecture générale}{42}{subsection.3.2.5}%
+\contentsline {subsubsection}{\numberline {3.2.5.1}Topologie de la coalition}{42}{subsubsection.3.2.5.1}%
+\contentsline {subsubsection}{\numberline {3.2.5.2}Cycle de vie d'une session de mitigation}{42}{subsubsection.3.2.5.2}%
+\contentsline {section}{\numberline {3.3}Conception technique détaillée}{43}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Modèle de données}{43}{subsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.1}Modèle de données}{43}{subsubsection.3.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.2}Identifiants et intégrité référentielle}{43}{subsubsection.3.3.1.2}%
+\contentsline {subsection}{\numberline {3.3.2}Modèle de confiance~: PeerTrust adapté}{45}{subsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.1}Motivation du choix de PeerTrust}{45}{subsubsection.3.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.3.2.2}Formule T(u) et ses paramètres}{45}{subsubsection.3.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.3}Niveaux de confiance}{46}{subsubsection.3.3.2.3}%
+\contentsline {subsection}{\numberline {3.3.3}Algorithme de sélection des pairs~: WSM}{46}{subsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.3.1}Critères de sélection}{46}{subsubsection.3.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.3.2}Pondération AHP}{46}{subsubsection.3.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3.3}Répartition proportionnelle du flux}{47}{subsubsection.3.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Diagramme d'activités~: session de mitigation}{47}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Mécanismes de sécurité}{49}{subsection.3.3.5}%
+\contentsline {subsubsection}{\numberline {3.3.5.1}Transport sécurisé~: mTLS}{49}{subsubsection.3.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.3.5.2}Authentification applicative~: JWT RS256}{49}{subsubsection.3.3.5.2}%
+\contentsline {subsection}{\numberline {3.3.6}Interface API REST}{49}{subsection.3.3.6}%
+\contentsline {subsubsection}{\numberline {3.3.6.1}Style architectural}{49}{subsubsection.3.3.6.1}%
+\contentsline {subsubsection}{\numberline {3.3.6.2}Endpoints}{50}{subsubsection.3.3.6.2}%
+\contentsline {section}{\numberline {3.4}Conclusion}{50}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Implémentation et Évaluation}{51}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction}{51}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Environnement technique}{51}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Pile technologique}{51}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Structure du projet}{52}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Implémentation du gestionnaire de confiance}{52}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Calcul de T(u) avec Cr historique}{52}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Capture de la crédibilité à la clôture}{53}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Persistance et sanctions automatiques}{54}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Implémentation de la sélection des pairs}{54}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Calcul du score WSM}{54}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Plan de répartition proportionnelle}{54}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Mécanismes de sécurité}{55}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}JWT RS256~: génération et vérification}{55}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}mTLS~: configuration côté serveur}{55}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}Protocole de communication inter-nœuds}{56}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Authentification}{56}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Heartbeat}{56}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Détection d'une attaque}{57}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}Demande et réponse d'aide}{57}{subsection.4.6.4}%
+\contentsline {subsection}{\numberline {4.6.5}Redirection du trafic et clôture}{58}{subsection.4.6.5}%
+\contentsline {section}{\numberline {4.7}Tests et évaluation}{59}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Protocole de test}{59}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Résultats des tests de scalabilité}{60}{subsection.4.7.2}%
+\contentsline {section}{\numberline {4.8}Conclusion}{60}{section.4.8}%
+\contentsline {chapter}{Conclusion générale}{62}{chapter*.49}%
+\contentsline {chapter}{Bibliographie}{64}{chapter*.50}%

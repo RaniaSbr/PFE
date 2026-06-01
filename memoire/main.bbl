@@ -19,6 +19,40 @@
 
 \refsection{0}
   \datalist[entry]{nyt/global//global/global/global}
+    \entry{rfc8040restconf}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=49997ddeb464bd92dc3c6e9f70600468}{%
+           family={Bierman},
+           familyi={B\bibinitperiod},
+           given={Andy},
+           giveni={A\bibinitperiod}}}%
+        {{hash=c302f0039be29440191c4cd1d1f41068}{%
+           family={Björklund},
+           familyi={B\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=0959fea4d94d15603b71e8dab79ab6e2}{%
+           family={Watsen},
+           familyi={W\bibinitperiod},
+           given={Kent},
+           giveni={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{01a87528f0a36c6d38c98e87b25bf15e}
+      \strng{fullhash}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \strng{fullhashraw}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \strng{bibnamehash}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \strng{authorbibnamehash}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \strng{authornamehash}{01a87528f0a36c6d38c98e87b25bf15e}
+      \strng{authorfullhash}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \strng{authorfullhashraw}{c2245f49f74b8e5422e3d3b46b1040dc}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{RFC 8040}
+      \field{title}{{RESTCONF} Protocol}
+      \field{year}{2017}
+    \endentry
     \entry{chua2018memcrashed}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=34d8c7dabe070727048e084de009fddd}{%
@@ -43,10 +77,10 @@
       \field{title}{Memcrashed --- Major Amplification Attacks from {UDP} Port 11211}
       \field{year}{2018}
       \verb{urlraw}
-      \verb https://blog.cloudflare.com/memcrashed-major-amplification-attacks-from-port-11211/
+      \verb https://blog.cloudflare.com/memcrashed-major-amplification-attacks-from-port-11211/#:~:text=The%20%EE%80%80UDP%EE%80%81%20server,%20not%20knowing%20the%20request
       \endverb
       \verb{url}
-      \verb https://blog.cloudflare.com/memcrashed-major-amplification-attacks-from-port-11211/
+      \verb https://blog.cloudflare.com/memcrashed-major-amplification-attacks-from-port-11211/#:~:text=The%20%EE%80%80UDP%EE%80%81%20server,%20not%20knowing%20the%20request
       \endverb
     \endentry
     \entry{cloudflare2025}{report}{}{}
@@ -588,6 +622,35 @@
       \field{title}{The Transport Layer Security ({TLS}) Protocol Version 1.3}
       \field{year}{2018}
     \endentry
+    \entry{rfc6347dtls}{misc}{}{}
+      \name{author}{2}{}{%
+        {{hash=fbed942ce41bbd27cb1ee6a803bdf541}{%
+           family={Rescorla},
+           familyi={R\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod}}}%
+        {{hash=29dcce65392670f1cbc60ca35fcd5573}{%
+           family={Modadugu},
+           familyi={M\bibinitperiod},
+           given={Nagendra},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{fullhash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{fullhashraw}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{bibnamehash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{authorbibnamehash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{authornamehash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{authorfullhash}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \strng{authorfullhashraw}{5ed44262ce2f55adbbcc996ecc88fd3a}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{RFC 6347}
+      \field{title}{Datagram Transport Layer Security Version 1.2}
+      \field{year}{2012}
+    \endentry
     \entry{rossow2014amplification}{inproceedings}{}{}
       \name{author}{1}{}{%
         {{hash=fb416c270e80f1ec4ad7d113cda7fb55}{%
@@ -640,6 +703,40 @@
       \field{labeltitlesource}{title}
       \field{title}{The Analytic Hierarchy Process: Planning, Priority Setting, Resource Allocation}
       \field{year}{1980}
+    \endentry
+    \entry{rfc7252coap}{misc}{}{}
+      \name{author}{3}{}{%
+        {{hash=ed98cd7a76bd516b3da09ae8534c32a0}{%
+           family={Shelby},
+           familyi={S\bibinitperiod},
+           given={Zach},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=9df875ea8cdea272d47bed2f6b8c68df}{%
+           family={Hartke},
+           familyi={H\bibinitperiod},
+           given={Klaus},
+           giveni={K\bibinitperiod}}}%
+        {{hash=7fe2f98d5101608d1a28002bcb59c6d0}{%
+           family={Bormann},
+           familyi={B\bibinitperiod},
+           given={Carsten},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{309fc5c5dc9fb5f1c4b6e0583d19687b}
+      \strng{fullhash}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \strng{fullhashraw}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \strng{bibnamehash}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \strng{authorbibnamehash}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \strng{authornamehash}{309fc5c5dc9fb5f1c4b6e0583d19687b}
+      \strng{authorfullhash}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \strng{authorfullhashraw}{d3b77bed71a92bc7ba4b5c06c8a42240}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{RFC 7252}
+      \field{title}{The Constrained Application Protocol ({CoAP})}
+      \field{year}{2014}
     \endentry
     \entry{sidnlabs2021clearinghouse}{report}{}{}
       \name{author}{1}{}{%

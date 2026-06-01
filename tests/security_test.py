@@ -68,10 +68,31 @@ async def call(session, method, path, body=None, token=None, expected=200):
             data = {"_status": r.status}
         return data
 
+async def docker_is_running() -> bool:
+    """Vérifie que le nœud Docker est accessible avant de lancer les tests."""
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://localhost:{UNIV_PORT}/",
+                ssl=SSL_CTX,
+                timeout=aiohttp.ClientTimeout(total=3),
+            ) as r:
+                return r.status < 500
+    except Exception:
+        return False
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 async def main(args=None):
     if args is None:
         args = argparse.Namespace(fast=False)
+
+    if not await docker_is_running():
+        print("\n[SKIP] ShieldNet Docker non disponible sur localhost:3001")
+        print("       Lance : docker compose up -d && python init-coalition.py")
+        print("       puis relance ce test.\n")
+        return
+
     async with aiohttp.ClientSession() as s:
 
         # ── 1. JWT RS256 ──────────────────────────────────────────────────────

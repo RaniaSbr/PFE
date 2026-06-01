@@ -31,9 +31,9 @@ from aiohttp import web
 import uuid
 import random
 import time
-import hashlib
 import json
 from typing import Dict, List, Optional
+from node_utils import make_token, check_token, need_auth, SECRET
 
 # ── Seed fixe EN PREMIER — avant tout appel random ────────────────────────────
 random.seed(42)
@@ -41,8 +41,6 @@ random.seed(42)
 # ── Paramètres ────────────────────────────────────────────────────────────────
 N_NODES   = 100
 BASE_PORT = 19001
-SECRET    = "shieldnet-2025"
-TOKEN_TTL = 3600
 
 # Poids WSM (AHP, CR = 1.6 %)
 W_CAP, W_LOAD, W_TRUST, W_RECIP = 0.52, 0.20, 0.20, 0.08
@@ -98,29 +96,6 @@ def generate_attack(victim_capacity: float, victim_load: float) -> dict:
     }
 
 
-# ── Token HMAC-SHA256 (JWT simplifié) ─────────────────────────────────────────
-def make_token(node_id: str) -> str:
-    exp  = int(time.time()) + TOKEN_TTL
-    body = f"{node_id}:{exp}"
-    sig  = hashlib.sha256(f"{body}:{SECRET}".encode()).hexdigest()[:16]
-    return f"{body}:{sig}"
-
-
-def check_token(token: str) -> Optional[str]:
-    """Retourne node_id si valide, None sinon."""
-    try:
-        parts = token.split(":")
-        if len(parts) != 3:
-            return None
-        node_id, exp_s, sig = parts
-        if time.time() > int(exp_s):
-            return None
-        expected = hashlib.sha256(
-            f"{node_id}:{exp_s}:{SECRET}".encode()
-        ).hexdigest()[:16]
-        return node_id if sig == expected else None
-    except Exception:
-        return None
 
 
 # ── État in-memory d'un nœud ──────────────────────────────────────────────────
@@ -153,21 +128,6 @@ def build_app(st: NodeState) -> web.Application:
     """Crée l'application aiohttp pour un nœud avec tous ses endpoints."""
 
     app = web.Application()
-
-    # ── Décorateur JWT ────────────────────────────────────────────────────────
-    def need_auth(fn):
-        async def wrapper(req):
-            hdr = req.headers.get("Authorization", "")
-            tok = hdr[7:] if hdr.startswith("Bearer ") else None
-            if not tok:
-                return web.json_response({"error": "Unauthorized"}, status=401)
-            nid = check_token(tok)
-            if not nid:
-                return web.json_response(
-                    {"error": "Invalid or expired token"}, status=401)
-            req["caller"] = nid
-            return await fn(req)
-        return wrapper
 
     # ── POST /auth/token ──────────────────────────────────────────────────────
     async def auth_token(req):
@@ -1018,6 +978,125 @@ async def main():
             info(f"  Scores PeerTrust   : {len(trust_data)} calculés")
             info(f"  Résultat           : ATTAQUE "
                  f"{'NEUTRALISÉE ✓' if coverage >= 95 else 'PARTIELLEMENT ATTÉNUÉE'}")
+
+            # ── PHASE 9 — ROBUSTESSE ──────────────────────────────────────────
+            title("PHASE 9 — ROBUSTESSE (CHAOS / IDEMPOTENCE / COVERAGE)")
+
+            # ── 9a. Chaos : nœud aidant tombe pendant une session active ─────
+            step("Chaos — arrêt d'un nœud pendant une session active...")
+            chaos_helper = helpers[0]
+            chaos_pid    = chaos_helper.node_id
+
+            # Créer et activer une session avec ce nœud
+            r = await call(http, "post", url(victim, "/help/request"), {
+                "attack_id":       attack_id,
+                "helping_peer_id": chaos_pid,
+                "allocation_pct":  10,
+            }, tok_v)
+            chaos_sid = r.get("session_id")
+
+            if chaos_sid:
+                await call(http, "put",
+                           url(victim, f"/help/{chaos_sid}/accept"),
+                           {"accepted_volume_gbps": 5.0, "tunnel_type": "GRE"},
+                           tok_v)
+                await call(http, "post", url(victim, "/traffic/redirect"),
+                           {"session_id": chaos_sid, "volume_gbps": 5.0,
+                            "tunnel_type": "GRE"}, tok_v)
+
+                # Simuler la panne : marquer le nœud INACTIVE dans victim
+                if chaos_pid in victim.peers:
+                    victim.peers[chaos_pid]["status"] = "INACTIVE"
+
+                # La victime doit gérer la clôture sans crash
+                r_chaos = await call(http, "post", url(victim, "/attack/over"), {
+                    "attack_id":   attack_id,
+                    "session_ids": [chaos_sid],
+                }, tok_v)
+                chaos_ok = r_chaos.get("_status") in (200, 201)
+                (ok if chaos_ok else warn)(
+                    "Clôture tolérée malgré nœud INACTIVE ✓" if chaos_ok
+                    else f"Erreur inattendue : {r_chaos}")
+                record("9", "Chaos : nœud tombe → clôture tolérée",
+                       chaos_ok, f"status={r_chaos.get('_status')}")
+
+                # Restaurer
+                if chaos_pid in victim.peers:
+                    victim.peers[chaos_pid]["status"] = "ACTIVE"
+            else:
+                warn("Session chaos non créée — test ignoré")
+                record("9", "Chaos : nœud tombe → clôture tolérée",
+                       False, "session non créée")
+
+            # ── 9b. Idempotence : double enregistrement du même pair ─────────
+            step("Idempotence — double POST /peers/register même peer_id...")
+            idem_pid = helpers[1].node_id
+            payload  = {
+                "peer_id":                     idem_pid,
+                "peer_name":                   helpers[1].name,
+                "organization_type":           "ISP",
+                "max_scrubbing_capacity_gbps": 10.0,
+                "declared_available_gbps":     8.0,
+            }
+            r1 = await call(http, "post", url(victim, "/peers/register"),
+                            payload, tok_v)
+            r2 = await call(http, "post", url(victim, "/peers/register"),
+                            payload, tok_v)
+
+            # Les deux doivent réussir et il ne doit y avoir qu'une entrée
+            both_ok    = r1.get("_status") in (200, 201) \
+                     and r2.get("_status") in (200, 201)
+            no_dup     = sum(1 for p in victim.peers.values()
+                             if p["peer_id"] == idem_pid) == 1
+            idem_ok    = both_ok and no_dup
+            (ok if idem_ok else warn)(
+                "Double enregistrement idempotent ✓" if idem_ok
+                else f"Duplication détectée ou erreur (r1={r1.get('_status')}, "
+                     f"r2={r2.get('_status')}, count={not no_dup})")
+            record("9", "Idempotence : double register → pas de doublon",
+                   idem_ok,
+                   f"r1={r1.get('_status')}, r2={r2.get('_status')}, "
+                   f"unique={no_dup}")
+
+            # ── 9c. Coverage challenge : livraison à 40 % (minimum réaliste) ─
+            step("Coverage challenge — traffic/redirect livre exactement 40 %...")
+            cov_pid = helpers[2].node_id
+            r = await call(http, "post", url(victim, "/help/request"), {
+                "attack_id":       attack_id,
+                "helping_peer_id": cov_pid,
+                "allocation_pct":  10,
+            }, tok_v)
+            cov_sid = r.get("session_id")
+
+            if cov_sid:
+                await call(http, "put",
+                           url(victim, f"/help/{cov_sid}/accept"),
+                           {"accepted_volume_gbps": 10.0, "tunnel_type": "GRE"},
+                           tok_v)
+
+                # Forcer 40 % de livraison en patchant random
+                import unittest.mock as mock
+                with mock.patch("random.uniform", return_value=0.40):
+                    r_red = await call(
+                        http, "post", url(victim, "/traffic/redirect"),
+                        {"session_id": cov_sid, "volume_gbps": 10.0,
+                         "tunnel_type": "GRE"}, tok_v)
+
+                actual    = r_red.get("actual_volume_gbps", -1)
+                expected  = round(10.0 * 0.40, 2)
+                cov_ok    = (r_red.get("status") == "ACTIVE"
+                             and abs(actual - expected) < 0.01)
+                (ok if cov_ok else warn)(
+                    f"Livraison 40% correcte : actual={actual} Gbps ✓"
+                    if cov_ok else
+                    f"actual={actual} Gbps attendu={expected} "
+                    f"status={r_red.get('status')}")
+                record("9", "Coverage 40% : actual_volume correct",
+                       cov_ok, f"actual={actual}, expected={expected}")
+            else:
+                warn("Session coverage non créée — test ignoré")
+                record("9", "Coverage 40% : actual_volume correct",
+                       False, "session non créée")
 
     finally:
         for runner in runners:

@@ -2397,21 +2397,27 @@
     <bcf:citekey order="20" intorder="1">stoica2001chord</bcf:citekey>
     <bcf:citekey order="21" intorder="1">mortensen2019dots</bcf:citekey>
     <bcf:citekey order="22" intorder="1">reddy2020dots</bcf:citekey>
-    <bcf:citekey order="23" intorder="1">mortensen2019dots</bcf:citekey>
-    <bcf:citekey order="24" intorder="1">sidnlabs2021clearinghouse</bcf:citekey>
-    <bcf:citekey order="25" intorder="1">sidnlabs2021clearinghouse</bcf:citekey>
-    <bcf:citekey order="26" intorder="1">nbip2023nawas</bcf:citekey>
-    <bcf:citekey order="27" intorder="1">mirkovic2003defcom</bcf:citekey>
-    <bcf:citekey order="28" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="29" intorder="1">stormwall2024severity</bcf:citekey>
-    <bcf:citekey order="30" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="31" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="32" intorder="1">saaty1980ahp</bcf:citekey>
-    <bcf:citekey order="33" intorder="1">rfc8446tls13</bcf:citekey>
-    <bcf:citekey order="34" intorder="1">rfc7519jwt</bcf:citekey>
-    <bcf:citekey order="35" intorder="1">rfc7518jwa</bcf:citekey>
-    <bcf:citekey order="36" intorder="1">fielding2000rest</bcf:citekey>
-    <bcf:citekey order="39" intorder="1">rfc7519jwt</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">rfc7252coap</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">rfc6347dtls</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">rfc8040restconf</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">mortensen2019dots</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">sidnlabs2021clearinghouse</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">marques2009flowspec</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">sidnlabs2021clearinghouse</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">nbip2023nawas</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">mirkovic2003defcom</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="33" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="34" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="35" intorder="1">stormwall2024severity</bcf:citekey>
+    <bcf:citekey order="36" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="37" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="38" intorder="1">saaty1980ahp</bcf:citekey>
+    <bcf:citekey order="39" intorder="1">rfc8446tls13</bcf:citekey>
+    <bcf:citekey order="40" intorder="1">rfc7519jwt</bcf:citekey>
+    <bcf:citekey order="41" intorder="1">rfc7518jwa</bcf:citekey>
+    <bcf:citekey order="42" intorder="1">fielding2000rest</bcf:citekey>
+    <bcf:citekey order="45" intorder="1">rfc7519jwt</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

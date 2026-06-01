@@ -36,6 +36,9 @@
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
 
+% Tableau en paysage
+\usepackage{pdflscape}
+
 % Bibliographie
 \usepackage[backend=biber, style=ieee, sorting=nyt]{biblatex}
 \addbibresource{references.bib}
@@ -157,6 +160,10 @@
 % DEBUT DU DOCUMENT
 % =============================================
 \begin{document}
+
+% ----- Couverture -----
+\pagenumbering{gobble}
+\input{chapters/couverture}
 
 % ----- Pages préliminaires -----
 \pagenumbering{roman}

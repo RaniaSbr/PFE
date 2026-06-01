@@ -4,20 +4,20 @@
 \contentsline {table}{\numberline {1.2}{\ignorespaces Comparaison des principaux services de mitigation cloud.}}{11}{table.caption.20}%
 \contentsline {table}{\numberline {1.3}{\ignorespaces Comparaison des infrastructures de mitigation DDoS.}}{12}{table.caption.21}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Comparaison des systèmes de défense collaborative contre les attaques DDoS.}}{25}{table.caption.26}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Comparaison des systèmes existants et positionnement de notre contribution.}}{26}{table.caption.26}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{32}{table.caption.30}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Documentation du cas d'utilisation \textit {S'enregistrer dans la coalition}.}}{33}{table.caption.31}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{34}{table.caption.32}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sélection WSM)}.}}{35}{table.caption.33}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{36}{table.caption.34}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{37}{table.caption.35}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{38}{table.caption.36}%
-\contentsline {table}{\numberline {3.8}{\ignorespaces Description des tables de la base de données.}}{42}{table.caption.39}%
-\contentsline {table}{\numberline {3.9}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{43}{table.caption.40}%
-\contentsline {table}{\numberline {3.10}{\ignorespaces Niveaux de confiance dans le système.}}{44}{table.caption.41}%
-\contentsline {table}{\numberline {3.11}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{44}{table.caption.42}%
-\contentsline {table}{\numberline {3.12}{\ignorespaces Endpoints principaux de l'API REST.}}{48}{table.caption.44}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{35}{table.caption.31}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Documentation du cas d'utilisation \textit {S'enregistrer dans la coalition}.}}{36}{table.caption.32}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{37}{table.caption.33}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sélection WSM)}.}}{38}{table.caption.34}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{39}{table.caption.35}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{40}{table.caption.36}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{41}{table.caption.37}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Description des tables de la base de données.}}{44}{table.caption.39}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{45}{table.caption.40}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Niveaux de confiance dans le système.}}{46}{table.caption.41}%
+\contentsline {table}{\numberline {3.11}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{47}{table.caption.42}%
+\contentsline {table}{\numberline {3.12}{\ignorespaces Endpoints principaux de l'API REST.}}{50}{table.caption.44}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Pile technologique du système.}}{50}{table.caption.45}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{59}{table.caption.47}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Pile technologique du système.}}{51}{table.caption.45}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{60}{table.caption.47}%

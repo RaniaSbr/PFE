@@ -6,7 +6,7 @@
 
 \section{Introduction}
 
-Ce chapitre décrit la réalisation concrète du système. Après avoir présenté l'environnement technique retenu, nous détaillons l'implémentation des trois composants algorithmiques centraux~: le gestionnaire de confiance (PeerTrust), le sélecteur de pairs (\gls{wsm}) et les mécanismes de sécurité (mTLS + JWT RS256). Le chapitre se conclut par les résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
+Ce chapitre décrit la réalisation concrète du système. Après avoir présenté l'environnement technique retenu, je détaille l'implémentation des trois composants algorithmiques centraux~: le gestionnaire de confiance (PeerTrust), le sélecteur de pairs (\gls{wsm}) et les mécanismes de sécurité (mTLS + JWT RS256). Le chapitre se conclut par les résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
 
 % --------------------------------------------------
 \section{Environnement technique}
@@ -131,14 +131,7 @@ Le cache \texttt{crCache} évite d'interroger le réseau plusieurs fois pour un 
 
 \subsection{Persistance et sanctions automatiques}
 
-La fonction \texttt{recalculateAndSave(peer\_id)} recalcule le score, le persiste dans \texttt{TRUST\_SCORES} et applique automatiquement la sanction si le score tombe sous 0.20~:
-
-\begin{itemize}
-    \item Le champ \texttt{trust\_level} de la table \texttt{TRUST\_SCORES} est mis à jour.
-    \item Si le niveau devient BANNED~: le pair est marqué \texttt{status = BANNED} et \texttt{membership\_status = EXPELLED} dans la table \texttt{PEERS}.
-    \item Tout changement de niveau déclenche une entrée dans \texttt{AUDIT\_LOG} (type \texttt{TRUST\_LEVEL\_CHANGED}).
-    \item Un bannissement automatique génère une entrée de sévérité CRITICAL (\texttt{PEER\_BANNED}).
-\end{itemize}
+La fonction \texttt{recalculateAndSave(peer\_id)} recalcule le score, le persiste dans \texttt{TRUST\_SCORES} et applique automatiquement la sanction si le score tombe sous 0.20. Le champ \texttt{trust\_level} de la table \texttt{TRUST\_SCORES} est mis à jour~; si le niveau devient BANNED, le pair est marqué \texttt{status = BANNED} et \texttt{membership\_status = EXPELLED} dans la table \texttt{PEERS}. Tout changement de niveau déclenche par ailleurs une entrée dans \texttt{AUDIT\_LOG} (type \texttt{TRUST\_LEVEL\_CHANGED}), et un bannissement automatique génère spécifiquement une entrée de sévérité CRITICAL (\texttt{PEER\_BANNED}).
 
 % --------------------------------------------------
 \section{Implémentation de la sélection des pairs}
