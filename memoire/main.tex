@@ -6,6 +6,17 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
+
+% Police Times New Roman (conforme à la charte)
+\usepackage{mathptmx}
+
+% Espacement entre paragraphes : 6pt après chaque paragraphe (charte §1.4)
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{1.5em}
+
+% Résumé en arabe
+\usepackage{arabtex}
+\usepackage{utf8}
 \usepackage{csquotes}
 \usepackage{tabularx}
 \usepackage{geometry}
@@ -13,7 +24,24 @@
     top=2.5cm,
     bottom=2.5cm,
     left=2.5cm,
-    right=2.5cm
+    right=2.5cm,
+    headheight=14pt,
+    headsep=6pt
+}
+
+% En-tête et pied de page
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\small\leftmark}          % chapitre courant en haut à gauche
+\fancyfoot[R]{\small\thepage}           % numéro de page en bas à droite (charte §1.2)
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \fancyhead[L]{\small\leftmark}
+  \fancyfoot[R]{\small\thepage}         % idem sur pages de début de chapitre
 }
 
 % Graphiques et figures
@@ -40,7 +68,8 @@
 \usepackage{pdflscape}
 
 % Bibliographie
-\usepackage[backend=biber, style=ieee, sorting=nyt]{biblatex}
+\usepackage[backend=biber, style=apa, sorting=nyt, language=french]{biblatex}
+\DeclareLanguageMapping{french}{french-apa}
 \addbibresource{references.bib}
 
 % Listings (code source)
@@ -114,6 +143,10 @@
 % Pifont (pour \ding)
 \usepackage{pifont}
 
+\newcommand{\figborder}[2][\linewidth]{%
+  \includegraphics[width=#1]{#2}%
+}
+
 % Glossaire / Acronymes
 \usepackage[acronym,nonumberlist]{glossaries}
 \renewcommand{\glsnamefont}[1]{\textbf{\large #1}}
@@ -168,6 +201,7 @@
 % ----- Pages préliminaires -----
 \pagenumbering{roman}
 \renewcommand{\thepage}{\textbf{\Roman{page}}}
+\pagestyle{plain}
 
 \cleardoublepage
 \thispagestyle{empty}
@@ -201,6 +235,7 @@
 % ----- Corps du mémoire -----
 \pagenumbering{arabic}
 \setcounter{page}{1}
+\pagestyle{fancy}
 
 \input{chapters/introduction}
 \input{chapters/chapter1}

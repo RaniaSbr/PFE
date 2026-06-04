@@ -6,15 +6,20 @@
 \contentsline {figure}{\numberline {1.4}{\ignorespaces Mécanisme de RTBH via BGP~: la victime annonce un préfixe avec une communauté RTBH, et le FAI redirige le trafic correspondant vers \texttt {null0}.}}{10}{figure.caption.19}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Architecture de référence du protocole \gls {dots} : séparation entre le canal de signalisation (CoAP/DTLS/UDP) et le canal de données (RESTCONF/HTTPS/TCP).}}{17}{figure.caption.22}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Architecture du \textit {DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}}{19}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Architecture du \textit {DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}}{20}{figure.caption.23}%
 \contentsline {figure}{\numberline {2.3}{\ignorespaces Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}}{21}{figure.caption.24}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}}{23}{figure.caption.25}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}}{24}{figure.caption.25}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{31}{figure.caption.28}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{32}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{34}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Exemple de coalition~: sept nœuds hétérogènes interconnectés en overlay \gls {p2p} plat non structuré.}}{42}{figure.caption.38}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative (deux couloirs~: nœud victime et nœud pair).}}{48}{figure.caption.43}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Exemple de coalition~: sept nœuds hétérogènes interconnectés en overlay \gls {p2p} plat non structuré.}}{30}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{31}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{32}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{34}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Vue globale du diagramme de classes — les quatorze entités du système.}}{45}{figure.caption.39}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Diagramme de classes — Configuration du nœud local.}}{46}{figure.caption.40}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme de classes — Gestion des pairs et de la confiance.}}{47}{figure.caption.42}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagramme de classes — Sessions de mitigation et traçabilité.}}{50}{figure.caption.44}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Distribution du trafic selon l'algorithme WSM~: répartition proportionnelle de l'overflow entre les pairs sélectionnés.}}{56}{figure.caption.50}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative (deux couloirs~: nœud victime et nœud pair).}}{57}{figure.caption.51}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des répertoires du projet.}}{52}{figure.caption.46}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}}{60}{figure.caption.48}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des répertoires du projet.}}{63}{figure.caption.53}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}}{71}{figure.caption.55}%

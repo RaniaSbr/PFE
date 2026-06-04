@@ -6,50 +6,89 @@
 
 \section{Introduction}
 
-Ce chapitre décrit la réalisation concrète du système. Après avoir présenté l'environnement technique retenu, je détaille l'implémentation des trois composants algorithmiques centraux~: le gestionnaire de confiance (PeerTrust), le sélecteur de pairs (\gls{wsm}) et les mécanismes de sécurité (mTLS + JWT RS256). Le chapitre se conclut par les résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
+Ce chapitre décrit la réalisation concrète du système. Après avoir présenté l'environnement technique retenu, je détaille l'implémentation des trois composants algorithmiques centraux~: le gestionnaire de confiance (PeerTrust), le sélecteur de pairs (\gls{wsm}) et les mécanismes de sécurité (mTLS + JWT RS256). Une section documente ensuite les échanges JSON du protocole de communication inter-nœuds. Le chapitre se conclut par les résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
 
 % --------------------------------------------------
 \section{Environnement technique}
 \label{sec:env_tech}
 
-\subsection{Pile technologique}
+% Commande locale : entrée technologie avec espace logo à droite
+\newcommand{\techentry}[2]{%
+  \vspace{6pt}%
+  \noindent%
+  \begin{minipage}[c]{0.82\linewidth}#1\end{minipage}\hfill%
+  \begin{minipage}[c]{0.13\linewidth}\centering
+    \fbox{\phantom{\rule{1.3cm}{1.3cm}}}%   ← remplacer par \includegraphics[height=1.3cm]{figures/logos/#2}
+  \end{minipage}\par\vspace{4pt}%
+}
 
-Le Tableau~\ref{tab:stack} présente les technologies utilisées et les motivations de chaque choix.
+% ==================================================
+\subsection{Langages de programmation}
+% ==================================================
 
-\begin{table}[htbp]
-\centering
-\caption{Pile technologique du système.}
-\label{tab:stack}
-\small
-\renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{\textwidth}{|l|l|X|}
-\hline
-\textbf{Composant} & \textbf{Technologie} & \textbf{Justification} \\
-\hline
-Runtime serveur   & Node.js 20 LTS     & Modèle événementiel adapté aux I/O concurrentes (heartbeats, requêtes inter-nœuds) \\
-\hline
-Framework REST    & Express.js 4       & Minimaliste, middleware-first, large écosystème de plugins de sécurité \\
-\hline
-Base de données   & PostgreSQL 15      & ACID, support natif UUID, types ENUM, contraintes de clés étrangères \\
-\hline
-ORM               & Sequelize 6        & Abstraction SQL avec migrations, associations déclaratives \\
-\hline
-Authentification  & jsonwebtoken (JWT) & Implémentation RS256 selon RFC 7519 \cite{rfc7519jwt} \\
-\hline
-Documentation API & Swagger/OpenAPI 3  & Auto-documentation des endpoints via annotations JSDoc \\
-\hline
-Containerisation  & Docker + Compose   & Déploiement reproductible~; isolation réseau entre nœuds simulés \\
-\hline
-\end{tabularx}
-\end{table}
+\techentry{%
+  \underline{\textbf{JavaScript :}} est un langage de programmation interprété, orienté événement et non bloquant. Il constitue le langage principal du back-end via Node.js~\cite{nodejs2024}, dont le modèle asynchrone est particulièrement adapté aux échanges inter-nœuds concurrents (heartbeats, requêtes d'aide simultanées).%
+}{javascript.png}
+
+\techentry{%
+  \underline{\textbf{SQL :}} est le langage de requête standard des bases de données relationnelles. Il est utilisé via PostgreSQL et l'ORM Sequelize pour la définition des schémas, les migrations et l'interrogation des quatorze tables du modèle de données.%
+}{sql.png}
+
+% ==================================================
+\subsection{Outils de développement}
+% ==================================================
+
+\techentry{%
+  \underline{\textbf{Node.js v20 LTS~\cite{nodejs2024} :}} est une plate-forme côté serveur construite sur le moteur V8 de Chrome. Son modèle événementiel est idéal pour les applications à I/O concurrentes telles que les coalitions de nœuds échangeant des heartbeats toutes les 30~secondes.%
+}{nodejs.png}
+
+\techentry{%
+  \underline{\textbf{Express.js v4~\cite{expressjs2024} :}} est un framework REST minimaliste pour Node.js, de type \textit{middleware-first}. Il structure les routes de l'API (\texttt{/peers}, \texttt{/help}, \texttt{/trust}, \texttt{/auth}) et facilite l'intégration des middlewares mTLS et JWT.%
+}{express.png}
+
+\techentry{%
+  \underline{\textbf{PostgreSQL 15~\cite{postgresql2024} :}} est un système de gestion de bases de données relationnelles open-source reconnu pour sa conformité ACID. Il est retenu pour son support natif des types \texttt{UUID}, \texttt{ENUM}, \texttt{FLOAT} et la gestion des contraintes de clés étrangères avec politique de suppression en cascade.%
+}{postgresql.png}
+
+\techentry{%
+  \underline{\textbf{Sequelize v6~\cite{sequelize2024} :}} est un ORM Node.js qui fournit une abstraction SQL avec migrations, associations déclaratives et transactions. Il mappe les quatorze classes du modèle objet vers les tables PostgreSQL.%
+}{sequelize.png}
+
+\techentry{%
+  \underline{\textbf{jsonwebtoken~\cite{jsonwebtoken2024} (JWT) :}} est la bibliothèque Node.js d'implémentation du standard JWT (RFC~7519 \cite{rfc7519jwt}). Elle est utilisée pour générer et vérifier les tokens RS256 à durée de vie de 60~secondes qui sécurisent chaque appel API inter-nœuds.%
+}{jwt.png}
+
+\techentry{%
+  \underline{\textbf{Swagger / OpenAPI 3~\cite{openapi3} :}} est un standard de description d'API REST. Il auto-documente l'ensemble des endpoints via des annotations JSDoc et expose une interface interactive accessible à \texttt{/api-docs}.%
+}{swagger.png}
+
+% ==================================================
+\subsection{Environnement de déploiement}
+% ==================================================
+
+\techentry{%
+  \underline{\textbf{Docker \& Docker Compose~\cite{docker2024} :}} permettent la containerisation du système. Chaque nœud de la coalition s'exécute dans un conteneur isolé~; Docker Compose orchestre les quatre nœuds et la base de données PostgreSQL avec un réseau virtuel dédié, garantissant un déploiement reproductible sur toute machine disposant de Docker.%
+}{docker.png}
+
+% ==================================================
+\subsection{Outils de collaboration}
+% ==================================================
+
+\techentry{%
+  \underline{\textbf{Git~\cite{git2024} :}} est le système de contrôle de version distribué utilisé pour gérer l'historique du code source, les branches de fonctionnalités et les correctifs tout au long du développement du prototype.%
+}{git.png}
+
+\techentry{%
+  \underline{\textbf{GitHub~\cite{github2024} :}} est la plateforme de collaboration hébergeant le dépôt du projet. Elle permet le suivi des issues, la revue de code par Pull Requests et la sauvegarde centralisée du code source.%
+}{github.png}
 
 \subsection{Structure du projet}
 
 Le projet est organisé selon le schéma de la Figure~\ref{fig:structure}, séparant clairement la logique métier (\texttt{utils/}), les routes \gls{api} (\texttt{routes/}), les modèles de données (\texttt{models/}) et la configuration (\texttt{config/}).
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures/shieldnet_directory_tree.png}
+\figborder[\textwidth]{figures/shieldnet_directory_tree.png}
 \caption{Structure des répertoires du projet.}
 \label{fig:structure}
 \end{figure}
@@ -441,13 +480,13 @@ Les tests ont été conduits selon trois axes~:
     \item \textbf{Tests de scalabilité} (\texttt{tests/scalability\_test.py})~: montée en charge progressive de 20 à 100 nœuds simultanés~; mesure des temps de réponse pour l'enregistrement, le heartbeat et la sélection WSM.
 \end{enumerate}
 
-Les tests de scalabilité ont été conduits sur une machine locale avec Node.js 20 LTS et PostgreSQL 15, en simulant les nœuds par des processus Python concurrents via \texttt{asyncio} et \texttt{aiohttp}.
+Les tests de scalabilité ont été conduits sur une machine locale avec Node.js 20 LTS et PostgreSQL 15, en simulant les nœuds par des processus Python concurrents via \texttt{asyncio}~\cite{pythonasyncio} et \texttt{aiohttp}~\cite{aiohttp2024}.
 
 \subsection{Résultats des tests de scalabilité}
 
 Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure~\ref{fig:scalabilite} en offre une représentation graphique.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Résultats des tests de scalabilité (20 à 100 nœuds).}
 \label{tab:scalabilite}
@@ -473,9 +512,9 @@ Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure
 \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures/shieldnet_scalability.png}
+\figborder[\textwidth]{figures/shieldnet_scalability.png}
 \caption{Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}
 \label{fig:scalabilite}
 \end{figure}
@@ -497,8 +536,38 @@ Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure
 % Les résultats indiquent un comportement sub-linéaire~: doubler le nombre de nœuds de 50 à 100 n'a pas doublé les temps de réponse. Pour des coalitions de plusieurs centaines de nœuds, l'ajout d'un système de cache distribué (Redis) pour les scores de confiance et l'utilisation de connexions persistantes pour les heartbeats permettraient de maintenir ces performances.
 
 % --------------------------------------------------
+\subsection{Résultats des tests de sécurité}
+
+Le Tableau~\ref{tab:secu} présente les cinq scénarios d'attaque simulés et les réponses obtenues du système.
+
+\begin{table}[H]
+\centering
+\caption{Résultats des tests de sécurité.}
+\label{tab:secu}
+\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{|X|c|c|}
+\hline
+\textbf{Scénario testé} & \textbf{HTTP attendu} & \textbf{Résultat} \\
+\hline
+Requête sans en-tête \texttt{Authorization} & 401 & \checkmark \\
+\hline
+Token JWT expiré (émis il y a $> 60$~s) & 401 & \checkmark \\
+\hline
+Token JWT signé avec une clé RSA incorrecte & 401 & \checkmark \\
+\hline
+Token valide d'un nœud à statut \texttt{BANNED} & 403 & \checkmark \\
+\hline
+\texttt{peer\_id} inconnu dans le corps de la requête & 404 & \checkmark \\
+\hline
+\end{tabularx}
+\end{table}
+
+Les cinq scénarios ont été rejetés avec le code HTTP correct. Aucun accès non autorisé n'a été accordé~; la vérification séquentielle du middleware (décodage sans vérification → récupération de la clé publique → vérification RS256) a fonctionné dans tous les cas.
+
+% --------------------------------------------------
 \section{Conclusion}
 
-Ce chapitre a présenté l'implémentation complète du système et ses résultats d'évaluation. Le gestionnaire de confiance implémente fidèlement la formule PeerTrust avec une crédibilité historique par session, garantissant que chaque session est évaluée avec la réputation en vigueur à l'époque des faits. L'algorithme \gls{wsm} offre une sélection multicritère en moins de 33~ms même pour 100 nœuds simultanés. La double sécurisation mTLS + JWT RS256 assure l'authenticité de chaque communication sans secret partagé entre les nœuds.
+Ce chapitre a présenté l'implémentation complète du système et ses résultats d'évaluation. Le gestionnaire de confiance implémente fidèlement la formule PeerTrust avec une crédibilité historique par session~: les trois scénarios de validation produisent des scores $T(u)$ conformes aux valeurs théoriques, et le bannissement automatique se déclenche correctement au seuil $T(u) < 0{,}20$. L'algorithme \gls{wsm} alloue le flux proportionnellement aux scores composites, garantissant que les pairs les plus capables et les plus fiables absorbent la part la plus importante du trafic d'attaque. La double sécurisation mTLS + JWT RS256 a rejeté l'ensemble des cinq scénarios d'attaque simulés avec le code HTTP approprié.
 
-Les tests de scalabilité confirment que le système maintient un taux de succès de 100\,\% sur l'ensemble des fonctionnalités testées jusqu'à 100 nœuds, avec des temps de réponse compatibles avec les contraintes opérationnelles d'une coalition de mitigation collaborative.
+Les tests de scalabilité confirment que le système maintient un taux de succès de 100\,\% sur l'ensemble des fonctionnalités testées jusqu'à 100 nœuds, avec un temps de sélection WSM inférieur à 33~ms quelle que soit la taille de la coalition. Ces résultats ont été obtenus sur une infrastructure locale~; une évaluation sur un déploiement géographiquement distribué, soumis à la latence réseau réelle, constitue une perspective de travail futur.

@@ -25,9 +25,9 @@ L'IETF a initié le groupe de travail \gls{dots} (\textit{DDoS Open Threat Signa
 Le protocole s'appuie sur une pile technologique légère adaptée aux environnements contraints et congestionnés, divisée en deux canaux distincts (voir Figure~\ref{fig:dots_archi})~:
 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics [height=0.45\textwidth]{do.png}
+\includegraphics[height=0.45\textwidth]{do.png}
 
 \caption{Architecture de référence du protocole \gls{dots} : séparation entre le canal de signalisation (CoAP/DTLS/UDP) et le canal de données (RESTCONF/HTTPS/TCP).}
 
@@ -43,7 +43,7 @@ Concrètement, le client émet une requête CoAP \texttt{PUT} sur l'URI~:
 \begin{center}
     \texttt{/dots/signal/\{cuid\}/\{mid\}}
 \end{center}
-contenant un objet \gls{cbor} (\textit{Concise Binary Object Representation}, RFC~8949) qui spécifie les préfixes IP à protéger (\texttt{target-prefix}), les numéros de port (\texttt{target-port-range}), le protocole (\texttt{target-protocol}) ainsi que la durée de mitigation souhaitée (\texttt{lifetime}).
+contenant un objet \gls{cbor} (\textit{Concise Binary Object Representation}, RFC~8949~\cite{rfc8949cbor}) qui spécifie les préfixes IP à protéger (\texttt{target-prefix}), les numéros de port (\texttt{target-port-range}), le protocole (\texttt{target-protocol}) ainsi que la durée de mitigation souhaitée (\texttt{lifetime}).
 Le serveur répond avec un code \texttt{2.01 Created} et un identifiant de mitigation (\texttt{mid}).
 
 Ce canal gère le cycle de vie de la mitigation via une \textbf{machine à états à quatre transitions}~:
@@ -55,7 +55,7 @@ Un mécanisme de \textit{heartbeat} (messages CoAP \texttt{GET} périodiques, in
 
 \subsubsection{Canal de données (\textit{Data Channel})}
 
-Basé sur \textbf{RESTCONF} (RFC~8040~\cite{rfc8040restconf}) via HTTPS (TLS~1.2+, TCP), il permet l'échange de configurations complexes et moins urgentes. Les données sont modélisées en YANG (RFC~7950). Ce canal remplit trois fonctions. Il permet d'abord de définir des \textbf{alias} (\textit{dots-alias}) regroupant plusieurs préfixes IP, ports et protocoles sous un identifiant unique, réduisant ainsi la taille des messages de signalisation en période d'attaque. Il sert également à pré-configurer des \textbf{\glspl{acl}} en amont, modélisées selon le module YANG \texttt{ietf-dots-data-channel} (RFC~8783), qui spécifient des règles de filtrage au format \texttt{ietf-access-control-list} incluant les critères de correspondance (5-tuple~: IP source/destination, port source/destination, protocole) et les actions (\texttt{permit}, \texttt{deny}, \texttt{rate-limit}). Enfin, il permet de récupérer les \textbf{télémétries} d'attaque (RFC~9244)~: bande passante entrante, nombre de paquets par seconde, distribution des protocoles d'attaque, \textit{top talkers} (sources les plus actives).
+Basé sur \textbf{RESTCONF} (RFC~8040~\cite{rfc8040restconf}) via HTTPS (TLS~1.2+, TCP), il permet l'échange de configurations complexes et moins urgentes. Les données sont modélisées en YANG (RFC~7950~\cite{rfc7950yang}). Ce canal remplit trois fonctions. Il permet d'abord de définir des \textbf{alias} (\textit{dots-alias}) regroupant plusieurs préfixes IP, ports et protocoles sous un identifiant unique, réduisant ainsi la taille des messages de signalisation en période d'attaque. Il sert également à pré-configurer des \textbf{\glspl{acl}} en amont, modélisées selon le module YANG \texttt{ietf-dots-data-channel} (RFC~8783), qui spécifient des règles de filtrage au format \texttt{ietf-access-control-list} incluant les critères de correspondance (5-tuple~: IP source/destination, port source/destination, protocole) et les actions (\texttt{permit}, \texttt{deny}, \texttt{rate-limit}). Enfin, il permet de récupérer les \textbf{télémétries} d'attaque (RFC~9244~\cite{rfc9244dotstelemetry})~: bande passante entrante, nombre de paquets par seconde, distribution des protocoles d'attaque, \textit{top talkers} (sources les plus actives).
 
 
 
@@ -98,10 +98,10 @@ Le système suit une architecture à trois composants (voir Figure~\ref{fig:ddos
     \item \textbf{Module de consommation (\textit{Converter})~:} Chaque membre récupère les fingerprints pertinents et un module de conversion les traduit automatiquement en règles de filtrage opérationnelles adaptées à l'infrastructure locale~: règles \texttt{iptables}/\texttt{nftables} pour le filtrage Linux, règles BGP Flowspec (RFC~5575~\cite{marques2009flowspec}) pour distribution aux routeurs de bordure, et politiques pour \textit{scrubbing appliances} (ex.~: Arbor Sightline/TMS, A10 Thunder TPS).
 \end{enumerate}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 
-\includegraphics[width=1\textwidth]{clearing_house.png}
+\figborder[\textwidth]{clearing_house.png}
 
 
 \caption{Architecture du \textit{DDoS Clearing House} : génération d'empreintes DDoS par le composant Dissector, stockage dans la base DDoS DB, puis utilisation par l'équipe opérationnelle pour générer des règles de mitigation.}
@@ -142,9 +142,9 @@ L'activation de la protection NaWas repose sur le principe de l'\textbf{injectio
     \item Le trafic nettoyé (\textit{clean traffic}) est renvoyé au membre via un \textbf{tunnel \gls{gre}} (RFC~2784) ou un \textbf{VLAN dédié} sur une interconnexion privée, contournant ainsi la saturation des liens publics du membre. Le routage de retour utilise un chemin distinct (\textit{clean-return path}) pour éviter les boucles de routage.
 \end{enumerate}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{nawas.png}
+\figborder[0.85\textwidth]{nawas.png}
 
 \caption{Architecture simplifiée du service NaWas : redirection du trafic vers un centre de scrubbing mutualisé via annonce BGP et analyse des flux avant application des mécanismes de mitigation.}
 
@@ -200,9 +200,9 @@ La communication entre les n\oe{}uds se fait via un \textbf{protocole de type \t
 
 La construction de l'overlay suit un mécanisme de \textbf{découverte initiale par traceroute}~: chaque n\oe{}ud participant exécute des \texttt{traceroute} vers les autres n\oe{}uds connus pour reconstruire la topologie Internet sous-jacente et positionner correctement les C-nodes sur le chemin entre sources et victimes.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
-     \includegraphics[width=0.75\textwidth]{defcom.png}
+     \figborder[0.55\textwidth]{defcom.png}
  
     \caption{Arbre de limitation de débit coopératif dans DefCOM~: propagation de la demande de la victime vers les sources.}
     \label{fig:defcom_tree}
@@ -226,7 +226,7 @@ Enfin, la \textbf{scalabilité de la découverte par traceroute} est intrinsèqu
 
 \subsection{Contexte et motivation}
 
-Le modèle PeerTrust, proposé par Xiong et Liu \cite{xiong2004peertrust}, est un cadre de gestion de la confiance basé sur la réputation pour les communautés en ligne pair-à-pair. Bien que conçu initialement dans le contexte du commerce électronique P2P, PeerTrust constitue la référence théorique fondamentale pour tout système de confiance distribué sans autorité centrale. Son inclusion dans cette étude bibliographique est justifiée par le fait qu'il fournit les bases formelles du mécanisme de confiance que nous adaptons dans notre système.
+Le modèle PeerTrust, proposé par Xiong et Liu \cite{xiong2004peertrust}, est un cadre de gestion de la confiance basé sur la réputation pour les communautés en ligne pair-à-pair. Bien que conçu initialement dans le contexte du commerce électronique P2P, PeerTrust constitue la référence théorique fondamentale pour tout système de confiance distribué sans autorité centrale. Son inclusion dans cette étude bibliographique est justifiée par le fait qu'il fournit les bases formelles du mécanisme de confiance que nous adaptons dans le système.
 
 \subsection{Paramètres de confiance et métrique générale}
 
@@ -266,7 +266,7 @@ Lorsqu'un facteur contextuel de transaction $D(u,i)$ est incorporé pour pondér
 T(u) = \sum_{i=1}^{I(u)} S(u,i) \cdot Cr(p(u,i)) \cdot D(u,i)
 \end{equation}
 
-C'est cette forme qui est directement adaptée dans notre système, où $D(u,i)$ reflète la sévérité de l'attaque \gls{ddos} associée à la session d'aide $i$ (LOW, MEDIUM, HIGH, CRITICAL).
+C'est cette forme qui est directement adaptée dans le système, où $D(u,i)$ reflète la sévérité de l'attaque \gls{ddos} associée à la session d'aide $i$ (LOW, MEDIUM, HIGH, CRITICAL).
 
 \subsection{Architecture d'implémentation distribuée}
 
@@ -283,7 +283,7 @@ PeerTrust, bien que robuste sur le plan théorique, présente plusieurs limites 
 Le Tableau~\ref{tab:comparaison} compare les travaux analysés selon les critères clés de la coordination distribuée anti-\gls{ddos}.
 
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{2.0}
 \setlength{\tabcolsep}{8pt}
@@ -302,29 +302,17 @@ DefCOM & P2P overlay & $\checkmark$ & $\checkmark$ \textit{(partiel)} & $\checkm
 \hline
 PeerTrust \cite{xiong2004peertrust} & P2P décentralisée & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
 \hline
-\textbf{Notre système} & \textbf{P2P plat} & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+\textbf{Le système} & \textbf{P2P plat} & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
 \hline
 \end{tabular}%
 }
-\caption{Comparaison des systèmes existants et positionnement de notre contribution.}
+\caption{Comparaison des systèmes existants et positionnement de la contribution.}
 \label{tab:comparaison}
 \end{table}
 
-\subsection*{Positionnement de notre contribution}
+Le Tableau~\ref{tab:comparaison} positionne le système par rapport aux travaux existants. Comme le montre la dernière ligne, la contribution est la seule à satisfaire simultanément les cinq critères identifiés. Les systèmes anti-\gls{ddos} existants couvrent chacun une dimension isolée~: \gls{dots} standardise la signalisation mais reste hiérarchique et sans confiance dynamique~; le Clearing House partage l'intelligence en différé et de manière centralisée~; NaWas mutualise les ressources sans coordination horizontale entre membres~; DefCOM distribue la défense mais sans modèle de confiance ni interopérabilité formelle. PeerTrust apporte le modèle de confiance manquant, mais dans un contexte e-commerce sans lien avec la mitigation réseau. le système comble l'ensemble de ces lacunes en combinant une architecture P2P décentralisée, une coordination en temps réel, un partage de capacités, et un modèle PeerTrust adapté au contexte DDoS avec crédibilité historique persistée.
 
-Le Tableau~\ref{tab:comparaison} inclut notre système comme ligne de référence. L'analyse qui suit détaille, pour chaque travail existant, ce que notre contribution apporte en réponse aux lacunes identifiées.
-
-Par rapport à \textbf{\gls{dots}}, notre système conserve l'idée d'une signalisation structurée entre entités, mais rompt avec l'asymétrie client--serveur~: chaque nœud est simultanément demandeur et prestataire d'aide. Là où DOTS ne prévoit aucune coordination horizontale entre clients, notre protocole permet à tout nœud de solliciter n'importe quel pair de la coalition via une API symétrique. De plus, notre système intègre un modèle de confiance qui évalue dynamiquement la fiabilité de chaque pair, là où DOTS repose uniquement sur des certificats X.509 pré-provisionnés.
-
-Par rapport au \textbf{DDoS Clearing House}, notre approche vise la coordination en temps réel plutôt que le partage d'intelligence a posteriori. Le Clearing House génère des fingerprints après analyse PCAP, avec un délai incompressible de plusieurs minutes~; dans notre système, les informations de capacité et de disponibilité des pairs sont mises à jour en continu via des heartbeats toutes les 30 secondes, et la sélection des pairs se fait en moins de 33~ms. Par ailleurs, notre architecture est entièrement décentralisée~: il n'existe aucun hub central dont la défaillance bloquerait la coordination.
-
-Par rapport à \textbf{NaWas/NBIP}, notre système réalise une véritable coordination horizontale entre membres. NaWas impose à chaque membre d'interagir uniquement avec l'infrastructure centrale~; dans notre coalition, les nœuds s'évaluent mutuellement, partagent leurs capacités en direct et se sélectionnent selon un algorithme multicritère (WSM-AHP) tenant compte de la confiance, de la capacité disponible, de la latence et de la réciprocité. La protection n'est pas déléguée à un tiers mutualisé mais co-produite par les participants eux-mêmes.
-
-Par rapport à \textbf{DefCOM}, notre travail résout les deux faiblesses fondamentales identifiées~: l'absence de modèle de confiance et le manque d'interopérabilité. Là où DefCOM suppose implicitement que tout n\oe{}ud participant est honnête, notre système calcule formellement un score PeerTrust $T(u) \in [0,1]$ après chaque session et exclut automatiquement les pairs dont le score tombe sous 0,20. L'API REST documentée via OpenAPI~3.0 et sécurisée par mTLS + JWT RS256 remplace le protocole informel de DefCOM par une interface standardisée et interopérable.
-
-Par rapport à \textbf{PeerTrust}, notre contribution est une adaptation opérationnelle du modèle pour le contexte de la mitigation DDoS. Nous remplaçons la notion de \og transaction e-commerce \fg{} par une session d'aide entre nœuds de scrubbing, le feedback par le ratio volume réel/volume accepté $S = \min(1, V_\text{réel}/V_\text{accepté})$, et le facteur contextuel $D(u,i)$ par la sévérité de l'attaque (LOW à CRITICAL). La crédibilité $Cr_i$ est capturée à la clôture de chaque session et persistée, ce qui rend le calcul de $T(u)$ fidèle à la réalité temporelle du réseau — une contribution absente du modèle original.
-
-L'analyse révèle qu'aucun système existant ne combine simultanément les cinq propriétés nécessaires à une défense collaborative opérationnelle. Une architecture \textbf{véritablement décentralisée} (\gls{p2p}) éliminant tout \gls{spof} n'est réalisée que par DefCOM et PeerTrust, mais aucun des deux ne l'applique à la coordination anti-\gls{ddos} en production. Un mécanisme de \textbf{partage de métadonnées d'attaque en temps réel} (et non \textit{a posteriori}) fait défaut~: DOTS transmet des demandes, non des signatures~; le Clearing House partage en différé. Une \textbf{orchestration coordonnée des actions de mitigation} entre participants n'est qu'esquissée dans DefCOM, sans mécanisme de confiance garantissant l'honnêteté des participants. Précisément, un \textbf{modèle de confiance dynamique et formalisé} — permettant de quantifier et de faire évoluer la fiabilité de chaque pair sans relation préétablie — est absent de tous les systèmes DDoS~; PeerTrust le fournit mais dans un contexte e-commerce sans lien avec la mitigation. Enfin, une \textbf{mutualisation effective des capacités de scrubbing} couplée à une sélection intelligente des pairs reste inexistante~: NaWas mutualise physiquement mais sans coordination horizontale ni critère de sélection basé sur la confiance.
+L'analyse révèle qu'aucun système existant ne combine simultanément les cinq propriétés nécessaires à une défense collaborative opérationnelle. Une architecture véritablement décentralisée (\gls{p2p}) éliminant tout \gls{spof} n'est réalisée que par DefCOM et PeerTrust, mais aucun des deux ne l'applique à la coordination anti-\gls{ddos} en production. Un mécanisme de \textbf{partage de métadonnées d'attaque en temps réel} (et non \textit{a posteriori}) fait défaut~: DOTS transmet des demandes, non des signatures~; le Clearing House partage en différé. Une \textbf{orchestration coordonnée des actions de mitigation} entre participants n'est qu'esquissée dans DefCOM, sans mécanisme de confiance garantissant l'honnêteté des participants. Précisément, un \textbf{modèle de confiance dynamique et formalisé} — permettant de quantifier et de faire évoluer la fiabilité de chaque pair sans relation préétablie — est absent de tous les systèmes DDoS~; PeerTrust le fournit mais dans un contexte e-commerce sans lien avec la mitigation. Enfin, une \textbf{mutualisation effective des capacités de scrubbing} couplée à une sélection intelligente des pairs reste inexistante~: NaWas mutualise physiquement mais sans coordination horizontale ni critère de sélection basé sur la confiance.
 
 % --------------------------------------------------
 \section{Conclusion}

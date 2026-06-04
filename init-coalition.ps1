@@ -44,14 +44,18 @@ foreach ($n in $nodes) {
     $maxRetry = 15
     $ok = $false
     for ($i = 1; $i -le $maxRetry; $i++) {
+        $tcpClient = New-Object System.Net.Sockets.TcpClient
         try {
-            Invoke-RestMethod $url -ErrorAction Stop | Out-Null
-            Write-Host "  $($n.name) pret" -ForegroundColor Green
+            $tcpClient.Connect("localhost", $n.port)
+            Write-Host "  $($n.name) pret (TCP OK)" -ForegroundColor Green
             $ok = $true
+            $tcpClient.Close()
             break
         } catch {
             Write-Host "  $($n.name) : attente ($i/$maxRetry)..." -ForegroundColor Yellow
             Start-Sleep -Seconds 2
+        } finally {
+            $tcpClient.Dispose()
         }
     }
     if (-not $ok) {

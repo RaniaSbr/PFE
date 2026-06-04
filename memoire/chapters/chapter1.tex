@@ -16,7 +16,7 @@ Ce chapitre a pour objectif de poser les bases conceptuelles nécessaires à la 
 \section{Les attaques par déni de service distribué (DDoS)}
 \label{sec:ddos}
 
-\subsection{Définition }
+\subsection{Définition}
 
 Une attaque par déni de service (\gls{dos}) désigne toute action malveillante visant à rendre un service informatique indisponible pour ses utilisateurs légitimes, en épuisant les ressources du système cible (bande passante, mémoire, CPU, connexions). Lorsque cette attaque est menée simultanément depuis un grand nombre de machines distribuées, on parle d'attaque \gls{ddos} \cite{mirkovic2004taxonomy}.
 
@@ -25,9 +25,9 @@ Mirkovic et Reiher définissent une attaque \gls{ddos} comme~: \og une tentative
 
 \subsection{Architecture d'une attaque DDoS}
 
-Une attaque \gls{ddos} repose sur une architecture à plusieurs niveaux impliquant différents acteurs (voir Figure~\ref{fig:ddos_archi}). \textbf{L'attaquant (\textit{handler})} est l'entité malveillante qui orchestre l'attaque depuis une machine maîtresse. Il s'appuie sur un \textbf{réseau de commande et contrôle (C\&C)}, infrastructure permettant de coordonner les agents d'attaque à distance, souvent dissimulée via des protocoles légitimes (IRC, HTTP, \gls{p2p}). Les \textbf{agents (\textit{zombies} / \textit{bots})} sont des machines compromises --- ordinateurs, serveurs, objets connectés \gls{iot} --- qui exécutent les instructions reçues du C\&C et génèrent le trafic malveillant. Enfin, \textbf{la cible (victime)} est le système dont on cherche à épuiser les ressources~: serveur web, infrastructure DNS, routeurs de transit, etc. Specht et Lee \cite{specht2004ddos} soulignent que la compromission de milliers voire de millions de machines forme des botnets dont la puissance agrégée dépasse largement la capacité de réponse d'un seul n\oe{}ud de défense, justifiant ainsi l'intérêt d'une défense distribuée et collaborative.
+Une attaque \gls{ddos} repose sur une architecture à plusieurs niveaux impliquant différents acteurs (voir Figure~\ref{fig:ddos_archi}). \textbf{L'attaquant (\textit{handler})} est l'entité malveillante qui orchestre l'attaque depuis une machine maîtresse. Il s'appuie sur un \textbf{réseau de commande et contrôle (C\&C)}, infrastructure permettant de coordonner les agents d'attaque à distance, souvent dissimulée via des protocoles légitimes (IRC, HTTP, \gls{p2p}). Les \textbf{agents (\textit{zombies} / \textit{bots})} sont des machines compromises --- ordinateurs, serveurs, objets connectés \gls{iot} --- qui exécutent les instructions reçues du C\&C et génèrent le trafic malveillant. Enfin, \textbf{la cible (victime)} est le système dont on cherche à épuiser les ressources~: serveur web, infrastructure DNS, routeurs de transit, etc. Specht et Lee \cite{specht2004ddos} soulignent que la compromission de milliers voire de millions de machines forme des botnets dont la puissance agrégée dépasse largement la capacité de réponse d'un seul n\oe{}ud de défense~; le botnet Mirai \cite{antonakakis2017mirai} en constitue l'exemple emblématique, ayant recruté plus de 600\,000 objets connectés \gls{iot} pour lancer des attaques dépassant 1~Tbps, justifiant ainsi l'intérêt d'une défense distribuée et collaborative.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[
     node distance=1.8cm and 1.6cm,
@@ -44,10 +44,10 @@ Une attaque \gls{ddos} repose sur une architecture à plusieurs niveaux impliqua
     lab/.style={font=\scriptsize}
 ]
 
-\node[box, fill=red!10]    (att)  {Attaquant\\(\textit{handler})};
-\node[box, fill=gray!15,   right=of att]  (cc)   {Serveur C\&C};
-\node[box, fill=orange!15, right=1.8cm of cc]   (bots) {Botnet\\(zombies)};
-\node[box, fill=blue!15,   right=1.8cm of bots] (vic)  {Victime\\(serveur cible)};
+\node[box, fill=white]    (att)  {Attaquant\\(\textit{handler})};
+\node[box, fill=white,   right=of att]  (cc)   {Serveur C\&C};
+\node[box, fill=white, right=1.8cm of cc]   (bots) {Botnet\\(zombies)};
+\node[box, fill=white,   right=1.8cm of bots] (vic)  {Victime\\(serveur cible)};
 
 \draw[arr] (att) -- node[lab, above]{ordres} (cc);
 \draw[arr] (cc)  -- node[lab, above]{contrôle} (bots);
@@ -77,7 +77,7 @@ Ces attaques exploitent des faiblesses dans les protocoles de communication (TCP
 
 Ces attaques ciblent la couche application du modèle OSI et sont particulièrement difficiles à distinguer du trafic légitime, car elles utilisent des requêtes HTTP, HTTPS, DNS valides du point de vue syntaxique \cite{zargar2013survey}. \textbf{L'HTTP Flood} consiste en l'envoi massif de requêtes HTTP GET ou POST vers un serveur web, saturant sa capacité de traitement sans nécessiter un volume de trafic important. \textbf{Slowloris} adopte une approche plus subtile~: il maintient un maximum de connexions HTTP ouvertes en envoyant des en-têtes partiels à faible débit, empêchant ainsi le serveur d'accepter de nouvelles connexions légitimes. Le \textbf{DNS Query Flood} procède par envoi massif de requêtes DNS syntaxiquement valides pour épuiser les ressources des serveurs de noms.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Synthèse comparative des catégories d'attaques DDoS.}
 \label{tab:classif_ddos}
@@ -134,7 +134,7 @@ Le processus de mitigation via \textit{scrubbing center} se déroule en plusieur
 \end{enumerate}
 Parmi les principaux fournisseurs de \textit{scrubbing centers}, on trouve des acteurs comme Arbor Networks (Sightline/TMS), Akamai (Prolexic), Radware (DefensePro) et A10 Networks (Thunder TPS). Ces solutions offrent des capacités de traitement allant de quelques dizaines de Gbps à plusieurs Tbps selon l'infrastructure déployée.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[
     node distance=0.8cm,
@@ -147,10 +147,10 @@ Parmi les principaux fournisseurs de \textit{scrubbing centers}, on trouve des a
     arr/.style={-{Stealth[length=3mm]}, thick}
 ]
 
-\node[stp, fill=blue!10]   (det) {1. Détection\\Anomalie};
-\node[stp, fill=orange!15, right=of det] (red) {2. Redirection\\BGP / DNS};
-\node[stp, fill=red!10,    right=of red] (fil) {3. Filtrage\\DPI, Rate limit};
-\node[stp, fill=green!15,  right=of fil] (rei) {4. Réinjection\\GRE / MPLS};
+\node[stp, fill=white]   (det) {1. Détection\\Anomalie};
+\node[stp, fill=white, right=of det] (red) {2. Redirection\\BGP / DNS};
+\node[stp, fill=white,    right=of red] (fil) {3. Filtrage\\DPI, Rate limit};
+\node[stp, fill=white,  right=of fil] (rei) {4. Réinjection\\GRE / MPLS};
 
 \draw[arr] (det) -- (red);
 \draw[arr] (red) -- (fil);
@@ -182,7 +182,7 @@ Le mécanisme de protection d'un CDN fonctionne comme suit~:
     \item \textbf{Transmission du trafic légitime~:} seul le trafic validé est transmis au serveur d'origine via un canal sécurisé (HTTPS).
 \end{enumerate}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[
     node distance=1.5cm and 2cm,
@@ -194,12 +194,12 @@ Le mécanisme de protection d'un CDN fonctionne comme suit~:
     },
     arr/.style={-{Stealth[length=3mm]}, thick}
 ]
-    \node[box, fill=red!15]    (att) {Attaquants};
-    \node[box, fill=gray!10,   right=of att] (dns) {DNS\\Anycast};
-    \node[box, fill=orange!15, right=of dns, yshift=0.8cm]  (pop1) {PoP Europe};
-    \node[box, fill=orange!15, right=of dns]                (pop2) {PoP Asie};
-    \node[box, fill=orange!15, right=of dns, yshift=-0.8cm] (pop3) {PoP USA};
-    \node[box, fill=blue!15,   right=2.5cm of pop2] (origin) {Serveur\\d'origine};
+    \node[box, fill=white]    (att) {Attaquants};
+    \node[box, fill=white,   right=of att] (dns) {DNS\\Anycast};
+    \node[box, fill=white, right=of dns, yshift=0.8cm]  (pop1) {PoP Europe};
+    \node[box, fill=white, right=of dns]                (pop2) {PoP Asie};
+    \node[box, fill=white, right=of dns, yshift=-0.8cm] (pop3) {PoP USA};
+    \node[box, fill=white,   right=2.5cm of pop2] (origin) {Serveur\\d'origine};
 
     \draw[arr, red] (att) -- (dns);
     \draw[arr] (dns) -- (pop1);
@@ -245,7 +245,7 @@ Le mécanisme \textbf{RTBH} (\textit{Remote Triggered Black Hole}, RFC~5635 \cit
     \item Le trafic d'attaque est ainsi éliminé \textit{en amont}, avant qu'il ne sature les liens du réseau victime.
 \end{enumerate}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[
     node distance=2cm and 2.8cm,
@@ -259,9 +259,9 @@ Le mécanisme \textbf{RTBH} (\textit{Remote Triggered Black Hole}, RFC~5635 \cit
 ]
 
 % --- Nœuds ---
-\node[box, fill=red!10]   (att)     {Attaquants};
-\node[box, fill=gray!10,  right=of att]     (transit) {FAI Transit};
-\node[box, fill=blue!10,  right=of transit] (victim)  {Victime};
+\node[box, fill=white]   (att)     {Attaquants};
+\node[box, fill=white,  right=of att]     (transit) {FAI Transit};
+\node[box, fill=white,  right=of transit] (victim)  {Victime};
 \node[box, fill=black!10, below=2.5cm of transit] (null)
     {\texttt{null0}\\(Black hole)};
 
@@ -303,7 +303,7 @@ Le fonctionnement repose sur le même principe que les \textit{scrubbing centers
 
 Le Tableau~\ref{tab:services_cloud} compare les principaux services de mitigation cloud disponibles sur le marché.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Comparaison des principaux services de mitigation cloud.}
 \label{tab:services_cloud}
@@ -313,13 +313,13 @@ Le Tableau~\ref{tab:services_cloud} compare les principaux services de mitigatio
 \hline
 \textbf{Service} & \textbf{Capacité} & \textbf{Couches protégées} & \textbf{Activation} \\
 \hline
-Cloudflare       & 348~Tbps (réseau global) & L3/L4 + L7 (WAF intégré) & Always-on (automatique) \\
+Cloudflare~\cite{cloudflare2025}       & 348~Tbps (réseau global) & L3/L4 + L7 (WAF intégré) & Always-on (automatique) \\
 \hline
-AWS Shield Advanced & Élastique (infra AWS) & L3/L4 + L7 (avec WAF) & Always-on + sur demande \\
+AWS Shield Advanced~\cite{awsshield2024} & Élastique (infra AWS) & L3/L4 + L7 (avec WAF) & Always-on + sur demande \\
 \hline
-Azure DDoS Protection & Élastique (infra Azure) & L3/L4 & Always-on \\
+Azure DDoS Protection~\cite{azureddos2024} & Élastique (infra Azure) & L3/L4 & Always-on \\
 \hline
-Google Cloud Armor & Élastique (infra Google) & L7 (HTTP/HTTPS) & Always-on \\
+Google Cloud Armor~\cite{googlearmor2024} & Élastique (infra Google) & L7 (HTTP/HTTPS) & Always-on \\
 \hline
 Akamai Prolexic  & 20+ Tbps (scrubbing dédié) & L3/L4 + L7 & On-demand (BGP redirect) \\
 \hline
@@ -338,7 +338,7 @@ La redirection du trafic vers une infrastructure de mitigation (qu'il s'agisse d
 
 Le Tableau~\ref{tab:comparaison_infra} compare les différentes infrastructures de mitigation présentées dans cette section selon plusieurs critères clés.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Comparaison des infrastructures de mitigation DDoS.}
 \label{tab:comparaison_infra}

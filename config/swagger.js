@@ -26,7 +26,16 @@ const options = {
       { name: "Monitoring", description: "Metriques et logs" },
       { name: "Simulation", description: "Simulation d'attaques" },
     ],
+    security: [{ bearerAuth: [] }],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Token JWT RS256 obtenu via POST /auth/token",
+        },
+      },
       schemas: {
         Peer: {
           type: "object",
