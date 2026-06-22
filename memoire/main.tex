@@ -5,18 +5,12 @@
 % =============================================
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[french]{babel}
-
-% Police Times New Roman (conforme à la charte)
-\usepackage{mathptmx}
 
 % Espacement entre paragraphes : 6pt après chaque paragraphe (charte §1.4)
 \setlength{\parskip}{6pt}
 \setlength{\parindent}{1.5em}
-
-% Résumé en arabe
-\usepackage{arabtex}
-\usepackage{utf8}
 \usepackage{csquotes}
 \usepackage{tabularx}
 \usepackage{geometry}
@@ -62,7 +56,7 @@
 
 % Couleurs et liens
 \usepackage{xcolor}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=black]{hyperref}
 
 % Tableau en paysage
 \usepackage{pdflscape}
@@ -71,6 +65,11 @@
 \usepackage[backend=biber, style=apa, sorting=nyt, language=french]{biblatex}
 \DeclareLanguageMapping{french}{french-apa}
 \addbibresource{references.bib}
+
+% Forcer l'affichage des URLs dans la webographie
+\DeclareFieldFormat{url}{\mkbibacro{URL}\addcolon\space\url{#1}}
+\DeclareFieldFormat{urldate}{(consulté le\space\mkbibdatelong{#1}{}{})}
+\ExecuteBibliographyOptions{url=true}
 
 % Listings (code source)
 \usepackage{listings}
@@ -188,6 +187,7 @@
 \newacronym{rest}{REST}{Representational State Transfer}
 \newacronym{uuid}{UUID}{Universally Unique Identifier}
 \newacronym{rtt}{RTT}{Round-Trip Time}
+\newacronym{uml}{UML}{Unified Modeling Language}
 
 % =============================================
 % DEBUT DU DOCUMENT
@@ -217,9 +217,6 @@
 \addcontentsline{toc}{chapter}{Table des matières}
 \cleardoublepage
 
-\printglossary[type=\acronymtype, title=Liste des acronymes]
-\addcontentsline{toc}{chapter}{Liste des acronymes}
-\cleardoublepage
 
 \input{chapters/abbreviations}
 \cleardoublepage
@@ -234,9 +231,10 @@
 
 % ----- Corps du mémoire -----
 \pagenumbering{arabic}
+
 \setcounter{page}{1}
 \pagestyle{fancy}
-
+\nocite{*}
 \input{chapters/introduction}
 \input{chapters/chapter1}
 \input{chapters/chapter2}
@@ -245,10 +243,7 @@
 \input{chapters/conclusion}
 
 % ----- Bibliographie -----
+\nocite{batata_igl}
 \printbibliography[heading=bibintoc, title=Bibliographie]
-
-% ----- Annexes -----
-\appendix
-\input{chapters/appendix}
 
 \end{document}

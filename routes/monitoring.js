@@ -50,16 +50,55 @@ const router = express.Router();
  *     parameters:
  *       - in: query
  *         name: severity
- *         schema: { type: string, enum: [INFO, WARNING, CRITICAL] }
+ *         schema: { type: string, enum: [INFO, WARNING, ERROR, CRITICAL] }
  *       - in: query
  *         name: event_type
- *         schema: { type: string }
+ *         schema: { type: string, enum: [PEER_ADDED, PEER_REMOVED, PEER_BANNED, TRUST_LEVEL_CHANGED, ATTACK_DETECTED, AUTH_FAILURE, SYSTEM_CONFIG_CHANGE] }
  *       - in: query
  *         name: limit
  *         schema: { type: integer, default: 50 }
  *     responses:
  *       200:
  *         description: Logs audit
+ *
+ * /incidents:
+ *   get:
+ *     tags: [Monitoring]
+ *     summary: Historique des attaques (alias simplifie de GET /attacks)
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
+ *     responses:
+ *       200:
+ *         description: Liste des attaques par ordre chronologique decroissant
+ *
+ * /attacks/{id}:
+ *   patch:
+ *     tags: [Monitoring]
+ *     summary: Mettre a jour le statut d'une attaque
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status: { type: string, enum: [DETECTED, ANALYZING, MITIGATING_LOCAL, ESCALATED_TO_COALITION, MITIGATED, ENDED, UNMITIGATED] }
+ *               coalition_helped: { type: boolean }
+ *               nb_peers_involved: { type: integer }
+ *               ended_at: { type: string, format: date-time }
+ *               duration_seconds: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Attaque mise a jour
+ *       404:
+ *         description: Attaque introuvable
  */
 
 const ACTIVE_SESSION_STATUSES = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
@@ -151,6 +190,10 @@ router.get("/logs/messages", async (req, res) => {
     if (req.query.message_type) where.message_type = req.query.message_type;
     if (req.query.peer_id) where.peer_id = req.query.peer_id;
     if (req.query.processing_result) where.processing_result = req.query.processing_result;
+    if (req.query.exclude_types) {
+      const excluded = req.query.exclude_types.split(",").map((s) => s.trim());
+      where.message_type = { [Op.notIn]: excluded };
+    }
 
     const localNode = await LocalNodeConfig.findOne({ attributes: ["node_id", "node_name"] });
 

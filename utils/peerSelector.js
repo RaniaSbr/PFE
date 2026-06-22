@@ -43,10 +43,19 @@ function computeScore({ Cp, Lp_inv, Tp, Rp }) {
  * @param {number} [options.overflowGbps]    - Volume excédentaire (optionnel, pour estimation Gbps)
  * @param {number} [options.minTrustScore]   - Score minimum pour participer (défaut : 0.0)
  * @param {boolean} [options.ignoreTrust]    - Ignorer le filtre de confiance
+ * @param {string[]} [options.peerIds]       - Restreint le calcul à cet ensemble de pairs
+ *   précis (ex: ceux ayant déjà accepté) — dans ce cas, le filtre d'éligibilité
+ *   (statut, confiance minimale) est ignoré : l'appelant a déjà décidé du périmètre.
+ * @param {object} [options.capacityOverrides] - { peer_id: capacité_gbps } — remplace
+ *   declared_available_gbps par cette valeur pour le critère C (ex: accepted_volume_gbps
+ *   déclaré au moment de l'acceptation, plus récent que la dernière capacité connue).
  * @returns {Promise<{ plan: Array, total_peers: number }>}
  *   plan : [{ peer, allocation_pct, weight, score, estimated_gbps?, criteria }]
  */
-async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = false } = {}) {
+async function selectPeers({
+  overflowGbps, minTrustScore = 0.0, ignoreTrust = false,
+  peerIds = null, capacityOverrides = null,
+} = {}) {
   const node = await LocalNodeConfig.findOne();
   const policy = node
     ? await PolicyConfig.findOne({
@@ -55,14 +64,22 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
       })
     : null;
 
-  const minTrust = ignoreTrust ? 0.0 : minTrustScore;
+  // Appliquer le seuil de la politique si aucun seuil explicite n'est fourni
+  const policyMin = policy?.min_trust_score_to_help ?? 0.0;
+  const minTrust  = ignoreTrust ? 0.0 : Math.max(minTrustScore, policyMin);
 
-  // Pairs éligibles : ACTIVE, avec capacité disponible
+  // Pairs éligibles : ACTIVE, avec capacité disponible — ou, si peerIds est
+  // fourni, exactement cet ensemble (le périmètre a déjà été décidé ailleurs,
+  // ex. les pairs ayant accepté une sollicitation).
+  const where = peerIds
+    ? { peer_id: { [Op.in]: peerIds } }
+    : {
+        status: { [Op.in]: ["ACTIVE"] },
+        declared_available_gbps: { [Op.gt]: 0 },
+      };
+
   const peers = await Peer.findAll({
-    where: {
-      status: { [Op.in]: ["ACTIVE"] },
-      declared_available_gbps: { [Op.gt]: 0 },
-    },
+    where,
     include: [
       { model: TrustScore, as: "trust_score" },
       { model: ReciprocityLedger, as: "reciprocity_ledger" },
@@ -73,18 +90,27 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
     return { plan: [], total_peers: 0 };
   }
 
-  // Filtrer par score de confiance minimum
-  const candidates = peers.filter((p) => {
-    const score = p.trust_score?.overall_score ?? 0.5;
-    return score >= minTrust;
-  });
+  // Filtrer par score de confiance minimum — sauté si peerIds est fourni,
+  // puisque l'appelant a déjà sélectionné ce périmètre précis.
+  const candidates = peerIds
+    ? peers
+    : peers.filter((p) => {
+        // Les vrais nœuds sans historique de sessions reçoivent un score par défaut élevé
+        const score = p.trust_score?.overall_score ?? 0.75;
+        return score >= minTrust;
+      });
 
   if (candidates.length === 0) {
     return { plan: [], total_peers: 0 };
   }
 
-  // Pré-calculer les valeurs brutes pour normalisation
-  const capValues = candidates.map((p) => Number(p.declared_available_gbps));
+  // Pré-calculer les valeurs brutes pour normalisation — la capacité utilisée
+  // pour le critère C peut être remplacée par capacityOverrides (ex: le
+  // accepted_volume_gbps déclaré à l'acceptation, plus à jour que
+  // declared_available_gbps issu du dernier heartbeat).
+  const capValues = candidates.map((p) =>
+    Number(capacityOverrides?.[p.peer_id] ?? p.declared_available_gbps),
+  );
   const latValues = candidates.map((p) => Number(p.measured_latency_ms ?? 0));
 
   const maxCap = Math.max(...capValues);
@@ -122,9 +148,22 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
   // Construire le plan : pour chaque pair, son poids et son pourcentage du flux
   const plan = scored.map((candidate) => {
     // w_i = Score(p_i) / Σ Score(p_j)
-    const weight         = totalScore > 0 ? candidate.score / totalScore : 1 / scored.length;
-    // Partie entière du pourcentage (opérationnel pour la redirection)
-    const allocation_pct = Math.floor(weight * 100);
+    const weight = totalScore > 0 ? candidate.score / totalScore : 1 / scored.length;
+
+    // Pourcentage brut issu du score WSM — minimum 1 % : un pair avec un poids
+    // non nul ne doit jamais être arrondi à 0 (sinon alloc_i=0 dans le WRR,
+    // qui l'exclurait silencieusement de toute distribution de paquets).
+    const wsm_allocation_pct = Math.max(1, Math.floor(weight * 100));
+
+    // Taux de capacité : part maximale que ce pair peut physiquement absorber
+    // capacity_ratio = cap_disp / overflow_gbps (plafonné à 100 %, minimum 1 %)
+    const capacity_ratio_pct = (overflowGbps !== undefined && overflowGbps > 0)
+      ? Math.max(1, Math.min(100, Math.floor((candidate.cap_disp / overflowGbps) * 100)))
+      : 100;
+
+    // Contrainte : allocation ≤ taux de capacité (un pair ne peut pas absorber
+    // plus que ce qu'il déclare disponible par rapport au volume à redistribuer)
+    const allocation_pct = Math.min(wsm_allocation_pct, capacity_ratio_pct);
 
     const entry = {
       peer: {
@@ -136,9 +175,11 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
         measured_latency_ms:     candidate.peer.measured_latency_ms,
         trust_level:             candidate.peer.trust_score?.trust_level ?? "BRONZE",
       },
-      wsm_score:      Number(candidate.score.toFixed(4)),
-      weight:         Number(weight.toFixed(4)),
-      allocation_pct,
+      wsm_score:           Number(candidate.score.toFixed(4)),
+      weight:              Number(weight.toFixed(4)),
+      wsm_allocation_pct,   // allocation brute selon le score WSM
+      capacity_ratio_pct,   // plafond physique (cap_disp / overflow_gbps)
+      allocation_pct,       // allocation effective = min(wsm, capacité)
       criteria: {
         capacity_normalized:     Number(candidate.criteria.Cp.toFixed(4)),
         latency_normalized_inv:  Number(candidate.criteria.Lp_inv.toFixed(4)),
@@ -147,7 +188,7 @@ async function selectPeers({ overflowGbps, minTrustScore = 0.0, ignoreTrust = fa
       },
     };
 
-    // Si le volume total est connu, plafonner par la capacité réelle du pair
+    // Gbps estimés : poids × overflow, plafonné par la capacité disponible
     if (overflowGbps !== undefined && overflowGbps > 0) {
       const raw_gbps = weight * overflowGbps;
       entry.estimated_gbps = Number(Math.min(raw_gbps, candidate.cap_disp).toFixed(3));

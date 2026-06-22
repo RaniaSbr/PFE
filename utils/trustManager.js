@@ -62,7 +62,7 @@ async function fetchCrFromPeer(peer, localNodeId) {
     }
     return DEFAULT_TRUST;
   } catch {
-    return DEFAULT_TRUST;
+    return 1.0;
   }
 }
 

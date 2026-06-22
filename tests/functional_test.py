@@ -33,8 +33,7 @@ import random
 import time
 import json
 from typing import Dict, List, Optional
-from node_utils import make_token, check_token, need_auth, SECRET
-
+from node_utils import make_token, check_token, need_auth, SECRET, TOKEN_TTL
 # ── Seed fixe EN PREMIER — avant tout appel random ────────────────────────────
 random.seed(42)
 

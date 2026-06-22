@@ -567,10 +567,21 @@
         font-weight: 600;
       }
       .wsm-alloc {
-        width: 40px;
+        width: 80px;
         text-align: right;
         color: var(--muted);
         font-size: 12px;
+        font-family: var(--font-mono);
+      }
+      .wsm-alloc .alloc-capped {
+        color: var(--amber);
+        font-weight: 600;
+      }
+      .wsm-alloc .alloc-raw {
+        color: var(--faint);
+        text-decoration: line-through;
+        margin-left: 2px;
+        font-size: 10px;
       }
       .dist-label {
         width: 60px;
@@ -707,8 +718,6 @@
       /* --- ATTACK BANNER --- */
       #attack-banner {
         display: none;
-        background: var(--red-bg);
-        border-left: 4px solid var(--red);
         border-radius: 8px;
         padding: 16px 20px;
         margin-bottom: 24px;
@@ -894,9 +903,9 @@
         >
       </div>
       <div class="topbar-right">
-        <span id="clock">—</span>
-        <span id="last-refresh" style="color: var(--faint)">màj —</span>
+        <span id="last-refresh" style="color: var(--faint)"></span>
         <button
+          id="btn-reset-coalition"
           class="btn-inline danger"
           onclick="coalitionReset()"
           style="margin-left: 12px"
@@ -906,8 +915,6 @@
         <span id="reset-status" style="color: var(--muted)"></span>
       </div>
     </div>
-
-    ////////////////////////////////
 
     <!-- NAV -->
     <div class="nav">
@@ -925,7 +932,7 @@
     <!-- ═══════════ PAGE: OVERVIEW ═══════════ -->
     <div class="page active" id="page-overview">
       <div id="attack-banner">
-        <div class="atk-label">⚠ Attaque DDoS en cours</div>
+        <div class="atk-label">Attaque DDoS en cours</div>
         <div class="atk-info" id="attack-info">—</div>
       </div>
 
@@ -996,9 +1003,7 @@
                 padding: 16px;
                 font-size: 12px;
               "
-            >
-              En attente…
-            </div>
+            ></div>
           </div>
           <div
             style="
@@ -1077,14 +1082,7 @@
               </tr>
             </thead>
             <tbody id="peers-tbody">
-              <tr>
-                <td
-                  colspan="9"
-                  style="text-align: center; color: var(--muted); padding: 20px"
-                >
-                  En attente…
-                </td>
-              </tr>
+              <tr></tr>
             </tbody>
           </table>
         </div>
@@ -1159,35 +1157,35 @@
             <div class="step-num step-pending"></div>
             <div class="step-body">
               <div class="step-title">Détection — anomalie trafic</div>
-              <div class="step-detail" id="step-1-detail">En attente…</div>
+              <div class="step-detail" id="step-1-detail"></div>
             </div>
           </div>
           <div class="step" id="step-2">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Caractérisation + capacité locale</div>
-              <div class="step-detail" id="step-2-detail">En attente…</div>
+              <div class="step-title">Escalade coalition — WSM</div>
+              <div class="step-detail" id="step-2-detail"></div>
             </div>
           </div>
           <div class="step" id="step-3">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Escalade coalition — WSM</div>
-              <div class="step-detail" id="step-3-detail">En attente…</div>
+              <div class="step-title">Envoi des demandes d'aide</div>
+              <div class="step-detail" id="step-3-detail"></div>
             </div>
           </div>
           <div class="step" id="step-4">
             <div class="step-num step-pending"></div>
             <div class="step-body">
               <div class="step-title">Mitigation distribuée active</div>
-              <div class="step-detail" id="step-4-detail">En attente…</div>
+              <div class="step-detail" id="step-4-detail"></div>
             </div>
           </div>
           <div class="step" id="step-5" style="border-bottom: none">
             <div class="step-num step-pending"></div>
             <div class="step-body">
               <div class="step-title">Mise à jour scores PeerTrust</div>
-              <div class="step-detail" id="step-5-detail">En attente…</div>
+              <div class="step-detail" id="step-5-detail"></div>
             </div>
           </div>
         </div>
@@ -1360,6 +1358,22 @@
         </div>
       </div>
 
+      <div class="panel" style="margin-bottom: 16px">
+        <div class="panel-title">Heartbeats</div>
+        <div id="hb-log" class="scrollable-sm">
+          <div
+            style="
+              color: var(--muted);
+              text-align: center;
+              padding: 12px;
+              font-size: 12px;
+            "
+          >
+            Chargement…
+          </div>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="panel-title">Scalabilité — 20 → 100 nœuds</div>
         <img
@@ -1512,14 +1526,6 @@
       ];
       const PRIMARY_PORT = 3001;
 
-      // ── CLOCK ─────────────────────────────────────────────────────────────
-      function updateClock() {
-        document.getElementById("clock").textContent =
-          new Date().toLocaleTimeString("fr-FR", { hour12: false });
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
-
       // ── FETCH ─────────────────────────────────────────────────────────────
       async function api(port, path, opts = {}) {
         const base = port === PRIMARY_PORT ? "" : `https://localhost:${port}`;
@@ -1535,7 +1541,14 @@
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       }
+      let _tokenCache = "";
+      let _tokenExpiresAt = 0;
       async function getToken() {
+        // Réutilise le token tant qu'il reste valable plus de 60s — évite
+        // de redemander un JWT à chaque cycle de polling (5 timers en
+        // parallèle sinon, cf. refresh/renderAuditLog/renderMessageLog/
+        // renderHeartbeatLog/populateViolPeers).
+        if (_tokenCache && Date.now() < _tokenExpiresAt) return _tokenCache;
         try {
           const d = await api(PRIMARY_PORT, "/auth/token", {
             method: "POST",
@@ -1544,6 +1557,10 @@
               node_secret: "shieldnet-secret-key-2025",
             },
           });
+          if (d.token) {
+            _tokenCache = d.token;
+            _tokenExpiresAt = Date.now() + 13 * 60 * 1000; // marge sur les 15 min
+          }
           return d.token || "";
         } catch {
           return "";
@@ -1591,8 +1608,20 @@
       <div class="nc-score-row"><span>PeerTrust</span><span>${score != null ? score.toFixed(3) : "N/A"}</span></div>
       <div class="nc-bar-bg"><div class="nc-bar-fill fill-${level}" style="width:${pct}%"></div></div>
       <div class="nc-metrics">
-        <div>Charge <span>${peer.current_load_percent != null ? peer.current_load_percent + "%" : "—"}</span></div>
-        <div>Latence <span>${peer.measured_latency_ms != null ? peer.measured_latency_ms + " ms" : "—"}</span></div>
+        <div>Charge <span>${
+          peer.declared_available_gbps != null &&
+          peer.max_scrubbing_capacity_gbps > 0
+            ? Math.round(
+                (1 -
+                  peer.declared_available_gbps /
+                    peer.max_scrubbing_capacity_gbps) *
+                  100,
+              ) + "%"
+            : peer.current_load_percent != null
+              ? peer.current_load_percent + "%"
+              : "—"
+        }</span></div>
+        <div>Latence <span>${peer.measured_latency_ms != null ? Math.round(peer.measured_latency_ms) + " ms" : "—"}</span></div>
       </div>`;
           grid.appendChild(card);
         });
@@ -1713,7 +1742,16 @@
       <div class="wsm-name">${p.peer?.peer_name || p.peer_name || "—"}</div>
       <div class="wsm-bar-bg"><div class="wsm-bar-fill" style="width:${(((p.wsm_score || 0) / maxS) * 100).toFixed(1)}%"></div></div>
       <div class="wsm-score">${(p.wsm_score || 0).toFixed(4)}</div>
-      <div class="wsm-alloc">${p.allocation_pct != null ? p.allocation_pct + "%" : ""}</div>
+      <div class="wsm-alloc" title="alloc effective / plafond capacité">${(() => {
+        const eff = p.allocation_pct;
+        const raw = p.wsm_allocation_pct;
+        const cap = p.capacity_ratio_pct;
+        if (eff == null) return "";
+        const capped = raw != null && cap != null && eff < raw;
+        return capped
+          ? `<span class="alloc-capped">${eff}%</span><span class="alloc-raw">${raw}%</span>`
+          : `${eff}%`;
+      })()}</div>
     </div>`,
           )
           .join("");
@@ -1800,6 +1838,18 @@
           peers.forEach((p) => {
             if (p.peer_name) peersMap[p.peer_name] = p;
           });
+          // Ajouter le nœud local (university) depuis /status — absent de PEERS
+          if (metricsRaw.value) {
+            const m = metricsRaw.value;
+            peersMap["node-university"] = {
+              peer_name: "node-university",
+              organization_name: "ESI Alger",
+              status: "ACTIVE",
+              declared_available_gbps: m.available_gbps,
+              current_load_percent: m.current_load_pct,
+              measured_latency_ms: null,
+            };
+          }
           renderCards(peersMap, trustMap);
           renderTable(peers, trustMap);
           renderStats(peers, trustMap, attacks);
@@ -1812,8 +1862,7 @@
           );
           renderSessionHistory();
           renderCoalition();
-          document.getElementById("last-refresh").textContent =
-            "màj " + new Date().toLocaleTimeString("fr-FR", { hour12: false });
+          document.getElementById("last-refresh").textContent;
         } catch (e) {
           console.error(e);
         }
@@ -1852,32 +1901,22 @@
           btn.disabled = false;
           return;
         }
-        status.textContent = "Enregistrement de 100 nœuds…";
-        const tasks = Array.from({ length: 100 }, (_, i) => {
-          const pid = uuid();
-          const cap = (Math.random() * 9.5 + 0.5).toFixed(2);
-          return fetch("/api/v1/peers/register", {
+        status.textContent = "Création de 100 nœuds (GOLD/SILVER/BRONZE/SUSPECT/BANNED)…";
+        try {
+          const r = await fetch("/api/v1/simulation/seed-peers", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              peer_id: pid,
-              peer_name: `vnode-${String(i).padStart(3, "0")}`,
-              organization_name: `Org-${i}`,
-              organization_type: ORG_TYPES[i % ORG_TYPES.length],
-              country_code: COUNTRIES[i % COUNTRIES.length],
-              api_endpoint_url: `https://vnode-${i}:8443`,
-              public_key: `DEMO_KEY_${pid}`,
-              max_scrubbing_capacity_gbps: parseFloat(cap),
-              declared_available_gbps: parseFloat((cap * 0.8).toFixed(2)),
-            }),
-            signal: AbortSignal.timeout(8000),
-          })
-            .then((r) => (r.ok ? pid : null))
-            .catch(() => null);
-        });
-        const results = await Promise.all(tasks);
-        simPeerIds = results.filter(Boolean);
-        status.textContent = `✓ ${simPeerIds.length} nœuds enregistrés`;
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+            signal: AbortSignal.timeout(60000),
+          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+          simPeerIds = (d.peers || []).map((p) => p.peer_id).filter(Boolean);
+          const dist = d.distribution || {};
+          status.textContent = `✓ ${simPeerIds.length} nœuds créés — ${Object.entries(dist).map(([k, v]) => `${k}:${v}`).join(" ")}`;
+        } catch (e) {
+          status.textContent = `Erreur : ${e.message}`;
+        }
         document.getElementById("btn-clean").disabled = false;
         await refresh();
       }
@@ -1993,77 +2032,48 @@
         stepSet(
           2,
           "active",
-          "Analyse trafic — identification vecteur, mesure volume…",
+          "Algorithme WSM — sélection des pairs éligibles…",
         );
         await sleep(1100);
         const localCap = nodeState.local_capacity_gbps ?? 0;
         const available = nodeState.available_gbps ?? 0;
-        stepSet(
-          2,
-          "done",
-          `Capacité locale : <strong>${localCap} Gbps</strong> | Disponible : <strong>${available} Gbps</strong> — Escalade vers coalition`,
-        );
-        await sleep(400);
-
-        stepSet(
-          3,
-          "active",
-          "Algorithme WSM — sélection et envoi des demandes…",
-        );
-        await sleep(900);
-        let wsmPlan = [];
+        // Peuplement coalition — pairs virtuels
+        let seededCount = 0;
         try {
-          const r2 = await fetch("/api/v1/trust/select-peers", {
+          const rs = await fetch("/api/v1/simulation/seed-peers", {
             method: "POST",
             headers: { ...hdr, "Content-Type": "application/json" },
             body: JSON.stringify({}),
           });
+          const ds = await rs.json();
+          if (rs.ok && ds.distribution) {
+            const d = ds.distribution;
+            seededCount = Object.values(d).reduce((a, b) => a + b, 0);
+          }
+        } catch (e) {}
+
+        let wsmPlan = [];
+        // Scoring WSM — calculé et affiché AVANT l'envoi des demandes (CU4)
+        try {
+          const r2 = await fetch("/api/v1/trust/select-peers", {
+            method: "POST",
+            headers: { ...hdr, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              overflow_gbps: Math.max(0, volumeGbps - available),
+            }),
+          });
           const d2 = await r2.json();
           wsmPlan = d2.ranked_peers || d2.selected_peers || d2.plan || [];
         } catch (e) {}
-        // Tous les pairs éligibles, du meilleur score WSM au moins bon — par lots de BATCH
-        const topPeers = [...wsmPlan].reverse();
-        const allResults = [];
-        for (let i = 0; i < topPeers.length; i += BATCH) {
-          const batch = topPeers.slice(i, i + BATCH);
-          const batchResults = await Promise.all(
-            batch.map(async (p) => {
-              const peerId = p.peer_id || p.peer?.peer_id;
-              const alloc =
-                p.weight != null ? p.weight * 100 : p.allocation_pct || 1;
-              try {
-                const r3 = await fetch("/api/v1/help/request", {
-                  method: "POST",
-                  headers: { ...hdr, "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    attack_id: attackId,
-                    helping_peer_id: peerId,
-                    requesting_node_id: localNodeId,
-                    allocation_pct: alloc,
-                    direction: "OUTBOUND_REQUEST",
-                    status: "REQUESTED",
-                  }),
-                });
-                if (!r3.ok) return null;
-                const d3 = await r3.json();
-                const sid = d3.session_id || d3.id || d3.dataValues?.session_id;
-                return {
-                  session_id: sid,
-                  peer_id: peerId,
-                  peer_name: p.peer_name || p.peer?.peer_name || "?",
-                  alloc,
-                  wsm: p.wsm_score || 0,
-                };
-              } catch {
-                return null;
-              }
-            }),
-          );
-          allResults.push(...batchResults);
-        }
-        const validReqs = allResults.filter(Boolean);
+        // Carte des scores WSM pour lookup rapide
+        const wsmById = {};
+        wsmPlan.forEach((p) => {
+          const pid = p.peer_id || p.peer?.peer_id;
+          if (pid) wsmById[pid] = p;
+        });
 
-        // Table WSM détaillée
+        // Table WSM détaillée — affichée dès que la sélection est connue,
+        // avant l'envoi des demandes d'aide (ordre conforme au CU4)
         const wsmTable =
           wsmPlan.length === 0
             ? "<em>Aucun pair disponible</em>"
@@ -2077,12 +2087,10 @@
               <th style="text-align:right;padding:3px 6px">L</th>
               <th style="text-align:right;padding:3px 6px">WSM</th>
               <th style="text-align:right;padding:3px 6px">Alloc</th>
-              <th style="text-align:center;padding:3px 6px">Sélectionné</th>
             </tr></thead>
             <tbody>
             ${wsmPlan
               .map((p, i) => {
-                const pid = p.peer_id || p.peer?.peer_id;
                 const name = p.peer_name || p.peer?.peer_name || "?";
                 const level = p.trust_level || p.peer?.trust_level || "—";
                 const trust =
@@ -2104,7 +2112,6 @@
                     ? (p.weight * 100).toFixed(2)
                     : p.allocation_pct || 0;
                 const alloc = `${allocVal}%`;
-                const sel = validReqs.some((r) => r.peer_id === pid);
                 const lvlCol =
                   {
                     GOLD: "#b45309",
@@ -2113,25 +2120,85 @@
                     SUSPECT: "#b91c1c",
                     BANNED: "#7f1d1d",
                   }[level] || "var(--muted)";
-                return `<tr style="border-bottom:1px solid var(--bg);${sel ? "background:#f0fdf4" : ""}">
-                <td style="padding:3px 6px;font-weight:${sel ? "600" : "400"}">${name}</td>
+                return `<tr style="border-bottom:1px solid var(--bg)">
+                <td style="padding:3px 6px;font-weight:600">${name}</td>
                 <td style="padding:3px 6px;color:${lvlCol};font-size:10px">${level}</td>
                 <td style="padding:3px 6px;text-align:right">${trust}</td>
                 <td style="padding:3px 6px;text-align:right;color:var(--muted)">${cap}</td>
                 <td style="padding:3px 6px;text-align:right;color:var(--muted)">${lat}</td>
                 <td style="padding:3px 6px;text-align:right;font-weight:600;color:var(--blue)">${wsm}</td>
                 <td style="padding:3px 6px;text-align:right">${alloc}</td>
-                <td style="padding:3px 6px;text-align:center">${sel ? "✓" : ""}</td>
               </tr>`;
               })
               .join("")}
             </tbody>
           </table>
           <div style="font-size:10px;color:var(--faint);margin-top:4px;font-family:var(--font-mono)">
-            WSM = 0.52·C + 0.20·L + 0.20·T + 0.08·R &nbsp;|&nbsp; ${wsmPlan.length} pairs évalués, ${validReqs.length} sélectionnés &nbsp;|&nbsp; Σ Score<sub>j</sub> = ${wsmPlan.reduce((s, p) => s + (p.wsm_score || 0), 0).toFixed(3)}
+            WSM = 0.52·C + 0.20·L + 0.20·T + 0.08·R &nbsp;|&nbsp; ${wsmPlan.length} pairs scorés (éligibles) &nbsp;|&nbsp; Σ Score<sub>j</sub> = ${wsmPlan.reduce((s, p) => s + (p.wsm_score || 0), 0).toFixed(3)}${seededCount > 0 ? ` &nbsp;|&nbsp; coalition totale : ${seededCount} pairs` : ""}
           </div>`;
+        stepSet(2, "done", wsmTable);
 
-        stepSet(3, "done", wsmTable);
+        stepSet(3, "active", "Envoi des demandes d'aide aux pairs sélectionnés…");
+        await sleep(900);
+        // CU4 : seuls les pairs retournés par la sélection WSM reçoivent une
+        // demande d'aide — pas l'ensemble de la coalition (cf. §3.3.2 chap.3)
+        const peersToAlert = wsmPlan
+          .map((p) => ({
+            peer_id: p.peer_id || p.peer?.peer_id,
+            peer_name: p.peer_name || p.peer?.peer_name || "?",
+          }))
+          .filter((p) => p.peer_id && p.peer_id !== localNodeId);
+        const allResults = [];
+        for (let i = 0; i < peersToAlert.length; i += BATCH) {
+          const batch = peersToAlert.slice(i, i + BATCH);
+          const batchResults = await Promise.all(
+            batch.map(async (p) => {
+              const peerId = p.peer_id;
+              const wsmEntry = wsmById[peerId];
+              const alloc =
+                wsmEntry?.weight != null ? wsmEntry.weight * 100 : 1;
+              try {
+                const r3 = await fetch("/api/v1/help/request", {
+                  method: "POST",
+                  headers: { ...hdr, "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    attack_id: attackId,
+                    helping_peer_id: peerId,
+                    requesting_node_id: localNodeId,
+                    allocation_pct: alloc,
+                    direction: "OUTBOUND_REQUEST",
+                    status: "REQUESTED",
+                  }),
+                });
+                if (!r3.ok) return null;
+                const d3 = await r3.json();
+                const sid = d3.session_id || d3.id || d3.dataValues?.session_id;
+                return {
+                  session_id: sid,
+                  peer_id: peerId,
+                  peer_name: p.peer_name || "?",
+                  alloc,
+                  wsm: wsmEntry?.wsm_score || 0,
+                  rejected: d3.status === "REJECTED",
+                };
+              } catch {
+                return null;
+              }
+            }),
+          );
+          allResults.push(...batchResults);
+        }
+        const validReqs = allResults.filter(Boolean);
+        const acceptedReqs = validReqs.filter((r) => !r.rejected);
+        const rejectedCount =
+          peersToAlert.length -
+          validReqs.length +
+          validReqs.filter((r) => r.rejected).length;
+        stepSet(
+          3,
+          "done",
+          `<strong>${peersToAlert.length}</strong> demandes envoyées — <strong>${acceptedReqs.length}</strong> acceptées, <strong>${rejectedCount}</strong> refusées`,
+        );
         // Mettre l'attaque en ESCALATED_TO_COALITION
         if (attackId) {
           fetch(`/api/v1/attacks/${attackId}`, {
@@ -2148,16 +2215,28 @@
         stepSet(4, "active", "Activation tunnels GRE — redirection trafic…");
         await sleep(400);
         const activeSessions = [];
-        const validWithSession = validReqs.filter((r) => r.session_id);
+        const validWithSession = acceptedReqs.filter((r) => r.session_id);
+        // Réallocation post-refus : seuls les pairs ayant accepté forment la
+        // rotation WRR (cf. §4.3.3 chap.3). Leur part est renormalisée pour
+        // couvrir l'overflow, plafonnée par leur capacité réelle déclarée —
+        // un pair refusé n'est jamais "perdu", il n'a simplement jamais fait
+        // partie de la rotation.
+        const overflowGbps = Math.max(0, volumeGbps - available);
+        const totalAcceptedAlloc =
+          validWithSession.reduce((s, r) => s + r.alloc, 0) || 1;
         for (let i = 0; i < validWithSession.length; i += BATCH) {
           const batch = validWithSession.slice(i, i + BATCH);
           await Promise.all(
             batch.map(async (req) => {
-              const overflowGbps = Math.max(0, volumeGbps - available);
-              const gbps = Math.max(
+              const capDisp = wsmById[req.peer_id]?.declared_available_gbps;
+              const renormalizedShare = req.alloc / totalAcceptedAlloc;
+              let gbps = Math.max(
                 0.1,
-                Math.round(overflowGbps * (req.alloc / 100) * 100) / 100,
+                Math.round(overflowGbps * renormalizedShare * 100) / 100,
               );
+              if (capDisp != null) gbps = Math.min(gbps, capDisp);
+              req.finalGbps = gbps;
+              req.finalAllocPct = Number((renormalizedShare * 100).toFixed(2));
               try {
                 const rA = await fetch(
                   `/api/v1/help/${req.session_id}/accept`,
@@ -2193,24 +2272,22 @@
         const activeReqs = validReqs.filter((r) =>
           activeSessions.includes(r.session_id),
         );
+        // Trier par volume décroissant — les valeurs finalGbps/finalAllocPct
+        // ont déjà été recalculées sur le sous-ensemble des accepteurs
+        // (réallocation post-refus, cf. plus haut).
+        activeReqs.sort((a, b) => (b.finalGbps || 0) - (a.finalGbps || 0));
         const totalGbps = activeReqs
-          .reduce(
-            (s, r) =>
-              s + (Math.round(available * (r.alloc / 100) * 10) / 10 || 1),
-            0,
-          )
+          .reduce((s, r) => s + (r.finalGbps || 0), 0)
           .toFixed(1);
         const tunnelRows =
           activeReqs
             .slice(0, 10)
             .map((r) => {
               const name = r.peer_name || r.peer?.peer_name || "?";
-              const gbps =
-                Math.round(available * (r.alloc / 100) * 10) / 10 || 1;
               return `<tr style="border-bottom:1px solid var(--bg)">
               <td style="padding:3px 6px;font-weight:600">${name}</td>
-              <td style="padding:3px 6px;text-align:right;color:var(--green)">${gbps} Gbps</td>
-              <td style="padding:3px 6px;text-align:right">${r.alloc}%</td>
+              <td style="padding:3px 6px;text-align:right;color:var(--green)">${r.finalGbps} Gbps</td>
+              <td style="padding:3px 6px;text-align:right">${Number(r.finalAllocPct).toFixed(2)}%</td>
               <td style="padding:3px 6px;color:var(--muted);font-size:10px">GRE</td>
             </tr>`;
             })
@@ -2227,15 +2304,19 @@
               <th style="padding:3px 6px">Tunnel</th>
             </tr></thead>
             <tbody>${tunnelRows || '<tr><td colspan="4" style="padding:6px;color:var(--muted)">Aucun tunnel actif</td></tr>'}</tbody>
-          </table>`;
+          </table>
+          <div id="attack-counter" style="margin-top:6px;font-size:11px;color:var(--muted)">
+            <strong>${activeSessions.length}</strong> tunnel(s) actif(s) — absorbé : <strong style="color:var(--green)">${totalGbps} Gbps</strong> — durée : <strong>0s</strong>
+          </div>`;
         stepSet(4, "done", tunnelDetail);
         btnEnd.style.display = "block";
         btnEnd.disabled = false;
         attackSeconds = 0;
         attackTimer = setInterval(() => {
           attackSeconds++;
-          document.getElementById("step-4-detail").innerHTML =
-            `<strong>${activeSessions.length}</strong> tunnel(s) GRE actif(s) — volume absorbé : <strong style="color:var(--green)">${totalGbps} Gbps</strong> — durée : <strong>${attackSeconds}s</strong>`;
+          const ctr = document.getElementById("attack-counter");
+          if (ctr)
+            ctr.innerHTML = `<strong>${activeSessions.length}</strong> tunnel(s) actif(s) — absorbé : <strong style="color:var(--green)">${totalGbps} Gbps</strong> — durée : <strong>${attackSeconds}s</strong>`;
         }, 1000);
         await refresh();
         renderAuditLog();
@@ -2325,14 +2406,17 @@
           } catch {}
           const finalSev =
             finalAttack?.severity || finalAttack?.attack?.severity || "—";
-          const totalVol =
+          const totalVolRaw =
             finalAttack?.total_filtered_gbps ??
+            finalAttack?.peak_volume_gbps ??
             finalAttack?.attack?.peak_volume_gbps ??
-            "?";
+            null;
+          const totalVol =
+            totalVolRaw != null ? Number(totalVolRaw).toFixed(1) : "?";
           stepSet(
             5,
             "done",
-            `Durée : <strong>${attackSeconds}s</strong> | Volume filtré : <strong>${totalVol} Gbps</strong> | Sévérité : <strong>${finalSev}</strong> | ${activeCount} pairs mis à jour`,
+            ` Volume filtré : <strong>${totalVol} Gbps</strong> | Sévérité : <strong>${finalSev}</strong> | ${activeCount} pairs mis à jour`,
           );
           currentAttackId = null;
           sessionIds = [];
@@ -2415,26 +2499,32 @@
           }
         };
         log("Reset BDD…");
-        const tok = await nodeToken(3001, "node-university");
-        const hdr = tok
-          ? {
-              Authorization: `Bearer ${tok}`,
-              "Content-Type": "application/json",
-            }
-          : { "Content-Type": "application/json" };
-        try {
-          await fetch("/api/v1/simulation/reset", {
-            method: "POST",
-            headers: hdr,
-            signal: AbortSignal.timeout(8000),
-          });
-        } catch (e) {
-          log("Erreur reset : " + e.message, "#b91c1c");
-          btn.disabled = false;
-          return;
+        // Réinitialiser la base de TOUS les nœuds (pas seulement University)
+        for (const node of COALITION_NODES) {
+          const tok = await nodeToken(node.port, node.name);
+          const hdr = tok
+            ? {
+                Authorization: `Bearer ${tok}`,
+                "Content-Type": "application/json",
+              }
+            : { "Content-Type": "application/json" };
+          try {
+            await fetch(
+              `https://localhost:${node.port}/api/v1/simulation/reset`,
+              {
+                method: "POST",
+                headers: hdr,
+                signal: AbortSignal.timeout(8000),
+              },
+            );
+          } catch (e) {
+            log(`Erreur reset ${node.name}: ` + e.message, "#b91c1c");
+          }
         }
         await sleep(500);
         log("Initialisation des nœuds…");
+        // Collecter les node_id réels retournés par chaque nœud après init
+        const nodeIds = {};
         for (const node of COALITION_NODES) {
           const t = await nodeToken(node.port, node.name);
           const h = t
@@ -2444,7 +2534,7 @@
               }
             : { "Content-Type": "application/json" };
           try {
-            await fetch(
+            const resp = await fetch(
               `https://localhost:${node.port}/api/v1/simulation/node/init`,
               {
                 method: "POST",
@@ -2455,13 +2545,17 @@
                   organization_name: node.org,
                   organization_type: node.type,
                   country_code: "DZ",
-                  api_endpoint_url: `https://localhost:${node.port}/api/v1`,
+                  api_endpoint_url: `https://node-${node.cert}:8443/api/v1`,
                   public_key: `DEMO_KEY_${node.cert}`,
                   max_scrubbing_capacity_gbps: node.capacity,
                   current_load_percent: 20,
                 }),
               },
             );
+            if (resp.ok) {
+              const data = await resp.json();
+              nodeIds[node.name] = data.node_id;
+            }
           } catch {}
         }
         await sleep(500);
@@ -2483,6 +2577,10 @@
                 headers: h,
                 signal: AbortSignal.timeout(6000),
                 body: JSON.stringify({
+                  // Utiliser le vrai node_id du pair pour que les heartbeats matchent
+                  ...(nodeIds[peer.name]
+                    ? { peer_id: nodeIds[peer.name] }
+                    : {}),
                   peer_name: peer.name,
                   organization_name: peer.org,
                   organization_type: peer.type,
@@ -2579,7 +2677,7 @@
             headers: hdr,
           }).then((r) => r.json());
           const sessions = Array.isArray(data) ? data : data.sessions || [];
-          if (countEl) countEl.textContent = `${sessions.length} session(s)`;
+          if (countEl) countEl.textContent = ``;
           if (sessions.length === 0) {
             tbody.innerHTML =
               '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:14px">Aucune session.</td></tr>';
@@ -2753,9 +2851,12 @@
         try {
           const token = await getToken();
           const hdr = token ? { Authorization: `Bearer ${token}` } : {};
-          const d = await fetch("/api/v1/logs/messages?limit=12", {
-            headers: hdr,
-          }).then((r) => r.json());
+          const d = await fetch(
+            "/api/v1/logs/messages?limit=20&exclude_types=HEARTBEAT,HELLO",
+            {
+              headers: hdr,
+            },
+          ).then((r) => r.json());
           const msgs = d.messages || [];
           const el = document.getElementById("msg-log");
           if (!el) return;
@@ -2765,7 +2866,6 @@
             HELP_REJECT: "var(--amber)",
             TRAFFIC_REDIRECT: "#7c3aed",
             ATTACK_OVER: "var(--green)",
-            HEARTBEAT: "var(--border-strong)",
             HELLO: "var(--blue)",
             CAPABILITY_ADV: "var(--blue)",
             ALERT: "var(--red)",
@@ -2800,12 +2900,7 @@
                       (m.direction === "SENT"
                         ? m.peer?.peer_name || m.peer_id?.slice(0, 8)
                         : "local");
-                    const hb =
-                      m.message_type === "HEARTBEAT" ||
-                      m.message_type === "HELLO";
-                    const info = hb
-                      ? `charge ${m.reported_load_pct ?? "?"}% · dispo ${m.reported_available_gbps ?? "?"} Gbps`
-                      : m.rejection_reason || "";
+                    const info = m.rejection_reason || "";
                     return `<div class="audit-row" style="flex-wrap:wrap;gap:2px">
         <span class="audit-t">${t}</span>
         <span style="width:20px;text-align:center;flex-shrink:0">${dir}</span>
@@ -2820,6 +2915,66 @@
       }
       setInterval(renderMessageLog, 5000);
       renderMessageLog();
+
+      // ── HEARTBEAT LOG ─────────────────────────────────────────────────────
+      async function renderHeartbeatLog() {
+        try {
+          const token = await getToken();
+          const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+          const d = await fetch(
+            "/api/v1/logs/messages?limit=60&message_type=HEARTBEAT",
+            {
+              headers: hdr,
+            },
+          ).then((r) => r.json());
+          const seen = new Set();
+          const msgs = (d.messages || [])
+            .filter((m) => {
+              const key =
+                (m.peer_id || "") + "|" + (m.timestamp || "").slice(0, 19);
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            })
+            .slice(0, 15);
+          const el = document.getElementById("hb-log");
+          if (!el) return;
+          el.innerHTML =
+            msgs.length === 0
+              ? '<div style="color:var(--muted);text-align:center;padding:12px;font-size:12px">Aucun heartbeat reçu.</div>'
+              : msgs
+                  .map((m) => {
+                    const t = new Date(m.timestamp).toLocaleTimeString(
+                      "fr-FR",
+                      { hour12: false },
+                    );
+                    const name =
+                      m.peer?.peer_name || m.peer_id?.slice(0, 12) || "?";
+                    const load =
+                      m.reported_load_pct != null
+                        ? `charge <strong>${m.reported_load_pct}%</strong>`
+                        : "";
+                    const avail =
+                      m.reported_available_gbps != null
+                        ? `· dispo <strong>${m.reported_available_gbps} Gbps</strong>`
+                        : "";
+                    const dir =
+                      m.direction === "SENT"
+                        ? '<span style="color:var(--green)">→</span>'
+                        : '<span style="color:var(--blue)">←</span>';
+                    return `<div class="audit-row" style="gap:6px">
+        <span class="audit-t">${t}</span>
+        <span style="width:20px;text-align:center;flex-shrink:0">${dir}</span>
+        <span style="color:var(--border-strong);font-size:10px;font-weight:600;flex-shrink:0">HB</span>
+        <span style="font-size:10px;font-weight:600;flex-shrink:0">${name}</span>
+        <span style="flex:1;font-size:10px;color:var(--muted);font-family:var(--font-mono)">${load} ${avail}</span>
+      </div>`;
+                  })
+                  .join("");
+        } catch {}
+      }
+      setInterval(renderHeartbeatLog, 8000);
+      renderHeartbeatLog();
 
       // ── COALITION VISUALIZATION ───────────────────────────────────────────
       async function renderCoalition() {

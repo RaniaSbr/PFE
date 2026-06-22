@@ -148,21 +148,21 @@ async def main(args=None):
             record("JWT", "Rejet token malformé (401)",
                    r.get("_status") == 401)
 
-        # 1e. Token expiré — on attend 65 secondes (tokens durent 60s)
+        # 1e. Token expiré — on attend 910 secondes (tokens durent 60s)
         if args.fast:
             step("Test d'expiration ignoré (mode --fast)...")
-            warn("Passer sans --fast pour tester l'expiration réelle (65 s)")
+            warn("Passer sans --fast pour tester l'expiration réelle (910 s)")
             record("JWT", "Expiration token après 60s (401)", True,
                    "ignoré --fast (TTL serveur=60s non modifiable côté client)")
         else:
-            step("Test d'expiration du token (attend 65 secondes)...")
+            step("Test d'expiration du token (attend 910 secondes)...")
             print("    [INFO] Génération d'un token frais...")
             r2 = await call(s, "post", "/auth/token",
                             {"node_id": NODE_ID, "node_secret": SECRET})
             exp_token = r2.get("token", "")
             if exp_token:
                 print("    [INFO] Attente de 65 secondes pour expiration...")
-                await asyncio.sleep(65)
+                await asyncio.sleep(905)
                 r3 = await call(s, "get", "/peers", token=exp_token)
                 if r3.get("_status") == 401:
                     ok("401 Token expired reçu ✓")
@@ -399,6 +399,6 @@ async def main(args=None):
 if __name__ == "__main__":
     _parser = argparse.ArgumentParser(description="ShieldNet security test")
     _parser.add_argument("--fast", action="store_true",
-                         help="Ignore le test d'expiration (65 s) pour aller plus vite")
+                         help="Ignore le test d'expiration (910 s) pour aller plus vite")
     _args = _parser.parse_args()
     asyncio.run(main(_args))

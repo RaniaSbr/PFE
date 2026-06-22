@@ -1,5 +1,6 @@
-const express = require("express");
-const { Op } = require("sequelize");
+const express     = require("express");
+const httpsClient = require("../utils/httpsClient");
+const { Op }      = require("sequelize");
 const {
   Attack,
   HelpSession,
@@ -9,12 +10,47 @@ const {
   ReciprocityLedger,
 } = require("../models");
 const { logAudit, logMessage } = require("../utils/logger");
-const { fetchCrFromNetwork } = require("../utils/trustManager");
+const { fetchCrFromNetwork, recalculateAndSave } = require("../utils/trustManager");
+const { selectPeers } = require("../utils/peerSelector");
 
 const router = express.Router();
 
+const NODE_SECRET = process.env.JWT_SECRET || "shieldnet-secret-key-2025";
+const PEER_HEADERS = (extra = {}) => ({
+  "X-Node-Secret": NODE_SECRET,
+  ...extra,
+});
+
 /**
  * @swagger
+ * /alert:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Signaler une attaque DDoS detectee (signal boite de detection)
+ *     description: "Recoit le signal de la boite de detection externe. Le volume peak est une estimation observable ; la severite est calculee automatiquement a la cloture via POST /attack/over."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               peak_volume_gbps: { type: number, description: "Volume de pointe estime (Gbps) — alias volume_gbps accepte" }
+ *               overflow_volume_gbps: { type: number, description: "Volume depassant la capacite locale (Gbps)" }
+ *               local_capacity_at_detection: { type: number, description: "Capacite locale disponible au moment de la detection (Gbps)" }
+ *               target_ip_range: { type: string, description: "Plage IP ciblee (ex: 192.168.1.0/24)" }
+ *               target_service: { type: string, description: "Service cible (ex: HTTP, DNS)" }
+ *               target_port: { type: integer, description: "Port cible (0-65535)" }
+ *               target_protocol: { type: string, description: "Protocole (ex: TCP, UDP)" }
+ *               detected_at: { type: string, format: date-time, description: "Horodatage de detection (defaut: maintenant)" }
+ *     responses:
+ *       201:
+ *         description: Attaque creee
+ *       200:
+ *         description: Attaque mise a jour (si attack_id fourni)
+ *       400:
+ *         description: Donnees invalides
+ *
  * /attacks:
  *   get:
  *     tags: [Coalition]
@@ -22,13 +58,16 @@ const router = express.Router();
  *     parameters:
  *       - in: query
  *         name: status
- *         schema: { type: string, enum: [ONGOING, ENDED, MITIGATED] }
+ *         schema: { type: string, enum: [DETECTED, ANALYZING, MITIGATING_LOCAL, ESCALATED_TO_COALITION, MITIGATED, ENDED, UNMITIGATED] }
  *       - in: query
  *         name: severity
  *         schema: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
  *       - in: query
  *         name: limit
  *         schema: { type: integer, default: 20 }
+ *       - in: query
+ *         name: offset
+ *         schema: { type: integer, default: 0 }
  *     responses:
  *       200:
  *         description: Liste des attaques
@@ -36,7 +75,7 @@ const router = express.Router();
  * /attacks/{attack_id}:
  *   get:
  *     tags: [Coalition]
- *     summary: Détail d'une attaque
+ *     summary: Detai d'une attaque avec ses sessions d'aide
  *     parameters:
  *       - in: path
  *         name: attack_id
@@ -44,14 +83,14 @@ const router = express.Router();
  *         schema: { type: string, format: uuid }
  *     responses:
  *       200:
- *         description: Attaque trouvée
+ *         description: Attaque trouvee
  *       404:
  *         description: Attaque introuvable
  *
  * /help/request:
  *   post:
  *     tags: [Coalition]
- *     summary: Demander l'aide d'un pair
+ *     summary: Demander l'aide d'un pair pour une attaque
  *     requestBody:
  *       required: true
  *       content:
@@ -62,65 +101,94 @@ const router = express.Router();
  *             properties:
  *               attack_id: { type: string, format: uuid }
  *               helping_peer_id: { type: string, format: uuid }
- *               allocation_pct: { type: number, description: "Pourcentage du flux attribué à ce pair (0-100)" }
+ *               allocation_pct: { type: number, description: "Pourcentage du flux alloue a ce pair (0-100)" }
+ *               direction: { type: string, enum: [OUTBOUND_REQUEST, INBOUND_REQUEST, OUTBOUND_OFFER, INBOUND_OFFER], default: OUTBOUND_REQUEST }
  *     responses:
  *       201:
- *         description: Session créée
+ *         description: Session creee en statut REQUESTED
  *       400:
- *         description: Données invalides
+ *         description: Donnees invalides
  *       403:
- *         description: Pair banni ou expulsé
+ *         description: Pair banni ou expulse
+ *       404:
+ *         description: Attaque ou pair introuvable
  *
  * /help/offer:
  *   post:
  *     tags: [Coalition]
- *     summary: Proposer de l'aide à un pair
- *     responses:
- *       201:
- *         description: Offre créée
- *
- * /help/{session_id}/accept:
- *   put:
- *     tags: [Coalition]
- *     summary: Accepter une session d'aide
- *     parameters:
- *       - in: path
- *         name: session_id
- *         required: true
- *         schema: { type: string, format: uuid }
+ *     summary: Proposer proactivement l'aide a un pair (auto_offer_enabled)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [attack_id, helping_peer_id]
  *             properties:
- *               accepted_volume_gbps: { type: number }
+ *               attack_id: { type: string, format: uuid }
+ *               helping_peer_id: { type: string, format: uuid }
+ *               allocation_pct: { type: number }
  *     responses:
- *       200:
- *         description: Session acceptée
- *       409:
- *         description: Statut invalide pour cette transition
+ *       201:
+ *         description: Offre creee en statut OFFERED
  *
- * /help/{session_id}/reject:
+ * /help/{session_id}/accept:
  *   put:
  *     tags: [Coalition]
- *     summary: Rejeter une session d'aide
+ *     summary: Accepter une session d'aide (REQUESTED -> ACCEPTED)
  *     parameters:
  *       - in: path
  *         name: session_id
  *         required: true
  *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accepted_volume_gbps: { type: number, description: "Volume que le pair accepte de traiter (Gbps)" }
+ *               tunnel_type: { type: string, enum: [GRE, VXLAN, IPSEC, BGP_FLOWSPEC] }
+ *               response_time_ms: { type: number, description: "Temps de reponse mesure (ms)" }
  *     responses:
  *       200:
- *         description: Session rejetée
+ *         description: Session acceptee
+ *       404:
+ *         description: Session introuvable
  *       409:
- *         description: Statut invalide pour cette transition
+ *         description: Statut invalide (doit etre REQUESTED, OFFERED ou NEGOTIATING)
+ *
+ * /help/{session_id}/reject:
+ *   put:
+ *     tags: [Coalition]
+ *     summary: Rejeter une session d'aide (REQUESTED -> REJECTED)
+ *     parameters:
+ *       - in: path
+ *         name: session_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rejection_reason: { type: string, description: "Raison du refus (ex: capacite insuffisante)" }
+ *     responses:
+ *       200:
+ *         description: Session rejetee
+ *       404:
+ *         description: Session introuvable
+ *       409:
+ *         description: Statut invalide (doit etre REQUESTED, OFFERED ou NEGOTIATING)
  *
  * /traffic/redirect:
  *   post:
  *     tags: [Coalition]
- *     summary: Rediriger le trafic vers un pair
+ *     summary: Activer la redirection du trafic (ACCEPTED -> ACTIVE)
+ *     description: "Signal applicatif de demarrage de la redirection. La redirection reseau reelle (tunnel GRE/VXLAN/IPSEC) est geree hors perimetre par l'infrastructure du noeud victime."
  *     requestBody:
  *       required: true
  *       content:
@@ -130,18 +198,21 @@ const router = express.Router();
  *             required: [session_id, tunnel_type]
  *             properties:
  *               session_id: { type: string, format: uuid }
- *               tunnel_type: { type: string, enum: [GRE, IPIP, VXLAN] }
- *               volume_gbps: { type: number }
+ *               tunnel_type: { type: string, enum: [GRE, VXLAN, IPSEC, BGP_FLOWSPEC] }
+ *               volume_gbps: { type: number, description: "Volume redirige vers ce pair (Gbps)" }
  *     responses:
  *       200:
- *         description: Redirection enregistrée
+ *         description: Session passee en statut ACTIVE
+ *       404:
+ *         description: Session introuvable
  *       409:
- *         description: Session pas encore acceptée
+ *         description: Session pas en statut ACCEPTED
  *
  * /attack/over:
  *   post:
  *     tags: [Coalition]
- *     summary: Clôturer une attaque et mettre à jour les crédits
+ *     summary: Cloture une attaque, met a jour credits et calcule la severite
+ *     description: "Marque les sessions comme COMPLETED, met a jour les ledgers de reciprocite, capture Cr et calcule la severite finale selon le volume total filtre."
  *     requestBody:
  *       required: true
  *       content:
@@ -151,16 +222,30 @@ const router = express.Router();
  *             required: [attack_id]
  *             properties:
  *               attack_id: { type: string, format: uuid }
- *               session_ids: { type: array, items: { type: string, format: uuid } }
- *               attack_duration_seconds: { type: integer }
+ *               session_ids: { type: array, items: { type: string, format: uuid }, description: "Sessions a clotures (statut -> COMPLETED)" }
+ *               attack_duration_seconds: { type: integer, description: "Duree totale de l'attaque en secondes" }
  *     responses:
  *       200:
- *         description: Attaque clôturée et crédits mis à jour
+ *         description: Attaque cloturee, severite calculee, credits mis a jour
+ *       404:
+ *         description: Attaque introuvable
+ *
+ * /sessions:
+ *   get:
+ *     tags: [Coalition]
+ *     summary: Historique complet des sessions d'aide
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 100, maximum: 500 }
+ *     responses:
+ *       200:
+ *         description: Liste des sessions
  *
  * /sessions/active:
  *   get:
  *     tags: [Coalition]
- *     summary: Lister les sessions actives
+ *     summary: Sessions en cours (REQUESTED, ACCEPTED, ACTIVE...)
  *     responses:
  *       200:
  *         description: Sessions actives
@@ -168,7 +253,7 @@ const router = express.Router();
  * /sessions/{session_id}:
  *   get:
  *     tags: [Coalition]
- *     summary: Détail d'une session
+ *     summary: Detail d'une session avec attaque et pair associes
  *     parameters:
  *       - in: path
  *         name: session_id
@@ -176,7 +261,7 @@ const router = express.Router();
  *         schema: { type: string, format: uuid }
  *     responses:
  *       200:
- *         description: Session trouvée
+ *         description: Session trouvee
  *       404:
  *         description: Session introuvable
  */
@@ -281,6 +366,185 @@ router.get("/attacks/:id", async (req, res) => {
   }
 });
 
+/**
+ * Sollicite un pair pour une attaque donnée — crée la session et gère le
+ * forward réel (ou la décision simulée pour un pair virtuel). Factorisé pour
+ * être réutilisé à la fois par POST /help/request et par la reconsidération
+ * automatique de la coalition (cf. reconsiderCoalition ci-dessous).
+ */
+async function solicitPeer(attack, peer, requestingNodeId, extra = {}) {
+  // Sollicitation pure : "peux-tu aider ?" — sans allocation ni volume.
+  // Le volume n'existe qu'à partir de l'acceptation (accepted_volume_gbps,
+  // déclaré par le pair), et l'allocation n'existe qu'après /attack/:id/allocate.
+  const session = await HelpSession.create({
+    attack_id: attack.attack_id,
+    requesting_node_id: requestingNodeId,
+    helping_peer_id: peer.peer_id,
+    direction: extra.direction || "OUTBOUND_REQUEST",
+    status: "REQUESTED",
+    requested_at: new Date(),
+  });
+
+  if (peer.api_endpoint_url) {
+    // Pairs virtuels de simulation (.shieldnet.local ou vnode-) : acceptation
+    // automatique sans forwarding réseau (pas d'endpoint réel joignable).
+    const isVirtualPeer =
+      peer.api_endpoint_url.includes(".shieldnet.local") ||
+      (peer.peer_name && peer.peer_name.startsWith("vnode-"));
+
+    if (isVirtualPeer) {
+      // Simuler la décision du pair virtuel : refus probable selon niveau de confiance
+      const refuseProb = { GOLD: 0.15, SILVER: 0.25, BRONZE: 0.45, SUSPECT: 0.75 }[peer.trust_level] ?? 0.50;
+      if (Math.random() < refuseProb) {
+        const reasons = ["Capacité insuffisante", "Charge trop élevée", "Politique interne", "Ressources réservées"];
+        await session.update({
+          status: "REJECTED",
+          rejection_reason: reasons[Math.floor(Math.random() * reasons.length)],
+        });
+      } else {
+        // Le pair virtuel déclare sa capacité au moment de l'acceptation —
+        // simple métadonnée reprenant sa capacité déjà connue, pas un nouveau
+        // calcul. C'est cette valeur que /attack/:id/allocate utilisera
+        // comme critère C, à la place de l'ancienne capacité du WSM initial.
+        await session.update({
+          status: "ACCEPTED",
+          accepted_volume_gbps: Number(peer.declared_available_gbps ?? 0),
+          responded_at: new Date(),
+        });
+      }
+    } else {
+      const localNode = await LocalNodeConfig.findOne();
+      try {
+        const fwdUrl = `${peer.api_endpoint_url}/help/offer`;
+        console.log(`[coalition] → forward help/offer to ${fwdUrl}`);
+        const fwdResult = await httpsClient.post(
+          fwdUrl,
+          {
+            session_id:               session.session_id,
+            attack_id:                attack.attack_id,
+            attack_details:           attack.toJSON(),
+            helping_peer_id:          peer.peer_id,
+            requesting_node_id:       requestingNodeId,
+            requesting_node_endpoint: localNode?.api_endpoint_url ?? null,
+            direction:                "INBOUND_OFFER",
+          },
+          { headers: PEER_HEADERS({ "X-Node-Id": requestingNodeId }), timeout: 8000 }
+        );
+        console.log(`[coalition] ← forward result: HTTP ${fwdResult.status}`, JSON.stringify(fwdResult.data));
+        await session.update({ status: "OFFERED" });
+      } catch (e) {
+        console.error(`[coalition] forward help/offer FAILED: ${e.message}`);
+        // Détection réactive (pas de heartbeat périodique) : un pair
+        // injoignable lors d'une vraie sollicitation est marqué INACTIVE
+        // à cet instant — pas avant, faute de minuteur de surveillance.
+        await peer.update({ status: peer.status === "BANNED" ? "BANNED" : "INACTIVE" });
+        // Session reste REQUESTED — le pair n'a pas pu être notifié.
+      }
+    }
+  }
+
+  logMessage({ message_type: "HELP_REQUEST", direction: "SENT", peer_id: peer.peer_id, priority: "CRITICAL" });
+  return session;
+}
+
+/**
+ * Reconsidération automatique de la coalition pendant une attaque en cours.
+ *
+ * Déclenchée sur trois événements (cf. routes/discovery.js) :
+ *   - un pair aidant quitte la coalition ou devient INACTIVE
+ *   - un pair aidant met à jour sa capacité déclarée
+ *   - un nouveau pair rejoint la coalition
+ *
+ * Le WSM (selectPeers) n'est pas modifié — seule la fréquence à laquelle on
+ * le réinterroge change : à chaud, dès qu'un événement d'adhésion survient,
+ * au lieu d'une seule fois à la sélection initiale.
+ */
+async function reconsiderCoalition(triggerPeerId, reason) {
+  const ongoingAttacks = await Attack.findAll({ where: { status: { [Op.ne]: "ENDED" } } });
+  if (ongoingAttacks.length === 0) return;
+
+  const localNodeId = await getLocalNodeId();
+  if (!localNodeId) return;
+
+  const { selectPeers } = require("../utils/peerSelector");
+
+  for (const attack of ongoingAttacks) {
+    let activeSessions = await HelpSession.findAll({
+      where: { attack_id: attack.attack_id, status: "ACTIVE" },
+    });
+
+    // Le pair déclencheur avait-il une session active sur cette attaque ?
+    const triggerSession = activeSessions.find((s) => s.helping_peer_id === triggerPeerId);
+    if (triggerSession) {
+      const triggerPeer = await Peer.findByPk(triggerPeerId);
+
+      if (!triggerPeer || triggerPeer.status !== "ACTIVE") {
+        // Le pair est parti ou injoignable : sa session ne peut plus contribuer.
+        await triggerSession.update({
+          status: "FAILED",
+          failure_reason: `Pair ${reason} pendant la mitigation`,
+          updated_at: new Date(),
+        });
+        logAudit({
+          event_type: "MANUAL_OVERRIDE",
+          severity: "WARNING",
+          actor: "system",
+          target: attack.attack_id,
+          description: `[Reconsidération] Session ${triggerSession.session_id} interrompue — pair ${triggerPeerId} (${reason}).`,
+        });
+      } else {
+        // Le pair reste actif mais sa capacité déclarée a pu changer —
+        // recaler le volume de sa session sans dépasser sa nouvelle capacité.
+        const newCap = Number(triggerPeer.declared_available_gbps ?? 0);
+        const promised = Number(triggerSession.accepted_volume_gbps ?? newCap);
+        const adjusted = Math.min(newCap, promised);
+        if (newCap > 0 && Number(triggerSession.actual_volume_gbps) !== adjusted) {
+          await triggerSession.update({ actual_volume_gbps: adjusted, updated_at: new Date() });
+        }
+      }
+    }
+
+    // Couverture actuelle après prise en compte de l'événement
+    activeSessions = await HelpSession.findAll({
+      where: { attack_id: attack.attack_id, status: "ACTIVE" },
+    });
+    const currentlyCovered = activeSessions.reduce(
+      (sum, s) => sum + Number(s.actual_volume_gbps ?? 0), 0,
+    );
+    const overflow = Number(attack.overflow_volume_gbps ?? 0);
+    const remainingNeed = Math.max(0, overflow - currentlyCovered);
+
+    if (remainingNeed <= 0) continue; // couverture déjà suffisante, rien à faire
+
+    // Pairs déjà engagés (REQUESTED..ACTIVE) sur cette attaque — à exclure
+    const engagedSessions = await HelpSession.findAll({
+      where: {
+        attack_id: attack.attack_id,
+        status: { [Op.in]: ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"] },
+      },
+    });
+    const alreadyEngaged = new Set(engagedSessions.map((s) => s.helping_peer_id));
+
+    // Même WSM, même formule (w_i, capacity_ratio_pct) — juste réinterrogé.
+    const { plan } = await selectPeers({ overflowGbps: remainingNeed });
+    const candidates = plan.filter((p) => !alreadyEngaged.has(p.peer.peer_id));
+
+    for (const candidate of candidates) {
+      const peer = await Peer.findByPk(candidate.peer.peer_id);
+      if (!peer || peer.status !== "ACTIVE") continue;
+
+      await solicitPeer(attack, peer, localNodeId);
+      logAudit({
+        event_type: "MANUAL_OVERRIDE",
+        severity: "INFO",
+        actor: "system",
+        target: attack.attack_id,
+        description: `[Reconsidération] Pair sollicité automatiquement : ${peer.peer_name} (déclencheur : ${reason}).`,
+      });
+    }
+  }
+}
+
 // POST /help/request
 router.post("/help/request", async (req, res) => {
   try {
@@ -311,24 +575,12 @@ router.post("/help/request", async (req, res) => {
       return res.status(403).json({ error: "Peer has been expelled from the coalition" });
     }
 
-    const session = await HelpSession.create({
-      attack_id: req.body.attack_id,
-      requesting_node_id: requestingNodeId,
-      helping_peer_id: req.body.helping_peer_id,
-      direction: req.body.direction || "OUTBOUND_REQUEST",
-      status: req.body.status || "REQUESTED",
-      allocation_pct: req.body.allocation_pct ?? null,
-      accepted_volume_gbps: req.body.accepted_volume_gbps ?? null,
-      actual_volume_gbps: req.body.actual_volume_gbps ?? null,
-      requested_at: req.body.requested_at || new Date(),
-      response_time_ms: req.body.response_time_ms ?? null,
-      rejection_reason: req.body.rejection_reason ?? null,
-      failure_reason: req.body.failure_reason ?? null,
-      tunnel_type: req.body.tunnel_type ?? null,
-      credits_exchanged: req.body.credits_exchanged ?? 0,
+    // Sollicitation pure : "peux-tu aider ?" — ni allocation ni volume à ce
+    // stade. Le pair déclarera lui-même accepted_volume_gbps en acceptant ;
+    // l'allocation ne sera calculée qu'à POST /attack/:id/allocate.
+    const session = await solicitPeer(attack, peer, requestingNodeId, {
+      direction: req.body.direction,
     });
-
-    logMessage({ message_type: "HELP_REQUEST", direction: "SENT", peer_id: req.body.helping_peer_id, priority: "CRITICAL" });
 
     return res.status(201).json(session);
   } catch (error) {
@@ -344,43 +596,72 @@ router.post("/help/offer", async (req, res) => {
     }
 
     const localNodeId = await getLocalNodeId();
-    const requestingNodeId = req.body.requesting_node_id || localNodeId;
 
-    if (!requestingNodeId) {
+    if (!localNodeId) {
       return res.status(400).json({ error: "Local node configuration is missing" });
     }
 
-    const attack = await Attack.findByPk(req.body.attack_id);
+    // On the helping node, requesting_node_id must be in LOCAL_NODE_CONFIG (FK).
+    // Use local node ID as FK placeholder; the actual requester is a remote peer.
+    const requestingNodeId = localNodeId;
+
+    // Créer l'attaque localement si elle vient d'un autre nœud (forwarded)
+    let attack = await Attack.findByPk(req.body.attack_id);
     if (!attack) {
-      return res.status(404).json({ error: "Attack not found" });
+      if (req.body.attack_details) {
+        const { attack_id: _id, createdAt, updatedAt, created_at, updated_at, ...details } = req.body.attack_details;
+        attack = await Attack.create({ attack_id: req.body.attack_id, ...details });
+      } else {
+        return res.status(404).json({ error: "Attack not found" });
+      }
     }
 
-    const peer = await Peer.findByPk(req.body.helping_peer_id);
+    // Le helping_peer_id peut être inconnu sur ce nœud (ID venant d'une autre BDD)
+    // On l'auto-enregistre comme pair minimal pour satisfaire la FK
+    let peer = await Peer.findByPk(req.body.helping_peer_id);
     if (!peer) {
-      return res.status(404).json({ error: "Peer not found" });
+      if (req.body.helping_peer_id) {
+        peer = await Peer.create({
+          peer_id:            req.body.helping_peer_id,
+          peer_name:          req.body.requesting_node_id || "remote-peer",
+          organization_name:  "Remote Node",
+          organization_type:  "UNIVERSITY",
+          country_code:       "DZ",
+          api_endpoint_url:   req.body.requesting_node_endpoint || "",
+          public_key:         "REMOTE_KEY",
+          status:             "ACTIVE",
+        });
+      } else {
+        return res.status(404).json({ error: "Peer not found" });
+      }
     }
     if (peer.status === "BANNED") {
       return res.status(403).json({ error: "Peer is banned" });
     }
 
-    const session = await HelpSession.create({
-      attack_id: req.body.attack_id,
-      requesting_node_id: requestingNodeId,
-      helping_peer_id: req.body.helping_peer_id,
-      direction: req.body.direction || "INBOUND_OFFER",
-      status: req.body.status || "OFFERED",
-      allocation_pct: req.body.allocation_pct ?? null,
+    const sessionPayload = {
+      attack_id:            req.body.attack_id,
+      requesting_node_id:   requestingNodeId,
+      helping_peer_id:      req.body.helping_peer_id,
+      direction:            req.body.direction || "INBOUND_OFFER",
+      status:               req.body.status || "OFFERED",
+      allocation_pct:       req.body.allocation_pct ?? null,
       accepted_volume_gbps: req.body.accepted_volume_gbps ?? null,
-      actual_volume_gbps: req.body.actual_volume_gbps ?? null,
-      requested_at: req.body.requested_at || new Date(),
-      response_time_ms: req.body.response_time_ms ?? null,
-      tunnel_type: req.body.tunnel_type ?? null,
-      credits_exchanged: req.body.credits_exchanged ?? 0,
-    });
+      actual_volume_gbps:   req.body.actual_volume_gbps ?? null,
+      requested_at:         req.body.requested_at || new Date(),
+      response_time_ms:     req.body.response_time_ms ?? null,
+      tunnel_type:          req.body.tunnel_type ?? null,
+      credits_exchanged:    req.body.credits_exchanged ?? 0,
+    };
+    // Utiliser le même session_id que le nœud demandeur pour cohérence P2P
+    if (req.body.session_id) sessionPayload.session_id = req.body.session_id;
+
+    const session = await HelpSession.create(sessionPayload);
 
     logMessage({ message_type: "HELP_OFFER", direction: "RECEIVED", peer_id: req.body.helping_peer_id, priority: "HIGH" });
 
-    return res.status(201).json(session);
+    const requestingEndpoint = req.body.requesting_node_endpoint ?? null;
+    return res.status(201).json({ ...session.toJSON(), requesting_node_endpoint: requestingEndpoint });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -457,21 +738,36 @@ router.put("/help/:id/accept", async (req, res) => {
       return res.status(404).json({ error: "Help session not found" });
     }
 
-    const acceptableStatuses = ["REQUESTED", "OFFERED", "NEGOTIATING"];
+    const acceptableStatuses = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED"];
     if (!acceptableStatuses.includes(session.status)) {
       return res.status(409).json({ error: `Cannot accept a session in status: ${session.status}` });
     }
 
+    const acceptedVolume  = req.body.accepted_volume_gbps ?? session.accepted_volume_gbps;
+    const tunnelType      = req.body.tunnel_type ?? session.tunnel_type;
+    const responseTimeMs  = req.body.response_time_ms ?? session.response_time_ms;
+
     await session.update({
-      status: "ACCEPTED",
-      accepted_volume_gbps: req.body.accepted_volume_gbps ?? session.accepted_volume_gbps,
-      responded_at: req.body.responded_at || new Date(),
-      tunnel_type: req.body.tunnel_type ?? session.tunnel_type,
-      response_time_ms: req.body.response_time_ms ?? session.response_time_ms,
-      updated_at: new Date(),
+      status:               "ACCEPTED",
+      accepted_volume_gbps: acceptedVolume,
+      responded_at:         req.body.responded_at || new Date(),
+      tunnel_type:          tunnelType,
+      response_time_ms:     responseTimeMs,
+      updated_at:           new Date(),
     });
 
     logMessage({ message_type: "HELP_ACCEPT", direction: "SENT", peer_id: session.helping_peer_id, priority: "HIGH" });
+
+    // Notifier le nœud demandeur si on connaît son endpoint (pas de boucle si X-No-Callback)
+    if (!req.headers["x-no-callback"] && req.body.requesting_node_endpoint) {
+      try {
+        await httpsClient.put(
+          `${req.body.requesting_node_endpoint}/help/${session.session_id}/accept`,
+          { accepted_volume_gbps: acceptedVolume, tunnel_type: tunnelType, response_time_ms: responseTimeMs },
+          { headers: PEER_HEADERS({ "X-No-Callback": "true" }), timeout: 8000 }
+        );
+      } catch (_) { /* best-effort */ }
+    }
 
     return res.json(session);
   } catch (error) {
@@ -494,15 +790,100 @@ router.put("/help/:id/reject", async (req, res) => {
     }
 
     await session.update({
-      status: "REJECTED",
+      status:           "REJECTED",
       rejection_reason: req.body.rejection_reason || "Rejected by peer",
-      responded_at: req.body.responded_at || new Date(),
-      updated_at: new Date(),
+      responded_at:     req.body.responded_at || new Date(),
+      updated_at:       new Date(),
     });
 
     logMessage({ message_type: "HELP_REJECT", direction: "SENT", peer_id: session.helping_peer_id, priority: "NORMAL" });
 
+    if (!req.headers["x-no-callback"] && req.body.requesting_node_endpoint) {
+      try {
+        await httpsClient.put(
+          `${req.body.requesting_node_endpoint}/help/${session.session_id}/reject`,
+          { rejection_reason: req.body.rejection_reason || "Rejected by peer" },
+          { headers: PEER_HEADERS({ "X-No-Callback": "true" }), timeout: 8000 }
+        );
+      } catch (_) { /* best-effort */ }
+    }
+
     return res.json(session);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /attack/{attack_id}/allocate:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Calculer la répartition WSM parmi les pairs ayant déjà accepté
+ *     description: >
+ *       Étape déclenchée explicitement par le nœud victime une fois les réponses
+ *       des pairs sollicités jugées suffisantes. Réutilise le même algorithme WSM
+ *       (Score(p) = 0,52·C + 0,20·L + 0,20·T + 0,08·R) que la sélection initiale,
+ *       mais restreint aux pairs en statut ACCEPTED pour cette attaque, en utilisant
+ *       leur accepted_volume_gbps déclaré à l'acceptation comme critère de capacité.
+ *     parameters:
+ *       - in: path
+ *         name: attack_id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Plan d'allocation calculé et appliqué aux sessions ACCEPTED
+ *       404:
+ *         description: Attaque introuvable
+ */
+router.post("/attack/:id/allocate", async (req, res) => {
+  try {
+    const attack = await Attack.findByPk(req.params.id);
+    if (!attack) {
+      return res.status(404).json({ error: "Attack not found" });
+    }
+
+    const acceptedSessions = await HelpSession.findAll({
+      where: { attack_id: attack.attack_id, status: "ACCEPTED" },
+    });
+
+    if (acceptedSessions.length === 0) {
+      return res.json({ message: "Aucun pair n'a encore accepté", plan: [] });
+    }
+
+    const peerIds = acceptedSessions.map((s) => s.helping_peer_id);
+    const capacityOverrides = {};
+    acceptedSessions.forEach((s) => {
+      capacityOverrides[s.helping_peer_id] = Number(s.accepted_volume_gbps ?? 0);
+    });
+
+    // Même WSM, même formule — restreint aux pairs ACCEPTED, capacité = ce
+    // qu'ils ont déclaré à l'acceptation plutôt que l'ancienne valeur du heartbeat.
+    const { plan } = await selectPeers({
+      peerIds,
+      capacityOverrides,
+      overflowGbps: attack.overflow_volume_gbps ?? undefined,
+    });
+
+    // Reporter l'allocation calculée sur chaque session correspondante
+    const sessionByPeer = new Map(acceptedSessions.map((s) => [s.helping_peer_id, s]));
+    for (const entry of plan) {
+      const session = sessionByPeer.get(entry.peer.peer_id);
+      if (session) {
+        await session.update({ allocation_pct: entry.allocation_pct, updated_at: new Date() });
+      }
+    }
+
+    logAudit({
+      event_type: "SYSTEM_CONFIG_CHANGE",
+      severity: "INFO",
+      actor: "system",
+      target: attack.attack_id,
+      description: `Allocation WSM calculée sur ${plan.length} pair(s) ayant accepté.`,
+    });
+
+    return res.json({ attack_id: attack.attack_id, plan });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -567,6 +948,8 @@ router.post("/attack/over", async (req, res) => {
       const localNodeId = await getLocalNodeId();
       const crCache = {};
 
+      const peersToRecalculate = new Set();
+
       for (const session of sessions) {
         // Si actual_volume_gbps n'a pas été renseigné, on utilise le volume accepté
         // (le pair a fourni ce qu'il avait promis)
@@ -599,6 +982,13 @@ router.post("/attack/over", async (req, res) => {
           last_transaction_at: new Date(),
           updated_at: new Date(),
         });
+
+        peersToRecalculate.add(session.helping_peer_id);
+      }
+
+      // Déclencher recalcul PeerTrust pour chaque pair impliqué (DS3)
+      for (const peer_id of peersToRecalculate) {
+        recalculateAndSave(peer_id).catch(() => {});
       }
     }
 
@@ -619,10 +1009,11 @@ router.post("/attack/over", async (req, res) => {
       severity: computeSeverity(totalFiltered),
     });
 
-    return res.json(attack);
+    return res.json({ ...attack.toJSON(), total_filtered_gbps: totalFiltered });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 });
 
 module.exports = router;
+module.exports.reconsiderCoalition = reconsiderCoalition;

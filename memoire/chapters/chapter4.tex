@@ -6,32 +6,24 @@
 
 \section{Introduction}
 
-Ce chapitre décrit la réalisation concrète du système. Après avoir présenté l'environnement technique retenu, je détaille l'implémentation des trois composants algorithmiques centraux~: le gestionnaire de confiance (PeerTrust), le sélecteur de pairs (\gls{wsm}) et les mécanismes de sécurité (mTLS + JWT RS256). Une section documente ensuite les échanges JSON du protocole de communication inter-nœuds. Le chapitre se conclut par les résultats des tests de scalabilité conduits sur une coalition simulée jusqu'à 100 nœuds.
+Ce chapitre présente la mise en œuvre du système. Il décrit d'abord l'environnement technique retenu, puis les principaux mécanismes développés, à savoir le gestionnaire de confiance, la sélection des pairs et les mécanismes de sécurité. Les échanges JSON assurant la communication entre les nœuds sont ensuite présentés. Enfin, les résultats des tests et du scénario de mitigation collaborative sont exposés.
 
 % --------------------------------------------------
 \section{Environnement technique}
 \label{sec:env_tech}
 
-% Commande locale : entrée technologie avec espace logo à droite
-\newcommand{\techentry}[2]{%
-  \vspace{6pt}%
-  \noindent%
-  \begin{minipage}[c]{0.82\linewidth}#1\end{minipage}\hfill%
-  \begin{minipage}[c]{0.13\linewidth}\centering
-    \fbox{\phantom{\rule{1.3cm}{1.3cm}}}%   ← remplacer par \includegraphics[height=1.3cm]{figures/logos/#2}
-  \end{minipage}\par\vspace{4pt}%
-}
+
 
 % ==================================================
 \subsection{Langages de programmation}
 % ==================================================
 
 \techentry{%
-  \underline{\textbf{JavaScript :}} est un langage de programmation interprété, orienté événement et non bloquant. Il constitue le langage principal du back-end via Node.js~\cite{nodejs2024}, dont le modèle asynchrone est particulièrement adapté aux échanges inter-nœuds concurrents (heartbeats, requêtes d'aide simultanées).%
+  \textbf{JavaScript :} est un langage de programmation interprété, orienté événement et non bloquant. Il constitue le langage principal du back-end via Node.js~\parencite{nodejs2024}, dont le modèle asynchrone est particulièrement adapté aux échanges inter-nœuds concurrents (heartbeats, requêtes d'aide simultanées).%
 }{javascript.png}
 
 \techentry{%
-  \underline{\textbf{SQL :}} est le langage de requête standard des bases de données relationnelles. Il est utilisé via PostgreSQL et l'ORM Sequelize pour la définition des schémas, les migrations et l'interrogation des quatorze tables du modèle de données.%
+ \textbf{SQL :} est le langage de requête standard des bases de données relationnelles. Il est utilisé via PostgreSQL et l'ORM Sequelize pour la définition des schémas, les migrations et l'interrogation des quatorze tables du modèle de données.%
 }{sql.png}
 
 % ==================================================
@@ -39,52 +31,63 @@ Ce chapitre décrit la réalisation concrète du système. Après avoir présent
 % ==================================================
 
 \techentry{%
-  \underline{\textbf{Node.js v20 LTS~\cite{nodejs2024} :}} est une plate-forme côté serveur construite sur le moteur V8 de Chrome. Son modèle événementiel est idéal pour les applications à I/O concurrentes telles que les coalitions de nœuds échangeant des heartbeats toutes les 30~secondes.%
-}{nodejs.png}
+  \textbf{Node.js v20 LTS~\parencite{nodejs2024} :} est une plate-forme côté serveur construite sur le moteur V8 de Chrome. Son modèle événementiel est idéal pour les applications à I/O concurrentes telles que les coalitions de nœuds échangeant des messages de présence sur événement (adhésion, mise à jour de paramètres) plutôt que selon un intervalle fixe.%
+}
 
 \techentry{%
-  \underline{\textbf{Express.js v4~\cite{expressjs2024} :}} est un framework REST minimaliste pour Node.js, de type \textit{middleware-first}. Il structure les routes de l'API (\texttt{/peers}, \texttt{/help}, \texttt{/trust}, \texttt{/auth}) et facilite l'intégration des middlewares mTLS et JWT.%
-}{express.png}
+ \textbf{Express.js v4~\parencite{expressjs2024} :} est un framework REST minimaliste pour Node.js, de type \textit{middleware-first}. Il structure les routes de l'API (\texttt{/peers}, \texttt{/help}, \texttt{/trust}, \texttt{/auth}) et facilite l'intégration des middlewares mTLS et JWT.%
+}
 
 \techentry{%
-  \underline{\textbf{PostgreSQL 15~\cite{postgresql2024} :}} est un système de gestion de bases de données relationnelles open-source reconnu pour sa conformité ACID. Il est retenu pour son support natif des types \texttt{UUID}, \texttt{ENUM}, \texttt{FLOAT} et la gestion des contraintes de clés étrangères avec politique de suppression en cascade.%
-}{postgresql.png}
+  \textbf{PostgreSQL 15~\parencite{postgresql2024} :} est un système de gestion de bases de données relationnelles open-source reconnu pour sa conformité ACID. Il est retenu pour son support natif des types \texttt{UUID}, \texttt{ENUM}, \texttt{FLOAT} et la gestion des contraintes de clés étrangères avec politique de suppression en cascade.%
+}
 
 \techentry{%
-  \underline{\textbf{Sequelize v6~\cite{sequelize2024} :}} est un ORM Node.js qui fournit une abstraction SQL avec migrations, associations déclaratives et transactions. Il mappe les quatorze classes du modèle objet vers les tables PostgreSQL.%
-}{sequelize.png}
+  \textbf{Sequelize v6~\parencite{sequelize2024} :} est un ORM Node.js qui fournit une abstraction SQL avec migrations, associations déclaratives et transactions. Il mappe les quatorze classes du modèle objet vers les tables PostgreSQL.%
+}
 
 \techentry{%
-  \underline{\textbf{jsonwebtoken~\cite{jsonwebtoken2024} (JWT) :}} est la bibliothèque Node.js d'implémentation du standard JWT (RFC~7519 \cite{rfc7519jwt}). Elle est utilisée pour générer et vérifier les tokens RS256 à durée de vie de 60~secondes qui sécurisent chaque appel API inter-nœuds.%
-}{jwt.png}
+ \textbf{jsonwebtoken~\parencite{jsonwebtoken2024} (JWT) :} est la bibliothèque Node.js d'implémentation du standard JWT (RFC~7519 \parencite{rfc7519jwt}). Elle est utilisée pour générer et vérifier les tokens RS256 à durée de vie de 15~minutes qui sécurisent chaque appel API inter-nœuds.%
+}
 
 \techentry{%
-  \underline{\textbf{Swagger / OpenAPI 3~\cite{openapi3} :}} est un standard de description d'API REST. Il auto-documente l'ensemble des endpoints via des annotations JSDoc et expose une interface interactive accessible à \texttt{/api-docs}.%
-}{swagger.png}
+   \textbf{Swagger / OpenAPI 3~\parencite{openapi3} :} est un standard de description d'API REST. Il auto-documente l'ensemble des endpoints via des annotations JSDoc et expose une interface interactive accessible à \texttt{/api-docs}.%
+}
 
 % ==================================================
 \subsection{Environnement de déploiement}
 % ==================================================
 
 \techentry{%
-  \underline{\textbf{Docker \& Docker Compose~\cite{docker2024} :}} permettent la containerisation du système. Chaque nœud de la coalition s'exécute dans un conteneur isolé~; Docker Compose orchestre les quatre nœuds et la base de données PostgreSQL avec un réseau virtuel dédié, garantissant un déploiement reproductible sur toute machine disposant de Docker.%
-}{docker.png}
+  \textbf{Docker \& Docker Compose~\parencite{docker2024} :} permettent la containerisation du système. Chaque nœud de la coalition s'exécute dans un conteneur isolé~; Docker Compose orchestre les quatre nœuds et la base de données PostgreSQL avec un réseau virtuel dédié, garantissant un déploiement reproductible sur toute machine disposant de Docker.%
+}
+
+\subsection{Architecture de déploiement}
+
+La Figure~\ref{fig:deployment} présente l'architecture de déploiement du prototype. Le système est composé de cinq conteneurs Docker orchestrés par Docker Compose~: quatre nœuds API (\texttt{shieldnet-university}, \texttt{shieldnet-pme}, \texttt{shieldnet-isp},\\ \texttt{shieldnet-datacenter}), chacun exposant son API sur un port distinct (3001 à 3004) en interne sur le port 8443, et une instance PostgreSQL partagée hébergeant quatre bases de données indépendantes. Les nœuds communiquent entre eux via un réseau coalition sécurisé en HTTPS, authentifié par JWT RS256, selon trois flux principaux~: le heartbeat périodique (toutes les 30~secondes), les requêtes d'aide lors d'une attaque, et la collecte de crédibilité réseau pour le calcul du score de confiance. Le mécanisme mTLS est implémenté côté serveur (section~\ref{sec:impl_secu}) mais désactivé par défaut dans ce prototype~: il nécessiterait une autorité de certification commune aux quatre organisations simulées, ce qui réintroduirait une forme de centralisation que l'architecture P2P cherche précisément à éviter~; l'authentification mutuelle des nœuds est néanmoins déjà garantie au niveau applicatif par JWT RS256, chaque nœud signant avec une clé privée qui lui est propre.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/deployment_diagram1.pdf}
+\caption{Diagramme de déploiement du prototype.}
+\label{fig:deployment}
+\end{figure}
 
 % ==================================================
 \subsection{Outils de collaboration}
 % ==================================================
 
 \techentry{%
-  \underline{\textbf{Git~\cite{git2024} :}} est le système de contrôle de version distribué utilisé pour gérer l'historique du code source, les branches de fonctionnalités et les correctifs tout au long du développement du prototype.%
-}{git.png}
+\textbf{Git~\parencite{git2024} :} est le système de contrôle de version distribué utilisé pour gérer l'historique du code source, les branches de fonctionnalités et les correctifs tout au long du développement du prototype.%
+}
 
 \techentry{%
-  \underline{\textbf{GitHub~\cite{github2024} :}} est la plateforme de collaboration hébergeant le dépôt du projet. Elle permet le suivi des issues, la revue de code par Pull Requests et la sauvegarde centralisée du code source.%
-}{github.png}
+\textbf{GitHub~\parencite{github2024} :} est la plateforme de collaboration hébergeant le dépôt du projet. Elle permet le suivi des issues, la revue de code par Pull Requests et la sauvegarde centralisée du code source.%
+}
 
 \subsection{Structure du projet}
 
-Le projet est organisé selon le schéma de la Figure~\ref{fig:structure}, séparant clairement la logique métier (\texttt{utils/}), les routes \gls{api} (\texttt{routes/}), les modèles de données (\texttt{models/}) et la configuration (\texttt{config/}).
+Le projet est organisé selon le schéma de la Figure~\ref{fig:structure}, séparant la logique métier (\texttt{utils/}), les routes \gls{api} (\texttt{routes/}), les modèles de données (\texttt{models/}) et la configuration (\texttt{config/}).
 
 \begin{figure}[H]
 \centering
@@ -208,27 +211,53 @@ const scored = candidates.map((peer, i) => {
 Le plan de répartition est construit en normalisant les scores WSM~; l'allocation en pourcentage est la partie entière de $w_i \times 100$~:
 
 \begin{lstlisting}[language=JavaScript, caption={Construction du plan de répartition proportionnelle.}, label=lst:alloc]
-const totalScore = scored.reduce((s, c) => s + c.score, 0);
+const totalScore = scored.reduce((sum, c) => sum + c.score, 0);
 
 const plan = scored.map((c) => {
-  const weight         = totalScore > 0
-                         ? c.score / totalScore
-                         : 1 / scored.length;
-  const allocation_pct = Math.floor(weight * 100);
+  // w_i = Score(p_i) / sum Score(p_j)
+  const weight = totalScore > 0
+                 ? c.score / totalScore
+                 : 1 / scored.length;
 
-  const entry = { peer: { ... }, wsm_score, weight, allocation_pct };
+  // allocation_pct = min(floor(w_i * 100), cap_disp)
+  const wsm_pct      = Math.floor(weight * 100);
+  const allocation_pct = Math.min(wsm_pct, c.cap_disp);
 
-  // Si le volume total est connu, plafonner par la capacite reelle
-  if (overflowGbps !== undefined && overflowGbps > 0) {
-    const raw = weight * overflowGbps;
-    entry.estimated_gbps = Math.min(raw, c.cap_disp);
-  }
-  return entry;
+  return { peer: { ... }, wsm_score, weight, allocation_pct };
 });
 \end{lstlisting}
 
-Le plafonnement par \texttt{cap\_disp} garantit qu'aucun pair ne reçoit plus de trafic que sa capacité déclarée.
+Le quota de paquets alloué à chaque pair par cycle de Round-Robin pondéré est la partie entière du poids $w_i$ exprimé en pourcentage, plafonné par la capacité disponible du pair~:
 
+\begin{equation}
+\label{eq:alloc_cap}
+\mathrm{alloc}_i = \min\!\left(\lfloor w_i \times 100 \rfloor,\; \mathrm{cap\_disp}_i\right)
+\end{equation}
+
+\noindent Cette contrainte assure qu'un pair ne peut recevoir plus de paquets par cycle que sa capacité déclarée ne le permet, indépendamment de la qualité de son score WSM. La Figure~\ref{fig:wsm_distribution} synthétise l'ensemble du plan de répartition~: depuis le trafic d'attaque entrant jusqu'à l'allocation proportionnelle par pair, en passant par le calcul des poids $w_i$ et les contraintes associées.
+
+% --------------------------------------------------
+\subsection{Distribution des paquets par Round-Robin pondéré}
+\label{subsec:wrr}
+
+Une fois les allocations $\mathrm{alloc}_i$ calculées pour chaque pair $N_{p_i}$, la redistribution effective des paquets est réalisée selon un mécanisme de \textbf{Round-Robin pondéré} (Weighted Round-Robin, WRR). Le nœud victime $N_v$ dispose d'un flux entrant de $n$ paquets $(P_1, P_2, \ldots, P_n)$ qu'il distribue vers $m$ nœuds pairs $(N_{p_1}, N_{p_2}, \ldots, N_{p_m})$ acceptés, chacun associé à un quota $\mathrm{alloc}_i$ représentant le nombre de paquets qu'il absorbe par cycle.
+
+\paragraph{Principe d'un cycle.}
+Les pairs sont parcourus séquentiellement dans l'ordre $N_{p_1}, N_{p_2}, \ldots, N_{p_m}$. À chaque passage, le pair $N_{p_i}$ reçoit exactement $\mathrm{alloc}_i$ paquets consécutifs. Le pair $N_{p_i}$ reçoit ainsi les paquets d'indice~:
+
+\begin{equation}
+\label{eq:wrr_range}
+P_{\,1+\sum_{j=1}^{i-1}\mathrm{alloc}_j},\quad P_{\,2+\sum_{j=1}^{i-1}\mathrm{alloc}_j},\quad \ldots,\quad P_{\,\sum_{j=1}^{i}\mathrm{alloc}_j}
+\end{equation}
+
+Après $N_{p_m}$, le processus revient à $N_{p_1}$ et entame un nouveau cycle. Cette opération est répétée jusqu'à ce que le dernier paquet $P_n$ soit distribué. La Figure~\ref{fig:wrr} illustre ce mécanisme.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/wrr_distribution.pdf}
+\caption{Distribution des paquets par Round-Robin pondéré~: le nœud victime $N_v$ distribue $n$ paquets vers $m$ pairs en cycles successifs, chaque pair $N_{p_i}$ recevant $\mathrm{alloc}_i$ paquets par cycle.}
+\label{fig:wrr}
+\end{figure}
 % --------------------------------------------------
 \section{Mécanismes de sécurité}
 \label{sec:impl_secu}
@@ -244,7 +273,7 @@ function generateToken(node_id) {
   return jwt.sign(
     { iss: node_id, node_id },
     privateKey,
-    { algorithm: "RS256", expiresIn: "60s" }
+    { algorithm: "RS256", expiresIn: "15m" }
   );
 }
 
@@ -255,7 +284,7 @@ const publicKey = peer.public_key;            // PEM stocke en base
 jwt.verify(token, publicKey, { algorithms: ["RS256"] });
 \end{lstlisting}
 
-Le token expire après 60 secondes~; un token expiré retourne HTTP 401 avec un message invitant à obtenir un nouveau token via \texttt{POST /auth/token}.
+Le token expire après 15 minutes~; un token expiré retourne HTTP 401 avec un message invitant à obtenir un nouveau token via \texttt{POST /auth/token}.
 
 \subsection{mTLS~: configuration côté serveur}
 
@@ -266,12 +295,12 @@ const server = https.createServer({
   key:  fs.readFileSync(process.env.TLS_KEY),
   cert: fs.readFileSync(process.env.TLS_CERT),
   ca:   fs.readFileSync(process.env.TLS_CA),
-  requestCert: true,    // demander le certificat client
-  rejectUnauthorized: process.env.MTLS_STRICT === "true",
+  requestCert:          true,  // demander le certificat client
+  rejectUnauthorized:   true,  // refuser tout cert non signe par la CA coalition
 }, app);
 \end{lstlisting}
 
-En mode \texttt{MTLS\_STRICT=true}, toute connexion sans certificat client valide est rejetée au niveau TLS avant même d'atteindre les middlewares applicatifs. En mode non strict, le certificat est optionnel~; cela permet à des outils de test (Postman, Swagger UI) de s'y connecter sans certificat.
+Lorsque \texttt{MTLS\_ENABLED=true}, \texttt{rejectUnauthorized} est toujours positionné à \texttt{true}~: toute connexion dont le certificat client n'est pas signé par la CA de la coalition est rejetée au niveau TLS avant même d'atteindre les middlewares applicatifs. La variable d'environnement \texttt{MTLS\_STRICT} intervient quant à elle au niveau du middleware applicatif~: si elle vaut \texttt{true}, une requête sans certificat (certificat absent plutôt qu'invalide) est également rejetée avec HTTP 401. Dans le prototype déployé, \texttt{MTLS\_ENABLED=false}~: ce mécanisme est implémenté et testable indépendamment (section~\ref{sec:tests}), mais n'est pas activé par défaut, pour les raisons exposées en section~\ref{sec:env_tech}.
 
 % --------------------------------------------------
 \section{Protocole de communication inter-nœuds}
@@ -294,19 +323,19 @@ Avant tout appel API protégé, un nœud obtient un token JWT en transmettant so
 // Réponse 200 OK
 {
   "token":      "eyJhbGciOiJSUzI1NiJ9...",
-  "expires_in": "60s",
+  "expires_in": "15m",
   "node_id":    "node-university",
   "role":       "local",
   "algorithm":  "RS256"
 }
 \end{lstlisting}
 
-Le token expire après 60 secondes afin de limiter les attaques par rejeu. Le nœud récepteur vérifie la signature RS256 à l'aide de la clé publique de l'émetteur, enregistrée dans la table \texttt{Peers}.
+Le token expire après 15 minutes. Le nœud récepteur vérifie la signature RS256 à l'aide de la clé publique de l'émetteur~; un token expiré ou altéré retourne HTTP 401. Le nœud récepteur vérifie la signature RS256 à l'aide de la clé publique de l'émetteur, enregistrée dans la table \texttt{Peers}.
 
 % --------------------------------------------------
 \subsection{Heartbeat}
 
-Chaque nœud envoie périodiquement un heartbeat à ses pairs pour signaler son état et sa charge courante.
+Chaque nœud envoie un heartbeat à ses pairs de façon \textbf{événementielle} pour signaler son état et sa charge courante — lors de son adhésion à la coalition ou lors de toute mise à jour de ses paramètres locaux (capacité, charge déclarée) — plutôt que selon un intervalle fixe. Ce choix évite la croissance en $O(N^2)$ du nombre de messages échangés qu'imposerait un envoi périodique vers l'ensemble des pairs à mesure que la coalition grandit.
 
 \begin{lstlisting}[language=json, caption={Requête et réponse — \texttt{POST /heartbeat}.}, label=lst:heartbeat]
 // Requête
@@ -331,7 +360,7 @@ Chaque nœud envoie périodiquement un heartbeat à ses pairs pour signaler son 
 }
 \end{lstlisting}
 
-À la réception, le nœud met à jour le champ \texttt{last\_heartbeat} du pair et remet à zéro son compteur \texttt{consecutive\_missed\_heartbeats}.
+À la réception, le nœud met à jour le champ \texttt{last\_heartbeat} du pair ainsi que sa capacité et sa latence. En l'absence de minuteur de surveillance, un pair silencieux n'est pas détecté de façon proactive~; il n'est marqué \texttt{INACTIVE} que de façon réactive, si une demande d'aide ultérieure (\texttt{POST /help/request}) échoue à le joindre lors d'une attaque réelle.
 
 % --------------------------------------------------
 \subsection{Détection d'une attaque}
@@ -353,7 +382,6 @@ Lorsqu'une attaque \gls{ddos} est détectée, le nœud victime l'enregistre loca
 {
   "attack_id":        "a1b2c3d4-...",
   "status":           "DETECTED",
-  "severity":         "LOW",
   "detected_at":      "2026-05-22T10:00:00.000Z",
   "target_ip_range":  "192.168.1.0/24",
   "coalition_helped": false
@@ -475,13 +503,42 @@ La sévérité finale est calculée selon l'échelle Stormwall~: \texttt{CRITICA
 Les tests ont été conduits selon trois axes~:
 
 \begin{enumerate}
-    \item \textbf{Tests fonctionnels} (\texttt{tests/functional\_test.py})~: vérification de chaque endpoint de l'API (enregistrement, heartbeat, sessions d'aide, clôture, recalcul de trust).
-    \item \textbf{Tests de sécurité} (\texttt{tests/security\_test.py})~: tentatives d'accès sans JWT, avec un token expiré, avec un token signé par une clé incorrecte, et avec un nœud banni.
+    \item \textbf{Tests fonctionnels} (\texttt{tests/functional\_test.py})~: vérification de chaque endpoint de l'API (enregistrement, heartbeat, sessions d'aide, clôture, recalcul de trust) sur une coalition simulée. Les résultats de bout en bout de ce protocole fonctionnel sont présentés à travers la démonstration sur le tableau de bord (section~\ref{subsec:demo_dashboard}), qui exécute exactement le même enchaînement de requêtes sur le système réellement déployé.
+    \item \textbf{Tests de sécurité} (\texttt{tests/security\_test.py})~: tentatives d'accès sans JWT, avec un token expiré, avec un token signé par une clé incorrecte, avec un nœud banni, et avec un \texttt{peer\_id} inconnu dans le corps de la requête.
     \item \textbf{Tests de scalabilité} (\texttt{tests/scalability\_test.py})~: montée en charge progressive de 20 à 100 nœuds simultanés~; mesure des temps de réponse pour l'enregistrement, le heartbeat et la sélection WSM.
 \end{enumerate}
 
-Les tests de scalabilité ont été conduits sur une machine locale avec Node.js 20 LTS et PostgreSQL 15, en simulant les nœuds par des processus Python concurrents via \texttt{asyncio}~\cite{pythonasyncio} et \texttt{aiohttp}~\cite{aiohttp2024}.
+Les tests de scalabilité ont été conduits sur une machine locale avec Node.js 20 LTS et PostgreSQL 15, en simulant les nœuds par des processus Python concurrents via \texttt{asyncio}~\parencite{pythonasyncio} et \texttt{aiohttp}~\parencite{aiohttp2024}. Chaque palier (20, 40, 60, 80, 100 nœuds) a été mesuré sur une seule exécution~; les résultats doivent donc être interprétés comme indicatifs plutôt que comme une moyenne statistiquement lissée (section~\ref{subsec:analyse_scalabilite}).
 
+\subsection{Validation du calcul PeerTrust}
+\label{subsec:validation_peertrust}
+
+Trois scénarios illustrent le comportement de la formule $T(u) = \sum [S \cdot Cr \cdot D] / \sum [Cr \cdot D]$ (Équation~\ref{eq:trust}) face à des historiques de session contrastés. Les deux premiers scénarios (satisfaction extrême) correspondent aux assertions automatisées de \texttt{functional\_test.py} (Phase~8)~; le troisième illustre un cas nominal avec plusieurs sessions de sévérité différente.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\caption{Scénarios de validation du calcul de $T(u)$.}
+\label{tab:validation_peertrust}
+\small
+\begin{tabularx}{\textwidth}{|l|X|c|c|}
+\hline
+\textbf{Scénario} & \textbf{Sessions ($S$, $Cr$, $D$)} & \textbf{$T(u)$ calculé} & \textbf{Niveau} \\
+\hline
+1 — Livraison parfaite & 1 session~: $S{=}1{,}0$, $Cr{=}1{,}0$, $D{=}1{,}0$ (CRITICAL) & $\dfrac{1{,}0 \times 1{,}0 \times 1{,}0}{1{,}0 \times 1{,}0} = 1{,}000$ & GOLD \\
+\hline
+2 — Livraison nulle & 1 session~: $S{=}0{,}0$, $Cr{=}1{,}0$, $D{=}1{,}0$ (CRITICAL) & $\dfrac{0{,}0}{1{,}0 \times 1{,}0} = 0{,}000$ & BANNED \\
+\hline
+3 — Cas nominal mixte &
+2 sessions~: $S_1{=}0{,}8, Cr_1{=}0{,}9, D_1{=}0{,}75$ (HIGH)~; $S_2{=}0{,}5, Cr_2{=}0{,}6, D_2{=}0{,}25$ (LOW)
+& $\dfrac{0{,}54 + 0{,}075}{0{,}675 + 0{,}15} = 0{,}745$ & SILVER \\
+\hline
+\end{tabularx}
+\end{table}
+
+Le scénario~1 confirme qu'une satisfaction parfaite ($S{=}1$) associée à une crédibilité maximale produit $T(u){=}1{,}000$, classé GOLD ($\geq 0{,}80$). Le scénario~2 confirme le mécanisme de bannissement automatique~: une livraison nulle produit $T(u){=}0{,}000 < 0{,}20$, déclenchant le passage du pair en statut \texttt{BANNED} et \texttt{membership\_status = EXPELLED} (section~\ref{sec:impl_trust}). Le scénario~3 illustre la pondération contextuelle~: bien que la seconde session ait une satisfaction modérée ($S_2{=}0{,}5$), son poids ($Cr_2 \cdot D_2 = 0{,}15$) est près de cinq fois plus faible que celui de la première session ($Cr_1 \cdot D_1 = 0{,}675$, une attaque HIGH évaluée par un pair très crédible)~: la session la plus sévère et la mieux attestée domine le score final, qui reste élevé ($0{,}745$, niveau SILVER) malgré la session mitigée.
+
+% --------------------------------------------------
 \subsection{Résultats des tests de scalabilité}
 
 Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure~\ref{fig:scalabilite} en offre une représentation graphique.
@@ -519,40 +576,51 @@ Le Tableau~\ref{tab:scalabilite} présente les résultats collectés~; la Figure
 \label{fig:scalabilite}
 \end{figure}
 
-% \subsection{Analyse des résultats}
+\subsection{Analyse des résultats}
+\label{subsec:analyse_scalabilite}
 
-% Trois observations majeures ressortent des résultats~:
+Trois observations ressortent du Tableau~\ref{tab:scalabilite}.
 
-% \paragraph{Taux de succès de 100\,\%.}
-% Tous les enregistrements et tous les heartbeats ont réussi sur l'ensemble des paliers testés (20 à 100 nœuds). Aucune erreur d'authentification, de collision d'identifiant \gls{uuid} ou de contrainte de base de données n'a été observée.
+\paragraph{Taux de succès de 100\,\%.}
+Tous les enregistrements et tous les heartbeats ont réussi sur l'ensemble des paliers testés (20 à 100 nœuds). Aucune erreur d'authentification, de collision d'identifiant \gls{uuid} ou de contrainte de base de données n'a été observée.
 
-% \paragraph{Sélection WSM quasi-constante.}
-% Le temps de sélection \gls{wsm} reste compris entre 20 et 32~ms quel que soit le nombre de pairs (20 à 100). Cette stabilité s'explique par le fait que la sélection repose uniquement sur une requête SQL avec jointures (une seule requête vers PostgreSQL), dont la complexité ne dépend que du nombre d'entrées en base et non d'échanges réseau entre nœuds.
+\paragraph{Sélection WSM bornée sous 33~ms, sans tendance strictement croissante.}
+Le temps de sélection \gls{wsm} reste compris entre 20,8 et 32,2~ms sur l'ensemble des paliers, sans suivre une progression monotone (il descend de 32,2~ms à 20,8~ms entre 20 et 60 nœuds avant de remonter à 30,4~ms à 100 nœuds). Cette absence de croissance régulière s'explique par le fait que la sélection repose sur une unique requête SQL avec jointures vers PostgreSQL~: sa durée dépend davantage de l'état du cache et du plan d'exécution de la base au moment de la mesure que du nombre de pairs lui-même, chaque palier n'ayant été mesuré qu'une seule fois (section~\ref{sec:tests}). Le résultat à retenir est néanmoins stable~: quel que soit le nombre de nœuds testé, la sélection reste inférieure à 33~ms.
 
-% \paragraph{Heartbeat~: légère croissance maîtrisée.}
-% Le temps de heartbeat croît de 160~ms (20 nœuds) à 450~ms (80 nœuds) avant de redescendre légèrement à 407~ms (100 nœuds), probablement en raison du pool de connexions PostgreSQL qui atteint son régime permanent. Cette croissance reste dans des limites acceptables pour un système dont l'intervalle de heartbeat par défaut est configuré à 30 secondes.
+\paragraph{Heartbeat et enregistrement~: croissance globale avec variance locale.}
+Le temps d'enregistrement et le temps de heartbeat croissent globalement avec le nombre de nœuds (de 389 à 457~ms, et de 160 à 450~ms respectivement), mais présentent chacun un point de mesure isolé en deçà du palier précédent (enregistrement~: 313~ms à 40 nœuds contre 389~ms à 20~; heartbeat~: 407~ms à 100 nœuds contre 450~ms à 80). Ces écarts sont attribuables à la variance d'une machine de développement non isolée (autres processus concurrents, cache du système d'exploitation, montée en régime du moteur V8) plutôt qu'à un phénomène algorithmique, chaque palier ne reposant que sur une seule exécution. Une mesure plus rigoureuse répéterait chaque palier plusieurs fois et reporterait la moyenne avec un intervalle de confiance.
 
-% \paragraph{Perspectives de scalabilité.}
-% Les résultats indiquent un comportement sub-linéaire~: doubler le nombre de nœuds de 50 à 100 n'a pas doublé les temps de réponse. Pour des coalitions de plusieurs centaines de nœuds, l'ajout d'un système de cache distribué (Redis) pour les scores de confiance et l'utilisation de connexions persistantes pour les heartbeats permettraient de maintenir ces performances.
+\paragraph{Perspectives de scalabilité.}
+Les résultats indiquent malgré ce bruit un comportement globalement sub-linéaire~: doubler le nombre de nœuds de 50 à 100 n'a pas doublé les temps de réponse. Pour des coalitions de plusieurs centaines de nœuds, l'ajout d'un système de cache distribué (Redis) pour les scores de confiance et l'utilisation de connexions persistantes pour les heartbeats permettraient de maintenir ces performances.
 
 % --------------------------------------------------
 \subsection{Résultats des tests de sécurité}
 
-Le Tableau~\ref{tab:secu} présente les cinq scénarios d'attaque simulés et les réponses obtenues du système.
+Le Tableau~\ref{tab:auth_tests} présente les cinq scénarios d'attaque simulés et les réponses obtenues du système.
+
+
+
+
+
+
+
+
+
 
 \begin{table}[H]
 \centering
-\caption{Résultats des tests de sécurité.}
-\label{tab:secu}
-\small
-\renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{\textwidth}{|X|c|c|}
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|
+>{\raggedright\arraybackslash}X|
+>{\centering\arraybackslash}p{2cm}|
+>{\centering\arraybackslash}p{1.8cm}|}
 \hline
 \textbf{Scénario testé} & \textbf{HTTP attendu} & \textbf{Résultat} \\
 \hline
 Requête sans en-tête \texttt{Authorization} & 401 & \checkmark \\
 \hline
-Token JWT expiré (émis il y a $> 60$~s) & 401 & \checkmark \\
+Token JWT expiré (émis il y a $>15$~min) & 401 & \checkmark \\
 \hline
 Token JWT signé avec une clé RSA incorrecte & 401 & \checkmark \\
 \hline
@@ -561,13 +629,107 @@ Token valide d'un nœud à statut \texttt{BANNED} & 403 & \checkmark \\
 \texttt{peer\_id} inconnu dans le corps de la requête & 404 & \checkmark \\
 \hline
 \end{tabularx}
+
+\caption{Tests de validation du mécanisme d'authentification}
+\label{tab:auth_tests}
 \end{table}
+
+
+
+
+
+
+
 
 Les cinq scénarios ont été rejetés avec le code HTTP correct. Aucun accès non autorisé n'a été accordé~; la vérification séquentielle du middleware (décodage sans vérification → récupération de la clé publique → vérification RS256) a fonctionné dans tous les cas.
 
 % --------------------------------------------------
+\subsection{Démonstration sur le tableau de bord de supervision}
+\label{subsec:demo_dashboard}
+
+Pour valider l'intégration cohérente de l'ensemble des composants en conditions réalistes, un scénario de bout en bout a été exécuté via le tableau de bord de supervision développé en HTML/JavaScript. Cette interface offre une vision consolidée de l'état de la coalition et permet de déclencher manuellement une simulation d'attaque \gls{ddos} tout en observant en temps réel chaque phase du protocole de mitigation collaborative.
+
+\paragraph{État initial de la coalition.}
+La Figure~\ref{fig:cap_overview} présente la vue d'ensemble au moment du lancement de la simulation. La coalition compte 103 pairs enregistrés~: 3~nœuds réels (Datacenter Oran, FAI Algérie Télécom, PME Algéroise) et 100~pairs virtuels répartis en cinq niveaux de confiance. Parmi eux, 93~pairs sont actifs, 23~sont de niveau GOLD et 10~sont bannis. Deux attaques précédentes restent ouvertes en base (non clôturées), et 55~sessions d'aide sont encore actives au moment de la capture.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_overview.png}
+\caption{Vue d'ensemble du tableau de bord~: état de la coalition avant le lancement du scénario.}
+\label{fig:cap_overview}
+\end{figure}
+
+La Figure~\ref{fig:cap_nodes} présente le tableau des pairs triés par score de confiance décroissant. Les trois nœuds réels (node-datacenter, node-isp, node-pme) apparaissent en tête avec le statut ACTIVE et un score PeerTrust de 1.000 (nœuds GOLD sans historique de défaillance), suivis des pairs virtuels dont les scores varient selon leur niveau (GOLD~: 0.928–0.929, SILVER~: 0.700–0.717).
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_nodes.png}
+\caption{Tableau des pairs de la coalition triés par score PeerTrust décroissant.}
+\label{fig:cap_nodes}
+\end{figure}
+
+\paragraph{Détection et escalade vers la coalition.}
+Une attaque de sévérité HIGH est configurée~: volume de 25~Gbps, protocole UDP, port~80, ciblant le réseau \texttt{192.168.100.0/24}. Avec une capacité locale disponible de 8~Gbps, l'overflow est de 17~Gbps. Le système émet automatiquement 103~alertes à l'ensemble des pairs de la coalition. La Figure~\ref{fig:cap_db_attack_wsm} montre le résultat~: 52~pairs ont accepté la demande d'aide et 51~l'ont refusée, illustrant le comportement probabiliste implémenté (taux de refus de 15\,\% pour GOLD, 25\,\% pour SILVER, 45\,\% pour BRONZE, 75\,\% pour SUSPECT).
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_attack_wsm.png}
+\caption{Configuration de l'attaque simulée et début du tableau de sélection WSM.}
+\label{fig:cap_db_attack_wsm}
+\end{figure}
+
+\paragraph{Sélection WSM et allocation.}
+L'algorithme \gls{wsm} calcule un score composite pour chaque pair éligible (score de confiance $\geq 0{,}70$) selon la formule $\text{WSM}(p) = 0{,}52 \cdot C + 0{,}20 \cdot L + 0{,}20 \cdot T + 0{,}08 \cdot R$. La Figure~\ref{fig:cap_wsm_full} présente le classement complet des 38~pairs scorés~: les paires avec une latence normalisée~$L = 1{,}000$ et une forte capacité obtiennent les scores les plus élevés (jusqu'à 0.905 pour sim-008) et se voient allouer les plus grandes fractions du trafic d'overflow (jusqu'à 3.54\,\%).
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_wsm_full.png}
+\caption{Tableau WSM complet~: classement des 38 pairs éligibles avec scores et allocations.}
+\label{fig:cap_wsm_full}
+\end{figure}
+
+\paragraph{Mitigation distribuée active.}
+La Figure~\ref{fig:cap_mitigation} présente l'étape de mitigation distribuée. 52~tunnels GRE sont activés simultanément, absorbant un volume total de 15{,}7~Gbps sur les 17~Gbps d'overflow. Les dix premiers nœuds du tableau sont triés par allocation décroissante~: les pairs GOLD à forte latence inversée (sim-004, sim-008, sim-012) absorbent chacun 0{,}6~Gbps, suivis des nœuds réels (node-isp à 0{,}5~Gbps). À la clôture de l'attaque, 52~pairs voient leur score PeerTrust recalculé avec la sévérité HIGH ($D = 0{,}75$) comme facteur contextuel.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_mitigation.png}
+\caption{Mitigation distribuée active~: 52 tunnels GRE, 15{,}7~Gbps absorbés, recalcul PeerTrust sur 52 pairs.}
+\label{fig:cap_mitigation}
+\end{figure}
+
+\paragraph{Traçabilité~: journal d'audit et messages P2P.}
+La Figure~\ref{fig:cap_db_audit} présente le journal d'audit horodaté~: les événements \texttt{TRUST\_LEVEL\_CHANGED} confirment l'évolution des niveaux à la clôture de la session — plusieurs pairs progressent de SUSPECT vers BRONZE, et d'autres de BRONZE vers SILVER, témoignant de l'effet de récompense de la participation à une session d'aide réussie.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_audit.png}
+\caption{Journal d'audit~: événements \texttt{TRUST\_LEVEL\_CHANGED} à la clôture de l'attaque.}
+\label{fig:cap_db_audit}
+\end{figure}
+
+La Figure~\ref{fig:cap_messages} présente les messages P2P échangés pendant la simulation~: les \texttt{HELP\_ACCEPT} confirment l'acceptation des sessions par les pairs (node-pme, node-isp, node-datacenter, sim-001), et les \texttt{TRAFFIC\_REDIRECT} actent la mise en place des tunnels GRE.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_messages.png}
+\caption{Messages P2P~: \texttt{HELP\_ACCEPT} et \texttt{TRAFFIC\_REDIRECT} échangés durant la mitigation.}
+\label{fig:cap_messages}
+\end{figure}
+
+\paragraph{Supervision des heartbeats.}
+La Figure~\ref{fig:cap_heartbeats} présente le panel de supervision des heartbeats. Les trois nœuds réels transmettent leur état à node-university lors de leur adhésion à la coalition et à chaque mise à jour de leurs paramètres~: node-datacenter (charge 20\,\%, 12~Gbps disponibles), node-isp (charge 20\,\%, 16~Gbps disponibles) et node-pme (charge 20\,\%, 4~Gbps disponibles). Ces échanges événementiels permettent au nœud victime de maintenir une vue à jour de la disponibilité déclarée des pairs avant de déclencher une sélection WSM, sans le coût en $O(N^2)$ d'un envoi périodique vers l'ensemble de la coalition.
+
+\begin{figure}[H]
+\centering
+\figborder[\textwidth]{figures/captures/cap_heartbeats.png}
+\caption{Panel Heartbeats~: signaux de présence événementiels des nœuds réels reçus par node-university.}
+\label{fig:cap_heartbeats}
+\end{figure}
+
+% --------------------------------------------------
 \section{Conclusion}
 
-Ce chapitre a présenté l'implémentation complète du système et ses résultats d'évaluation. Le gestionnaire de confiance implémente fidèlement la formule PeerTrust avec une crédibilité historique par session~: les trois scénarios de validation produisent des scores $T(u)$ conformes aux valeurs théoriques, et le bannissement automatique se déclenche correctement au seuil $T(u) < 0{,}20$. L'algorithme \gls{wsm} alloue le flux proportionnellement aux scores composites, garantissant que les pairs les plus capables et les plus fiables absorbent la part la plus importante du trafic d'attaque. La double sécurisation mTLS + JWT RS256 a rejeté l'ensemble des cinq scénarios d'attaque simulés avec le code HTTP approprié.
+Ce chapitre a présenté l'implémentation complète du système et ses résultats d'évaluation. Le gestionnaire de confiance implémente fidèlement la formule PeerTrust avec une crédibilité historique par session~: les trois scénarios de validation (section~\ref{subsec:validation_peertrust}) produisent des scores $T(u)$ conformes aux valeurs théoriques calculées à la main, et le bannissement automatique se déclenche correctement au seuil $T(u) < 0{,}20$. L'algorithme \gls{wsm} alloue le flux proportionnellement aux scores composites, garantissant que les pairs les plus capables et les plus fiables absorbent la part la plus importante du trafic d'attaque. La double sécurisation JWT RS256 (et mTLS, disponible mais désactivé par défaut dans ce prototype) a rejeté l'ensemble des cinq scénarios d'attaque simulés avec le code HTTP approprié.
 
-Les tests de scalabilité confirment que le système maintient un taux de succès de 100\,\% sur l'ensemble des fonctionnalités testées jusqu'à 100 nœuds, avec un temps de sélection WSM inférieur à 33~ms quelle que soit la taille de la coalition. Ces résultats ont été obtenus sur une infrastructure locale~; une évaluation sur un déploiement géographiquement distribué, soumis à la latence réseau réelle, constitue une perspective de travail futur.
+La démonstration sur le tableau de bord de supervision confirme quant à elle l'intégration cohérente de l'ensemble des composants en conditions réalistes~: le scénario complet s'est exécuté avec succès de bout en bout, validant la chaîne authentification~→~détection~→~sélection \gls{wsm}~→~formation de la coalition~→~clôture~→~recalcul du score de confiance. Les tests de scalabilité confirment un taux de succès de 100\,\% jusqu'à 100 nœuds, avec une sélection WSM toujours inférieure à 33~ms~; la variance observée sur certains paliers (section~\ref{subsec:analyse_scalabilite}) reflète l'absence de répétitions multiples plutôt qu'une dégradation algorithmique. Ces résultats ont été obtenus sur une infrastructure locale~; une évaluation sur un déploiement géographiquement distribué, soumis à la latence réseau réelle, constitue une perspective de travail futur.

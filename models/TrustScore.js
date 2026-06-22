@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       overall_score: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 1,
+        defaultValue: 0.5,
         validate: {
           min: 0,
           max: 1,
@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       trust_level: {
         type: DataTypes.ENUM(...TRUST_LEVELS),
         allowNull: false,
-        defaultValue: "GOLD",
+        defaultValue: "BRONZE",
       },
       reliability_score: {
         type: DataTypes.FLOAT,

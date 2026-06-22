@@ -67,8 +67,8 @@ async function start() {
       console.log(`  Docs: http://localhost:${PORT}/api-docs`);
       console.log("=".repeat(50));
 
-      // Démarrer l'envoi automatique de heartbeats aux pairs (mTLS + JWT RS256)
-      heartbeatSender.start();
+      // Annonce d'adhésion à la coalition (événementiel, pas de minuteur — mTLS + JWT RS256)
+      heartbeatSender.announceJoin();
     });
   } catch (error) {
     console.error("[FATAL]", error.message || error.name || "Unknown startup error");

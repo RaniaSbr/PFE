@@ -69,6 +69,17 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 async function jwtMiddleware(req, res, next) {
   if (isPublicRoute(req)) return next();
 
+  // Inter-node coalition calls use shared secret header instead of JWT
+  const nodeSecret = req.headers["x-node-secret"];
+  if (nodeSecret && nodeSecret === (process.env.JWT_SECRET || "shieldnet-secret-key-2025")) {
+    req.authNode = {
+      node_id: req.headers["x-node-id"] || "coalition-peer",
+      role: "peer",
+      is_local: false,
+    };
+    return next();
+  }
+
   const token = extractToken(req);
   if (!token) {
     return res.status(401).json({

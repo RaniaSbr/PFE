@@ -17,6 +17,9 @@ const {
 } = require("../models");
 const { logAudit } = require("../utils/logger");
 const { recalculateAndSave } = require("../utils/trustManager");
+const { weightedRoundRobin } = require("../utils/trafficDistributor");
+const heartbeatSender = require("../utils/heartbeatSender");
+const { selectPeers } = require("../utils/peerSelector");
 
 const router = express.Router();
 
@@ -90,6 +93,24 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: OK
+ *
+ * /simulation/seed-peers:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Injecter 100 pairs virtuels avec scores de confiance varies
+ *     responses:
+ *       201:
+ *         description: 100 pairs crees
+ *       400:
+ *         description: Noeud local non initialise
+ *
+ * /simulation/reset:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Remettre la base de donnees a zero
+ *     responses:
+ *       200:
+ *         description: Base videe
  */
 
 // GET /simulation/ping
@@ -189,6 +210,10 @@ router.post("/simulation/node/init", async (req, res) => {
       target: node.node_id,
       description: `[SIM] Local node ${created ? "initialized" : "updated"}: ${node.node_name}`,
     });
+
+    // Événement "mise à jour des paramètres" — diffuse le nouvel état aux
+    // pairs connus (pas de minuteur, déclenché par ce changement précis).
+    heartbeatSender.announceUpdate().catch(() => {});
 
     return res.status(created ? 201 : 200).json(node);
   } catch (error) {
@@ -439,7 +464,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
           });
         }
 
-        summary.push({ peer: peer.peer_name, level: ts.trust_level, score: ts.overall_score });
+        summary.push({ peer: peer.peer_name, peer_id: peer.peer_id, level: ts.trust_level, score: ts.overall_score });
       }
     }
 
@@ -460,6 +485,107 @@ router.post("/simulation/seed-peers", async (req, res) => {
       message: `${summary.length} pairs virtuels créés`,
       distribution: counts,
       peers: summary,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /simulation/distribute:
+ *   post:
+ *     tags: [Simulation]
+ *     summary: Simuler la redistribution WRR des paquets entre les pairs (Weighted Round-Robin)
+ *     description: |
+ *       Implémente l'algorithme de redistribution décrit au §4.x du mémoire.
+ *       Le nœud victime Nv distribue n paquets (P1..Pn) vers m pairs (Np1..Npm)
+ *       en Weighted Round-Robin : chaque pair reçoit alloc_i paquets par cycle,
+ *       on revient à Np1 après Npm, jusqu'à ce que Pn soit envoyé.
+ *       Les allocations (alloc_i) sont issues du score WSM de chaque pair.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [n_packets, overflow_gbps]
+ *             properties:
+ *               n_packets:
+ *                 type: integer
+ *                 description: "Nombre total de paquets à redistribuer (n)"
+ *                 example: 1000
+ *               overflow_gbps:
+ *                 type: number
+ *                 description: "Volume excédentaire (Gbps) — utilisé pour le calcul WSM"
+ *                 example: 8
+ *               min_trust_score:
+ *                 type: number
+ *                 description: "Score WSM minimum pour participer (défaut : 0.0)"
+ *                 example: 0.3
+ *     responses:
+ *       200:
+ *         description: Plan de distribution WRR avec cycles détaillés par pair
+ *       400:
+ *         description: Paramètres invalides
+ */
+router.post("/simulation/distribute", async (req, res) => {
+  try {
+    const nPackets     = parseInt(req.body.n_packets);
+    const overflowGbps = parseFloat(req.body.overflow_gbps);
+    const minTrust     = req.body.min_trust_score ?? 0.0;
+
+    if (!nPackets || nPackets <= 0) {
+      return res.status(400).json({ error: "n_packets doit être un entier positif" });
+    }
+    if (!overflowGbps || overflowGbps <= 0) {
+      return res.status(400).json({ error: "overflow_gbps doit être un nombre positif" });
+    }
+
+    // 1. Sélectionner les pairs éligibles via WSM
+    const { plan } = await selectPeers({
+      overflowGbps,
+      minTrustScore: minTrust,
+      ignoreTrust:   false,
+    });
+
+    if (plan.length === 0) {
+      return res.status(400).json({ error: "Aucun pair éligible pour la redistribution" });
+    }
+
+    // 2. Construire la liste des pairs avec leur quota WRR
+    //    alloc_i = allocation_pct issu du WSM (ex: 30 → 30 paquets/cycle)
+    //    Si allocation_pct = 0, utiliser 1 pour éviter qu'un pair soit exclu
+    const peers = plan.map((entry) => ({
+      peer_id:   entry.peer.peer_id,
+      peer_name: entry.peer.peer_name,
+      alloc_i:   Math.max(1, entry.allocation_pct),
+      wsm_score: entry.wsm_score,
+      capacity_ratio_pct: entry.capacity_ratio_pct,
+    }));
+
+    // 3. Exécuter l'algorithme Weighted Round-Robin
+    const result = weightedRoundRobin(nPackets, peers);
+
+    // 4. Enrichir la réponse avec les infos WSM
+    const enriched = result.distribution.map((d) => {
+      const wsm = peers.find((p) => p.peer_id === d.peer_id);
+      return {
+        ...d,
+        wsm_score:          wsm?.wsm_score,
+        capacity_ratio_pct: wsm?.capacity_ratio_pct,
+        share_pct:          Number(((d.packets_received / nPackets) * 100).toFixed(2)),
+      };
+    });
+
+    return res.json({
+      algorithm:     "Weighted Round-Robin (WRR)",
+      n_packets:     nPackets,
+      overflow_gbps: overflowGbps,
+      total_peers:   result.total_peers,
+      cycle_size:    result.cycle_size,
+      total_cycles:  result.total_cycles,
+      peers: enriched,
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });

@@ -1,4 +1,4 @@
-% =============================================
+﻿% =============================================
 % CHAPITRE 2 : Étude bibliographique
 % =============================================
 \chapter{Étude bibliographique}
@@ -16,7 +16,7 @@ Pour chaque travail, je décris le contexte de sa conception, son architecture t
 
 \subsection{Contexte et motivation}
 
-L'IETF a initié le groupe de travail \gls{dots} (\textit{DDoS Open Threat Signaling}) pour définir un protocole standardisé permettant à une entité attaquée de notifier automatiquement un prestataire de mitigation. Les exigences sont formalisées dans la RFC~8612 \cite{mortensen2019dots} et le canal de signalisation dans la RFC~8782 \cite{reddy2020dots}.
+L'IETF a initié le groupe de travail \gls{dots} (\textit{DDoS Open Threat Signaling}) pour définir un protocole standardisé permettant à une entité attaquée de notifier automatiquement un prestataire de mitigation. Les exigences sont formalisées dans la RFC~8612 \parencite{mortensen2019dots} et le canal de signalisation dans la RFC~8782 \parencite{reddy2020dots}.
 
 \subsection{Architecture et fonctionnement}
 
@@ -37,13 +37,13 @@ Le protocole s'appuie sur une pile technologique légère adaptée aux environne
 
 \subsubsection{Canal de signalisation (\textit{Signal Channel})}
 
-Ce canal utilise le protocole \gls{coap} (\textit{Constrained Application Protocol}, RFC~7252~\cite{rfc7252coap}) sécurisé par \gls{dtls}~1.2 (RFC~6347~\cite{rfc6347dtls}) sur UDP. Ce choix est stratégique~: contrairement à TCP, UDP évite les délais de retransmission et le blocage de tête de ligne (\textit{Head-of-Line blocking}) fréquents lors d'une saturation de lien.
+Ce canal utilise le protocole \gls{coap} (\textit{Constrained Application Protocol}, RFC~7252~\parencite{rfc7252coap}) sécurisé par \gls{dtls}~1.2 (RFC~6347~\parencite{rfc6347dtls}) sur UDP. Ce choix est stratégique~: contrairement à TCP, UDP évite les délais de retransmission et le blocage de tête de ligne (\textit{Head-of-Line blocking}) fréquents lors d'une saturation de lien.
 
 Concrètement, le client émet une requête CoAP \texttt{PUT} sur l'URI~:
 \begin{center}
     \texttt{/dots/signal/\{cuid\}/\{mid\}}
 \end{center}
-contenant un objet \gls{cbor} (\textit{Concise Binary Object Representation}, RFC~8949~\cite{rfc8949cbor}) qui spécifie les préfixes IP à protéger (\texttt{target-prefix}), les numéros de port (\texttt{target-port-range}), le protocole (\texttt{target-protocol}) ainsi que la durée de mitigation souhaitée (\texttt{lifetime}).
+contenant un objet \gls{cbor} (\textit{Concise Binary Object Representation}, RFC~8949~\parencite{rfc8949cbor}) qui spécifie les préfixes IP à protéger (\texttt{target-prefix}), les numéros de port (\texttt{target-port-range}), le protocole (\texttt{target-protocol}) ainsi que la durée de mitigation souhaitée (\texttt{lifetime}).
 Le serveur répond avec un code \texttt{2.01 Created} et un identifiant de mitigation (\texttt{mid}).
 
 Ce canal gère le cycle de vie de la mitigation via une \textbf{machine à états à quatre transitions}~:
@@ -55,7 +55,7 @@ Un mécanisme de \textit{heartbeat} (messages CoAP \texttt{GET} périodiques, in
 
 \subsubsection{Canal de données (\textit{Data Channel})}
 
-Basé sur \textbf{RESTCONF} (RFC~8040~\cite{rfc8040restconf}) via HTTPS (TLS~1.2+, TCP), il permet l'échange de configurations complexes et moins urgentes. Les données sont modélisées en YANG (RFC~7950~\cite{rfc7950yang}). Ce canal remplit trois fonctions. Il permet d'abord de définir des \textbf{alias} (\textit{dots-alias}) regroupant plusieurs préfixes IP, ports et protocoles sous un identifiant unique, réduisant ainsi la taille des messages de signalisation en période d'attaque. Il sert également à pré-configurer des \textbf{\glspl{acl}} en amont, modélisées selon le module YANG \texttt{ietf-dots-data-channel} (RFC~8783), qui spécifient des règles de filtrage au format \texttt{ietf-access-control-list} incluant les critères de correspondance (5-tuple~: IP source/destination, port source/destination, protocole) et les actions (\texttt{permit}, \texttt{deny}, \texttt{rate-limit}). Enfin, il permet de récupérer les \textbf{télémétries} d'attaque (RFC~9244~\cite{rfc9244dotstelemetry})~: bande passante entrante, nombre de paquets par seconde, distribution des protocoles d'attaque, \textit{top talkers} (sources les plus actives).
+Basé sur \textbf{RESTCONF} (RFC~8040~\parencite{rfc8040restconf}) via HTTPS (TLS~1.2+, TCP), il permet l'échange de configurations complexes et moins urgentes. Les données sont modélisées en YANG (RFC~7950~\parencite{rfc7950yang}). Ce canal remplit trois fonctions. Il permet d'abord de définir des \textbf{alias} (\textit{dots-alias}) regroupant plusieurs préfixes IP, ports et protocoles sous un identifiant unique, réduisant ainsi la taille des messages de signalisation en période d'attaque. Il sert également à pré-configurer des \textbf{\glspl{acl}} en amont, modélisées selon le module YANG \texttt{ietf-dots-data-channel} (RFC~8783), qui spécifient des règles de filtrage au format \texttt{ietf-access-control-list} incluant les critères de correspondance (5-tuple~: IP source/destination, port source/destination, protocole) et les actions (\texttt{permit}, \texttt{deny}, \texttt{rate-limit}). Enfin, il permet de récupérer les \textbf{télémétries} d'attaque (RFC~9244~\parencite{rfc9244dotstelemetry})~: bande passante entrante, nombre de paquets par seconde, distribution des protocoles d'attaque, \textit{top talkers} (sources les plus actives).
 
 
 
@@ -66,7 +66,7 @@ Basé sur \textbf{RESTCONF} (RFC~8040~\cite{rfc8040restconf}) via HTTPS (TLS~1.2
 
 À cette rigidité s'ajoute une \textbf{absence de mutualisation de capacité}~: \gls{dots} signale le besoin de mitigation mais ne spécifie pas comment répartir la charge entre plusieurs mitigateurs. Si le serveur \gls{dots} est lui-même saturé, aucun mécanisme de délégation ou d'équilibrage n'est prévu par le standard.
 
-La \textbf{confiance} reste par ailleurs \textbf{limitée aux relations bilatérales}~: l'authentification repose sur des certificats X.509 ou PSK (\textit{Pre-Shared Key}) pré-provisionnés, sans mécanisme dynamique pour évaluer la fiabilité d'un pair inconnu \cite{mortensen2019dots}, ce qui limite le déploiement à des relations contractuelles préétablies.
+La \textbf{confiance} reste par ailleurs \textbf{limitée aux relations bilatérales}~: l'authentification repose sur des certificats X.509 ou PSK (\textit{Pre-Shared Key}) pré-provisionnés, sans mécanisme dynamique pour évaluer la fiabilité d'un pair inconnu \parencite{mortensen2019dots}, ce qui limite le déploiement à des relations contractuelles préétablies.
 
 Enfin, \gls{dots} \textbf{ne permet pas le partage d'intelligence}~: il transmet des demandes de mitigation, non des signatures d'attaque. Un serveur \gls{dots} ne redistribue pas les caractéristiques techniques de l'attaque (vecteurs, TTL, taille de paquets) aux autres entités du réseau pour une protection proactive.
 
@@ -76,7 +76,7 @@ Enfin, \gls{dots} \textbf{ne permet pas le partage d'intelligence}~: il transmet
 
 \subsection{Contexte et motivation}
 
-Le projet DDoS Clearing House, développé par SIDN Labs dans le cadre du projet européen CONCORDIA (H2020), vise à briser le cloisonnement des informations sur les attaques \gls{ddos} entre opérateurs. Il permet le partage automatisé de \textit{fingerprints} (empreintes) d'attaques entre membres d'une coalition nationale \cite{sidnlabs2021clearinghouse}.
+Le projet DDoS Clearing House, développé par SIDN Labs dans le cadre du projet européen CONCORDIA (H2020), vise à briser le cloisonnement des informations sur les attaques \gls{ddos} entre opérateurs. Il permet le partage automatisé de \textit{fingerprints} (empreintes) d'attaques entre membres d'une coalition nationale \parencite{sidnlabs2021clearinghouse}.
 
 \subsection{Architecture et fonctionnement}
 
@@ -95,7 +95,7 @@ Le système suit une architecture à trois composants (voir Figure~\ref{fig:ddos
 
     \item \textbf{Clearing House central (\textit{Hub})~:} Un serveur central reçoit les fingerprints via l'API REST, les \textbf{déduplique} (en identifiant les attaques observées par plusieurs membres simultanément grâce à la corrélation temporelle et aux vecteurs communs), les \textbf{enrichit} (ajout de métadonnées de réputation des préfixes sources via des bases comme Shodan ou Spamhaus) et les stocke dans une base de données centralisée. Le hub expose une API de consultation permettant aux membres d'interroger l'historique par vecteur d'attaque, période ou préfixe cible.
 
-    \item \textbf{Module de consommation (\textit{Converter})~:} Chaque membre récupère les fingerprints pertinents et un module de conversion les traduit automatiquement en règles de filtrage opérationnelles adaptées à l'infrastructure locale~: règles \texttt{iptables}/\texttt{nftables} pour le filtrage Linux, règles BGP Flowspec (RFC~5575~\cite{marques2009flowspec}) pour distribution aux routeurs de bordure, et politiques pour \textit{scrubbing appliances} (ex.~: Arbor Sightline/TMS, A10 Thunder TPS).
+    \item \textbf{Module de consommation (\textit{Converter})~:} Chaque membre récupère les fingerprints pertinents et un module de conversion les traduit automatiquement en règles de filtrage opérationnelles adaptées à l'infrastructure locale~: règles \texttt{iptables}/\texttt{nftables} pour le filtrage Linux, règles BGP Flowspec (RFC~5575~\parencite{marques2009flowspec}) pour distribution aux routeurs de bordure, et politiques pour \textit{scrubbing appliances} (ex.~: Arbor Sightline/TMS, A10 Thunder TPS).
 \end{enumerate}
 
 \begin{figure}[H]
@@ -116,7 +116,7 @@ La principale limite du système tient à son \textbf{partage passif sans orches
 
 Son \textbf{architecture centralisée} introduit par ailleurs un point de défaillance unique (\gls{spof})~: si le hub central est indisponible (panne, attaque ciblée), la dissémination des fingerprints est interrompue, et les opérations de déduplique et d'enrichissement deviennent impossibles.
 
-Le système souffre également d'un \textbf{partage \textit{a posteriori}}~: la génération d'un fingerprint nécessite l'analyse du trafic d'attaque après sa détection. Le temps de traitement cumulé (capture PCAP $\rightarrow$ extraction DissecTor $\rightarrow$ upload API $\rightarrow$ déduplique $\rightarrow$ download par les membres $\rightarrow$ conversion en règles) introduit un délai incompressible de l'ordre de plusieurs minutes \cite{sidnlabs2021clearinghouse}, rendant le système inefficace contre les attaques éphémères (\textit{hit-and-run}, durée $<$~5~min).
+Le système souffre également d'un \textbf{partage \textit{a posteriori}}~: la génération d'un fingerprint nécessite l'analyse du trafic d'attaque après sa détection. Le temps de traitement cumulé (capture PCAP $\rightarrow$ extraction DissecTor $\rightarrow$ upload API $\rightarrow$ déduplique $\rightarrow$ download par les membres $\rightarrow$ conversion en règles) introduit un délai incompressible de l'ordre de plusieurs minutes \parencite{sidnlabs2021clearinghouse}, rendant le système inefficace contre les attaques éphémères (\textit{hit-and-run}, durée $<$~5~min).
 
 Enfin, le modèle repose sur une \textbf{confiance implicite}~: aucun mécanisme formel ne permet de vérifier la véracité d'un fingerprint soumis. Un membre compromis ou malveillant pourrait théoriquement injecter de faux fingerprints pour provoquer le blocage de trafic légitime chez les autres membres (\textit{poisoning attack}).
 
@@ -126,7 +126,7 @@ Enfin, le modèle repose sur une \textbf{confiance implicite}~: aucun mécanisme
 
 \subsection{Contexte et architecture}
 
-NaWas (\textit{National Wasstraat}, littéralement \og station de lavage nationale \fg{}) est une initiative néerlandaise opérée par le NBIP (\textit{Nationale Beheersorganisatie Internet Providers}), un consortium à but non lucratif regroupant des \glspl{fai} néerlandais. Elle offre une infrastructure de \textit{scrubbing} mutualisée aux membres participants \cite{nbip2023nawas}.
+NaWas (\textit{National Wasstraat}, littéralement \og station de lavage nationale \fg{}) est une initiative néerlandaise opérée par le NBIP (\textit{Nationale Beheersorganisatie Internet Providers}), un consortium à but non lucratif regroupant des \glspl{fai} néerlandais. Elle offre une infrastructure de \textit{scrubbing} mutualisée aux membres participants \parencite{nbip2023nawas}.
 
 \subsubsection{Mécanisme de redirection BGP}
 
@@ -167,7 +167,7 @@ Enfin, la \textbf{capacité finie} de la plateforme est dimensionnée pour le vo
 
 \subsection{Contexte et architecture}
 
-Proposé par Mirkovic et al. \cite{mirkovic2003defcom}, DefCOM est un système de défense coopérative qui structure les n\oe{}uds de défense en un \textbf{réseau overlay logique} pour éviter les goulots d'étranglement centraux. C'est l'une des premières propositions académiques de défense \gls{ddos} véritablement distribuée.
+Proposé par Mirkovic et al. \parencite{mirkovic2003defcom}, DefCOM est un système de défense coopérative qui structure les n\oe{}uds de défense en un \textbf{réseau overlay logique} pour éviter les goulots d'étranglement centraux. C'est l'une des premières propositions académiques de défense \gls{ddos} véritablement distribuée.
 
 \subsubsection{Topologie et rôles des n\oe{}uds}
 
@@ -226,7 +226,7 @@ Enfin, la \textbf{scalabilité de la découverte par traceroute} est intrinsèqu
 
 \subsection{Contexte et motivation}
 
-Le modèle PeerTrust, proposé par Xiong et Liu \cite{xiong2004peertrust}, est un cadre de gestion de la confiance basé sur la réputation pour les communautés en ligne pair-à-pair. Bien que conçu initialement dans le contexte du commerce électronique P2P, PeerTrust constitue la référence théorique fondamentale pour tout système de confiance distribué sans autorité centrale. Son inclusion dans cette étude bibliographique est justifiée par le fait qu'il fournit les bases formelles du mécanisme de confiance que nous adaptons dans le système.
+Le modèle PeerTrust, proposé par Xiong et Liu \parencite{xiong2004peertrust}, est un cadre de gestion de la confiance basé sur la réputation pour les communautés en ligne pair-à-pair. Bien que conçu initialement dans le contexte du commerce électronique P2P, PeerTrust constitue la référence théorique fondamentale pour tout système de confiance distribué sans autorité centrale. Son inclusion dans cette étude bibliographique est justifiée par le fait qu'il fournit les bases formelles du mécanisme de confiance que nous adaptons dans le système.
 
 \subsection{Paramètres de confiance et métrique générale}
 
@@ -248,7 +248,7 @@ où $\alpha$ et $\beta$ sont des facteurs de pondération normalisés. En désac
 T(u) = \sum_{i=1}^{I(u)} S(u,i) \cdot Cr(p(u,i))
 \end{equation}
 
-Cette forme constitue une moyenne pondérée du niveau de satisfaction, où chaque feedback est pondéré par la crédibilité de son source. La question centrale est alors~: comment calculer $Cr(p(u,i))$ ? PeerTrust propose deux métriques concrètes.
+Cette forme constitue une somme pondérée du niveau de satisfaction, où chaque feedback est pondéré par la crédibilité de sa source~; cette somme brute n'étant pas normalisée, $T(u)$ n'est pas borné dans $[0,1]$ à ce stade. La question centrale est alors~: comment calculer $Cr(p(u,i))$ ? PeerTrust propose deux métriques concrètes.
 
 La première, appelée \textbf{métrique TVM} (\textit{Trust Value Metric}), utilise récursivement la valeur de confiance du pair évaluateur comme mesure de crédibilité, normalisée par la somme des valeurs de confiance de tous les évaluateurs ayant interagi avec $u$~:
 
@@ -300,7 +300,7 @@ NaWas / NBIP & Semi-centralisée & $\times$ & $\times$ & $\times$ & $\checkmark$
 \hline
 DefCOM & P2P overlay & $\checkmark$ & $\checkmark$ \textit{(partiel)} & $\checkmark$ \textit{(partiel)} & $\times$ & $\times$ \\
 \hline
-PeerTrust \cite{xiong2004peertrust} & P2P décentralisée & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+PeerTrust \parencite{xiong2004peertrust} & P2P décentralisée & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
 \hline
 \textbf{Le système} & \textbf{P2P plat} & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
 \hline

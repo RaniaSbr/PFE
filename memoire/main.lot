@@ -1,27 +1,28 @@
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {1.1}{\ignorespaces Synthèse comparative des catégories d'attaques DDoS.}}{7}{table.caption.16}%
-\contentsline {table}{\numberline {1.2}{\ignorespaces Comparaison des principaux services de mitigation cloud.}}{11}{table.caption.20}%
-\contentsline {table}{\numberline {1.3}{\ignorespaces Comparaison des infrastructures de mitigation DDoS.}}{12}{table.caption.21}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Comparaison des principaux services de mitigation cloud.}}{12}{table.caption.20}%
+\contentsline {table}{\numberline {1.3}{\ignorespaces Comparaison des infrastructures de mitigation DDoS.}}{13}{table.caption.21}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Comparaison des systèmes existants et positionnement de la contribution.}}{27}{table.caption.26}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Comparaison des systèmes existants et positionnement de la contribution.}}{28}{table.caption.26}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Identification des cas d'utilisation.}}{35}{table.caption.31}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{36}{table.caption.32}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{37}{table.caption.33}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sélection WSM)}.}}{38}{table.caption.34}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{39}{table.caption.35}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{40}{table.caption.36}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{41}{table.caption.37}%
-\contentsline {table}{\numberline {3.8}{\ignorespaces Description des tables de la base de données.}}{43}{table.caption.38}%
-\contentsline {table}{\numberline {3.9}{\ignorespaces Classes — Configuration du nœud local.}}{46}{table.caption.41}%
-\contentsline {table}{\numberline {3.10}{\ignorespaces Classes — Gestion des pairs et de la confiance.}}{48}{table.caption.43}%
-\contentsline {table}{\numberline {3.11}{\ignorespaces Classes — Sessions de mitigation et traçabilité.}}{51}{table.caption.45}%
-\contentsline {table}{\numberline {3.12}{\ignorespaces Principales clés étrangères et politiques de suppression.}}{52}{table.caption.46}%
-\contentsline {table}{\numberline {3.13}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{53}{table.caption.47}%
-\contentsline {table}{\numberline {3.14}{\ignorespaces Niveaux de confiance dans le système.}}{54}{table.caption.48}%
-\contentsline {table}{\numberline {3.15}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{54}{table.caption.49}%
-\contentsline {table}{\numberline {3.16}{\ignorespaces Endpoints principaux de l'API REST.}}{59}{table.caption.52}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Identification des cas d'utilisation.}}{38}{table.caption.32}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{39}{table.caption.33}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{40}{table.caption.34}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sélection WSM)}.}}{41}{table.caption.35}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{42}{table.caption.36}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{43}{table.caption.37}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{44}{table.caption.38}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Description des tables de la base de données.}}{46}{table.caption.39}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Classes — Configuration du nœud local.}}{49}{table.caption.42}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Classes — Gestion des pairs et de la confiance.}}{51}{table.caption.44}%
+\contentsline {table}{\numberline {3.11}{\ignorespaces Classes — Sessions de mitigation et traçabilité.}}{54}{table.caption.46}%
+\contentsline {table}{\numberline {3.12}{\ignorespaces Principales clés étrangères et politiques de suppression.}}{55}{table.caption.47}%
+\contentsline {table}{\numberline {3.13}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{56}{table.caption.48}%
+\contentsline {table}{\numberline {3.14}{\ignorespaces Niveaux de confiance dans le système.}}{57}{table.caption.49}%
+\contentsline {table}{\numberline {3.15}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{58}{table.caption.50}%
+\contentsline {table}{\numberline {3.16}{\ignorespaces Endpoints principaux de l'API REST.}}{68}{table.caption.56}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{71}{table.caption.54}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Résultats des tests de sécurité.}}{72}{table.caption.56}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Scénarios de validation du calcul de $T(u)$.}}{83}{table.caption.61}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{83}{table.caption.62}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Tests de validation du mécanisme d'authentification}}{85}{table.caption.68}%

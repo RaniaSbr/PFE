@@ -1,151 +1,137 @@
 /**
  * utils/heartbeatSender.js
- * Service d'envoi automatique de heartbeats aux pairs de la coalition.
+ * Service d'annonce événementielle aux pairs de la coalition.
  *
- * Chaque nœud envoie périodiquement son état à tous ses pairs connus.
- * Les requêtes utilisent le client mTLS → certificat client présenté à chaque appel.
+ * Contrairement à un heartbeat périodique, ce module n'envoie un signal
+ * à ses pairs que lors d'un événement précis :
+ *   1. Adhésion à la coalition (annonce initiale au démarrage du nœud)
+ *   2. Mise à jour de ses propres paramètres (capacité, charge déclarée)
+ *   3. Départ de la coalition (cf. routes/discovery.js — POST /peers/goodbye)
  *
- * Flux complet :
- *   1. Lire l'état local (charge, capacité disponible)
- *   2. Générer un JWT RS256 (60s) pour s'authentifier
- *   3. Envoyer POST /heartbeat à chaque pair via HTTPS + certificat client
- *   4. Mesurer le round-trip time (RTT)
- *   5. Marquer les pairs injoignables comme INACTIVE après N échecs
+ * Aucun minuteur, aucune répétition automatique — chaque appel correspond
+ * à un événement réel survenu côté nœud local.
+ *
+ * Flux d'un envoi :
+ *   1. Lire l'état local courant (charge, capacité disponible)
+ *   2. Envoyer POST /heartbeat à chaque pair via HTTPS (+ x-node-secret)
+ *   3. Mesurer le round-trip time (RTT) pour alimenter le critère L du WSM
+ *
+ * La détection d'un pair injoignable est désormais réactive (cf.
+ * routes/coalition.js — POST /help/request), pas proactive : un pair
+ * silencieux reste ACTIVE jusqu'à ce qu'une vraie sollicitation échoue.
  */
 
 "use strict";
 
 const { Peer, LocalNodeConfig } = require("../models");
-const { generateToken }         = require("../middleware/auth");
 const httpsClient               = require("./httpsClient");
+const { Op }                    = require("sequelize");
 
-const HEARTBEAT_INTERVAL_MS = parseInt(process.env.HEARTBEAT_INTERVAL_MS) || 30_000; // 30s
-const MAX_MISSED            = parseInt(process.env.MAX_MISSED_HEARTBEATS)  || 3;
+const NODE_SECRET = process.env.JWT_SECRET || "shieldnet-secret-key-2025";
 
-let _timer = null;
+// ─── Envoi d'une annonce à un seul pair ──────────────────────────────────────
 
-// ─── Envoi d'un heartbeat à un seul pair ─────────────────────────────────────
-
-async function sendHeartbeatToPeer(peer, localNode, token) {
-  const url  = `${peer.api_endpoint_url.replace(/\/$/, "")}/heartbeat`;
+async function sendAnnounceToPeer(peer, localNode) {
+  const url    = `${peer.api_endpoint_url.replace(/\/$/, "")}/heartbeat`;
   const sentAt = Date.now();
 
   const body = {
-    peer_id:                localNode.node_id,
-    reported_status:        localNode.status        || "ACTIVE",
-    reported_load_pct:      localNode.current_load_percent ?? 0,
-    reported_available_gbps: localNode.max_scrubbing_capacity_gbps *
-                              (1 - (localNode.current_load_percent ?? 0) / 100),
-    round_trip_time_ms:     null, // sera mis à jour après réponse
+    peer_id:                 localNode.node_id,
+    peer_name:                localNode.node_name,
+    reported_status:          localNode.status || "ACTIVE",
+    reported_load_pct:        localNode.current_load_percent ?? 0,
+    reported_available_gbps:  localNode.max_scrubbing_capacity_gbps *
+                               (1 - (localNode.current_load_percent ?? 0) / 100),
+    round_trip_time_ms:       null,
+  };
+
+  // Shared secret inter-nœuds (x-node-secret) — accepté par le middleware
+  // auth pour les appels coalition (auth.js).
+  const headers = {
+    "x-node-secret": NODE_SECRET,
+    "x-node-id":     localNode.node_id,
   };
 
   try {
-    const resp = await httpsClient.post(url, body, { token });
+    const resp = await httpsClient.post(url, body, { headers });
     const rtt  = Date.now() - sentAt;
-
-    // Remettre à jour le RTT dans le corps (information pour les logs)
-    body.round_trip_time_ms = rtt;
 
     if (resp.status === 201 || resp.status === 200) {
       console.log(
-        `[Heartbeat] ✓ → ${peer.peer_name} (${rtt}ms) | status=${localNode.status}`
+        `[Annonce] ✓ → ${peer.peer_name} (${rtt}ms) | status=${localNode.status}`
       );
-
-      // Réinitialiser le compteur d'échecs si le pair répond
-      if (peer.consecutive_missed_heartbeats > 0) {
-        await peer.update({
-          consecutive_missed_heartbeats: 0,
-          status: peer.status === "BANNED" ? "BANNED" : "ACTIVE",
-        });
-      }
+      await peer.update({
+        status: peer.status === "BANNED" ? "BANNED" : "ACTIVE",
+        measured_latency_ms: rtt,
+      });
     } else {
-      console.warn(`[Heartbeat] ✗ → ${peer.peer_name} HTTP ${resp.status}`);
-      await incrementMissed(peer);
+      console.warn(`[Annonce] ✗ → ${peer.peer_name} HTTP ${resp.status}`);
     }
   } catch (err) {
-    console.warn(`[Heartbeat] ✗ → ${peer.peer_name} : ${err.message}`);
-    await incrementMissed(peer);
+    // Pair injoignable lors d'une annonce : pas de marquage INACTIVE ici —
+    // la détection de panne est désormais réactive, déclenchée par un échec
+    // de /help/request pendant une vraie sollicitation (cf. coalition.js).
+    console.warn(`[Annonce] ✗ → ${peer.peer_name} : ${err.message}`);
   }
 }
 
-// ─── Gestion des pairs injoignables ──────────────────────────────────────────
+// ─── Diffusion d'un événement à tous les pairs connus ────────────────────────
 
-async function incrementMissed(peer) {
-  const missed = (peer.consecutive_missed_heartbeats || 0) + 1;
-  const update = { consecutive_missed_heartbeats: missed };
-
-  if (missed >= MAX_MISSED && peer.status !== "BANNED") {
-    update.status = "INACTIVE";
-    console.warn(
-      `[Heartbeat] ${peer.peer_name} marqué INACTIVE (${missed} échecs consécutifs)`
-    );
-  }
-
-  await peer.update(update);
-}
-
-// ─── Cycle d'envoi complet ───────────────────────────────────────────────────
-
-async function sendHeartbeats() {
+/**
+ * Diffuse l'état courant du nœud local à tous ses pairs connus.
+ * Appelée sur événement (adhésion, mise à jour de paramètres) —
+ * jamais sur un minuteur périodique.
+ */
+async function announceToCoalition() {
   try {
     const localNode = await LocalNodeConfig.findOne();
     if (!localNode) {
-      console.warn("[Heartbeat] Nœud local non initialisé — heartbeat ignoré");
+      console.warn("[Annonce] Nœud local non initialisé — annonce ignorée");
       return;
     }
 
-    // Générer un token JWT RS256 (60s) pour s'authentifier auprès des pairs
-    let token;
-    try {
-      token = generateToken(localNode.node_id);
-    } catch (e) {
-      console.warn("[Heartbeat] Impossible de générer le JWT :", e.message);
-      return;
-    }
-
-    // Récupérer tous les pairs actifs ou injoignables (pas les bannis)
     const peers = await Peer.findAll({
-      where: { status: ["ACTIVE", "INACTIVE", "MAINTENANCE"] },
+      where: {
+        status: ["ACTIVE", "INACTIVE", "MAINTENANCE"],
+        peer_name: { [Op.notLike]: "sim-%" },
+        api_endpoint_url: { [Op.notLike]: "%.shieldnet.local%" },
+      },
     });
 
     if (peers.length === 0) {
-      console.log("[Heartbeat] Aucun pair enregistré");
+      console.log("[Annonce] Aucun pair enregistré");
       return;
     }
 
-    console.log(`[Heartbeat] Envoi à ${peers.length} pair(s)...`);
+    console.log(`[Annonce] Diffusion à ${peers.length} pair(s)...`);
 
-    // Envoyer en parallèle à tous les pairs
     await Promise.allSettled(
-      peers.map((peer) => sendHeartbeatToPeer(peer, localNode, token))
+      peers.map((peer) => sendAnnounceToPeer(peer, localNode))
     );
   } catch (err) {
-    console.error("[Heartbeat] Erreur cycle :", err.message);
+    console.error("[Annonce] Erreur de diffusion :", err.message);
   }
 }
 
-// ─── Démarrage / Arrêt du service ────────────────────────────────────────────
+// ─── Événements déclencheurs ─────────────────────────────────────────────────
 
-function start() {
-  if (_timer) return; // déjà démarré
-
-  console.log(
-    `[Heartbeat] Service démarré — intervalle : ${HEARTBEAT_INTERVAL_MS / 1000}s`
-  );
-
-  // Premier envoi après 10s (laisser le temps aux autres nœuds de démarrer)
-  setTimeout(() => {
-    sendHeartbeats();
-    _timer = setInterval(sendHeartbeats, HEARTBEAT_INTERVAL_MS);
-  }, 10_000);
+/**
+ * Événement 1 — Adhésion à la coalition.
+ * Appelée une seule fois au démarrage du nœud (annonce initiale).
+ */
+function announceJoin() {
+  console.log("[Annonce] Adhésion à la coalition — diffusion initiale");
+  // Délai court pour laisser les autres nœuds finir leur propre démarrage.
+  setTimeout(announceToCoalition, 10_000);
 }
 
-function stop() {
-  if (_timer) {
-    clearInterval(_timer);
-    _timer = null;
-    console.log("[Heartbeat] Service arrêté");
-  }
+/**
+ * Événement 2 — Mise à jour des paramètres locaux (capacité, charge).
+ * À appeler après toute modification de LocalNodeConfig.
+ */
+function announceUpdate() {
+  console.log("[Annonce] Mise à jour des paramètres — diffusion");
+  return announceToCoalition();
 }
 
-module.exports = { start, stop, sendHeartbeats };
+module.exports = { announceJoin, announceUpdate, announceToCoalition };

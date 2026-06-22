@@ -14,6 +14,15 @@ const { logAudit, logMessage } = require("../utils/logger");
 
 const router = express.Router();
 
+// Reconsidération automatique de la coalition pendant une attaque en cours
+// (cf. routes/coalition.js) — chargé en différé pour éviter toute dépendance
+// circulaire au démarrage des routes.
+function reconsider(peerId, reason) {
+  require("./coalition").reconsiderCoalition(peerId, reason).catch((e) =>
+    console.error("[Reconsidération] Erreur :", e.message),
+  );
+}
+
 /**
  * @swagger
  * /peers/register:
@@ -88,7 +97,48 @@ const router = express.Router();
  * /heartbeat:
  *   post:
  *     tags: [Discovery]
- *     summary: Envoyer un heartbeat
+ *     summary: Envoyer un heartbeat de presence
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [peer_id, reported_status, reported_load_pct, reported_available_gbps]
+ *             properties:
+ *               peer_id: { type: string, format: uuid }
+ *               reported_status: { type: string, enum: [ACTIVE, DEGRADED, UNDER_ATTACK, BUSY] }
+ *               reported_load_pct: { type: number, description: "Charge actuelle du pair (0-100)" }
+ *               reported_available_gbps: { type: number, description: "Capacite disponible en Gbps" }
+ *               round_trip_time_ms: { type: number, description: "Latence aller-retour mesuree (ms)" }
+ *     responses:
+ *       201:
+ *         description: Heartbeat enregistre
+ *       400:
+ *         description: Champs requis manquants
+ *       404:
+ *         description: Pair inconnu
+ *
+ * /peers/discover:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Decouvrir les pairs actifs de la coalition
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               max_results: { type: integer, default: 10, description: "Nombre maximum de pairs retournes" }
+ *     responses:
+ *       200:
+ *         description: Liste des pairs decouverts (hors BANNED et EXPELLED)
+ *
+ * /peers/goodbye:
+ *   post:
+ *     tags: [Discovery]
+ *     summary: Deconnexion propre d'un pair de la coalition
  *     requestBody:
  *       required: true
  *       content:
@@ -98,35 +148,49 @@ const router = express.Router();
  *             required: [peer_id]
  *             properties:
  *               peer_id: { type: string, format: uuid }
- *               current_load_percent: { type: number }
- *               available_capacity_gbps: { type: number }
+ *               reason: { type: string, description: "MAINTENANCE pour mise en maintenance, sinon INACTIVE" }
+ *               estimated_return: { type: string, format: date-time }
  *     responses:
  *       200:
- *         description: Heartbeat enregistré
+ *         description: Pair passe en statut INACTIVE ou MAINTENANCE
+ *       404:
+ *         description: Pair introuvable
  *
- * /goodbye:
- *   post:
- *     tags: [Discovery]
- *     summary: Déconnexion propre d'un pair
- *     responses:
- *       200:
- *         description: Pair déconnecté
- *
- * /node/state:
+ * /status:
  *   get:
  *     tags: [Discovery]
- *     summary: État actuel du nœud local
+ *     summary: Etat actuel du noeud local
  *     responses:
  *       200:
- *         description: État du nœud
+ *         description: Etat du noeud (charge, capacite, sessions actives)
+ *       404:
+ *         description: Noeud local non initialise
  *
  * /capability/advertise:
  *   post:
  *     tags: [Discovery]
- *     summary: Publier les capacités du nœud local
+ *     summary: Publier les capacites de scrubbing d'un pair
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [peer_id, capabilities]
+ *             properties:
+ *               peer_id: { type: string, format: uuid }
+ *               capabilities:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     declared_capacity_gbps: { type: number }
+ *                     verified: { type: boolean }
  *     responses:
  *       200:
- *         description: Capacités publiées
+ *         description: Capacites mises a jour
+ *       404:
+ *         description: Pair introuvable
  */
 
 const ACTIVE_SESSION_STATUSES = ["REQUESTED", "OFFERED", "NEGOTIATING", "ACCEPTED", "ACTIVE"];
@@ -180,14 +244,20 @@ router.post("/heartbeat", async (req, res) => {
       });
     }
 
-    const peer = await Peer.findByPk(peer_id);
+    let peer = null;
+    try { peer = await Peer.findByPk(peer_id); } catch (_) {}
+    if (!peer && req.body.peer_name) {
+      peer = await Peer.findOne({ where: { peer_name: req.body.peer_name } });
+    }
 
     if (!peer) {
       return res.status(404).json({ error: "Unknown peer" });
     }
 
+    const resolvedPeerId = peer.peer_id;
+
     const heartbeat = await HeartbeatLog.create({
-      peer_id,
+      peer_id: resolvedPeerId,
       reported_status,
       reported_load_pct,
       reported_available_gbps,
@@ -197,13 +267,18 @@ router.post("/heartbeat", async (req, res) => {
     await peer.update({
       last_heartbeat: new Date(),
       declared_available_gbps: reported_available_gbps,
+      current_load_percent: reported_load_pct,
       measured_latency_ms: round_trip_time_ms ?? peer.measured_latency_ms,
       consecutive_missed_heartbeats: 0,
       status: peer.status === "BANNED" ? "BANNED" : "ACTIVE",
       updated_at: new Date(),
     });
 
-    logMessage({ message_type: "HEARTBEAT", direction: "RECEIVED", peer_id, priority: "LOW" });
+    logMessage({ message_type: "HEARTBEAT", direction: "RECEIVED", peer_id: resolvedPeerId, priority: "LOW" });
+
+    // Mise à jour de paramètres pendant une attaque en cours : reconsidérer
+    // la couverture de la coalition (cf. routes/coalition.js).
+    reconsider(resolvedPeerId, "mise à jour de capacité");
 
     return res.status(201).json({ message: "Heartbeat recorded", heartbeat });
   } catch (error) {
@@ -281,6 +356,10 @@ router.post("/peers/register", async (req, res) => {
         description: `New peer registered: ${peer.peer_name} (${peer.organization_name})`,
       });
     }
+
+    // Adhésion pendant une attaque en cours : ce nouveau pair peut combler
+    // un manque de couverture existant (cf. routes/coalition.js).
+    reconsider(peerId, "adhésion à la coalition");
 
     return res.status(created ? 201 : 200).json(peer);
   } catch (error) {
@@ -392,6 +471,10 @@ router.post("/peers/goodbye", async (req, res) => {
     await peer.update({ status: nextStatus, updated_at: new Date() });
 
     logMessage({ message_type: "GOODBYE", direction: "RECEIVED", peer_id, priority: "NORMAL" });
+
+    // Départ pendant une attaque en cours : reconsidérer la couverture de
+    // la coalition pour combler la part que ce pair laisse (cf. coalition.js).
+    reconsider(peer_id, "départ de la coalition");
 
     return res.json({
       message: "Peer status updated",

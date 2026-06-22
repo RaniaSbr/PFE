@@ -1,13 +1,13 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  3 JUN 2026 14:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  9 JUN 2026 22:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**
+**main.tex
 
 ! Emergency stop.
-<*> 
-    
-End of file on the terminal!
+<*> main.tex
+            
+*** (job aborted, file error in nonstop mode)
 
  
 Here is how much of TeX's memory you used:

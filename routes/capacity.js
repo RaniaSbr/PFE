@@ -3,6 +3,31 @@ const { LocalNodeConfig, ScrubbingCapability } = require("../models");
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /capacity:
+ *   get:
+ *     tags: [Capacity]
+ *     summary: Capacite de scrubbing du noeud local
+ *     description: "Retourne la capacite maximale, la charge courante, la capacite disponible et les capacites de scrubbing detaillees."
+ *     responses:
+ *       200:
+ *         description: Capacite du noeud
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 node_id: { type: string, format: uuid }
+ *                 status: { type: string }
+ *                 current_load_percent: { type: number }
+ *                 max_scrubbing_capacity_gbps: { type: number }
+ *                 available_gbps: { type: number }
+ *                 capabilities: { type: array }
+ *       404:
+ *         description: Noeud local non initialise
+ */
+
 router.get("/capacity", async (req, res) => {
   try {
     const node = await LocalNodeConfig.findOne({
