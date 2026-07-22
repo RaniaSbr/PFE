@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShieldNet — Coalition Dashboard</title>
+    <title>Coalition Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
@@ -888,6 +888,38 @@
       .btn-inline.danger:hover {
         background: var(--red-bg);
       }
+      .btn-inline.success {
+        color: var(--green);
+        border-color: var(--green);
+      }
+      .btn-inline.success:hover {
+        background: #ecfdf5;
+      }
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-box {
+        background: var(--surface);
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        max-width: 560px;
+        width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 20px 24px;
+      }
+      .modal-close {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 22px;
+        line-height: 1;
+      }
     </style>
   </head>
   <body>
@@ -896,7 +928,7 @@
     <!-- TOP BAR -->
     <div class="topbar">
       <div class="topbar-left">
-        <span class="brand">Shield<span>Net</span></span>
+        <span class="brand" id="brand-node-name">Coalition Dashboard</span>
         <div class="live-dot"></div>
         <span style="font-size: 13px; color: var(--muted); font-weight: 500"
           ><span id="node-count">—</span> nœuds actifs</span
@@ -914,6 +946,37 @@
         </button>
         <span id="reset-status" style="color: var(--muted)"></span>
       </div>
+    </div>
+
+    <!-- NOTIF: demandes d'aide reçues (visible sur toutes les pages) -->
+    <div
+      id="incoming-request-notif"
+      onclick="showPage('coalition')"
+      style="
+        display: none;
+        cursor: pointer;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin: 0 0 16px;
+        font-size: 13px;
+        font-weight: 600;
+        align-items: center;
+        gap: 8px;
+      "
+    >
+      <span id="incoming-request-notif-text">—</span>
+      <span
+        style="
+          margin-left: auto;
+          font-size: 11px;
+          font-weight: 400;
+          color: #b45309;
+        "
+        >Voir dans Coalition →</span
+      >
     </div>
 
     <!-- NAV -->
@@ -1005,16 +1068,6 @@
               "
             ></div>
           </div>
-          <div
-            style="
-              margin-top: 10px;
-              font-size: 10px;
-              color: var(--faint);
-              font-family: var(--font-mono);
-            "
-          >
-            Score = 0.52·C + 0.20·L + 0.20·T + 0.08·R &nbsp;|&nbsp; CR = 1.6%
-          </div>
         </div>
         <div class="panel">
           <div class="panel-title">Distribution de confiance</div>
@@ -1043,17 +1096,14 @@
           Tous les pairs — <span id="peers-table-count">0</span>
         </div>
         <div class="sim-bar" style="margin: 0">
-          <button id="btn-sim" class="btn-sm blue" onclick="simStart()">
-            + 100 nœuds
-          </button>
           <button
-            id="btn-clean"
-            class="btn-sm red"
-            onclick="simClean()"
-            disabled
+            id="btn-heartbeat"
+            class="btn-sm blue"
+            onclick="broadcastHeartbeat()"
           >
-            Nettoyer
+            Diffuser heartbeat
           </button>
+
           <span
             id="sim-status"
             style="
@@ -1076,7 +1126,7 @@
                 <th>Type</th>
                 <th>Statut</th>
                 <th>Confiance</th>
-                <th>Score</th>
+                <th>Réciprocité</th>
                 <th>Capacité</th>
                 <th>Charge</th>
               </tr>
@@ -1093,53 +1143,21 @@
     <div class="page" id="page-attacks">
       <div class="two-col">
         <div class="panel">
-          <div class="panel-title">Configurer une attaque</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Protocole</label>
-              <select id="atk-protocol">
-                <option value="UDP">UDP</option>
-                <option value="TCP">TCP</option>
-                <option value="ICMP">ICMP</option>
-                <option value="DNS">DNS (UDP/53)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Port ciblé</label>
-              <input type="text" id="atk-port" value="80" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">IP / Réseau ciblé</label>
-            <input type="text" id="atk-target" value="192.168.100.0/24" />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Sévérité</label>
-              <select id="atk-severity">
-                <option value="LOW">LOW</option>
-                <option value="MEDIUM">MEDIUM</option>
-                <option value="HIGH" selected>HIGH</option>
-                <option value="CRITICAL">CRITICAL</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Volume (Gbps)</label>
-              <input
-                type="number"
-                id="atk-volume"
-                value="25"
-                min="1"
-                max="1000"
-              />
-            </div>
-          </div>
+          <div class="panel-title">Envoyer une demande d'aide</div>
           <button
             class="btn btn-danger"
             id="btn-attack"
             onclick="attackStart()"
           >
-            Lancer l'attaque DDoS
+            Alerter la coalition
+          </button>
+          <button
+            class="btn btn-primary"
+            id="btn-continue"
+            onclick="attackContinue()"
+            style="display: none; margin-top: 6px"
+          >
+            Continuer → Allocation WSM
           </button>
           <button
             class="btn btn-success"
@@ -1153,31 +1171,34 @@
 
         <div class="panel">
           <div class="panel-title">Flux de réponse</div>
+
           <div class="step" id="step-1">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Détection — anomalie trafic</div>
+              <div class="step-title">Surcharge de traffic</div>
               <div class="step-detail" id="step-1-detail"></div>
             </div>
           </div>
           <div class="step" id="step-2">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Escalade coalition — WSM</div>
+              <div class="step-title">Sollicitation de la coalition</div>
               <div class="step-detail" id="step-2-detail"></div>
             </div>
           </div>
           <div class="step" id="step-3">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Envoi des demandes d'aide</div>
+              <div class="step-title">Allocation WSM</div>
               <div class="step-detail" id="step-3-detail"></div>
             </div>
           </div>
           <div class="step" id="step-4">
             <div class="step-num step-pending"></div>
             <div class="step-body">
-              <div class="step-title">Mitigation distribuée active</div>
+              <div class="step-title">
+                Allocation du trafic — Round-Robin pondéré
+              </div>
               <div class="step-detail" id="step-4-detail"></div>
             </div>
           </div>
@@ -1287,16 +1308,18 @@
             <div class="form-group">
               <label class="form-label">Sévérité</label>
               <select id="viol-severity">
-                <option value="LOW">LOW</option>
-                <option value="MEDIUM">MEDIUM</option>
-                <option value="HIGH">HIGH</option>
+                <option value="WARNING">WARNING</option>
+                <option value="MINOR">MINOR</option>
+                <option value="MAJOR">MAJOR</option>
                 <option value="CRITICAL">CRITICAL</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Sanction</label>
               <select id="viol-sanction">
-                <option value="WARNING">WARNING</option>
+                <option value="WARNING_SENT">WARNING_SENT</option>
+                <option value="PRIORITY_LOWERED">PRIORITY_LOWERED</option>
+                <option value="CAPACITY_LIMITED">CAPACITY_LIMITED</option>
                 <option value="TEMP_SUSPENSION">TEMP_SUSPENSION</option>
                 <option value="PERMANENT_BAN">PERMANENT_BAN</option>
               </select>
@@ -1309,15 +1332,10 @@
         <div>
           <div class="panel" style="height: 100%">
             <div class="panel-title">Résultat</div>
-            <div
-              id="viol-result"
-              style="
-                color: var(--faint);
-                font-size: 12px;
-                font-family: var(--font-mono);
-              "
-            >
-              La sanction apparaîtra ici.
+            <div id="viol-result" style="font-size: 12px; line-height: 1.7">
+              <span style="color: var(--muted)"
+                >Sélectionne un pair et applique une sanction.</span
+              >
             </div>
           </div>
         </div>
@@ -1373,20 +1391,6 @@
           </div>
         </div>
       </div>
-
-      <div class="panel">
-        <div class="panel-title">Scalabilité — 20 → 100 nœuds</div>
-        <img
-          src="/scalability.png"
-          alt="Graphe de scalabilité"
-          style="width: 100%; border-radius: 4px; margin-top: 4px"
-          onerror="
-            this.parentElement.innerHTML +=
-              '<p style=\'color:var(--muted);font-size:11px;font-family:var(--font-mono);margin-top:8px\'>Non disponible — lancer : python tests/scalability_test.py --url https://localhost:3001</p>';
-            this.remove();
-          "
-        />
-      </div>
     </div>
 
     <!-- ═══════════ PAGE: COALITION ═══════════ -->
@@ -1400,93 +1404,143 @@
             align-items: center;
           "
         >
-          <span>Schéma de la coalition</span>
+          <span>Demandes d'aide reçues</span>
           <span
-            id="coalition-summary"
+            id="incoming-requests-count"
             style="font-size: 11px; color: var(--muted); font-weight: normal"
             >—</span
           >
         </div>
-        <!-- Légende -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+          <thead>
+            <tr
+              style="
+                color: var(--muted);
+                border-bottom: 1px solid var(--border);
+              "
+            >
+              <th style="text-align: left; padding: 5px 6px">Pair demandeur</th>
+              <th style="text-align: left; padding: 5px 6px">Statut</th>
+              <th style="text-align: center; padding: 5px 6px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="incoming-requests-body">
+            <tr>
+              <td
+                colspan="3"
+                style="text-align: center; color: var(--muted); padding: 14px"
+              >
+                Aucune demande reçue.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODAL: détail pair -->
+    <div
+      class="modal-backdrop"
+      id="peer-modal-backdrop"
+      onclick="if (event.target === this) closePeerDetail();"
+    >
+      <div class="modal-box">
         <div
           style="
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin: 8px 0 4px;
-            font-size: 11px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
           "
         >
-          <span
-            ><svg width="10" height="10">
-              <circle cx="5" cy="5" r="5" fill="#b45309" />
-            </svg>
-            GOLD</span
-          >
-          <span
-            ><svg width="10" height="10">
-              <circle cx="5" cy="5" r="5" fill="#475569" />
-            </svg>
-            SILVER</span
-          >
-          <span
-            ><svg width="10" height="10">
-              <circle cx="5" cy="5" r="5" fill="#92400e" />
-            </svg>
-            BRONZE</span
-          >
-          <span
-            ><svg width="10" height="10">
-              <circle cx="5" cy="5" r="5" fill="#b91c1c" />
-            </svg>
-            SUSPECT</span
-          >
-          <span
-            ><svg width="10" height="10">
-              <circle cx="5" cy="5" r="5" fill="#450a0a" />
-            </svg>
-            BANNED</span
-          >
-          <span style="color: var(--muted)"
-            >— Cercle intérieur : pairs réels · Cercle extérieur : pairs
-            simulés</span
-          >
+          <div style="font-size: 16px; font-weight: 700" id="peer-modal-title">
+            —
+          </div>
+          <span class="modal-close" onclick="closePeerDetail()">×</span>
         </div>
-        <div style="position: relative; overflow: hidden">
-          <svg
-            id="coalition-svg"
-            width="100%"
-            viewBox="0 0 800 600"
-            style="
-              display: block;
-              background: var(--bg);
-              border-radius: 6px;
-              margin-top: 4px;
-            "
-          ></svg>
-          <!-- Tooltip -->
-          <div
-            id="coalition-tooltip"
-            style="
-              display: none;
-              position: absolute;
-              background: #1e293b;
-              color: #f8fafc;
-              font-size: 11px;
-              font-family: var(--font-mono);
-              padding: 8px 12px;
-              border-radius: 5px;
-              pointer-events: none;
-              max-width: 220px;
-              line-height: 1.6;
-              z-index: 10;
-            "
-          ></div>
+        <div id="peer-modal-body">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- MODAL: diffuser un heartbeat -->
+    <div
+      class="modal-backdrop"
+      id="heartbeat-modal-backdrop"
+      onclick="if (event.target === this) closeHeartbeatModal();"
+    >
+      <div class="modal-box">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          "
+        >
+          <div style="font-size: 16px; font-weight: 700">
+            Diffuser un heartbeat
+          </div>
+          <span class="modal-close" onclick="closeHeartbeatModal()">×</span>
         </div>
+        <div class="form-group">
+          <label class="form-label">Charge déclarée (%)</label>
+          <input
+            type="number"
+            id="hb-load-pct"
+            min="0"
+            max="100"
+            oninput="updateHbPreview()"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Capacité max (Gbps)</label>
+          <input
+            type="number"
+            id="hb-max-capacity"
+            min="0"
+            step="0.1"
+            oninput="updateHbPreview()"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">État opérationnel</label>
+          <select id="hb-reported-status">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="BUSY">BUSY</option>
+            <option value="DEGRADED">DEGRADED</option>
+            <option value="UNDER_ATTACK">UNDER_ATTACK</option>
+          </select>
+        </div>
+        <div
+          id="hb-preview"
+          style="font-size: 11px; color: var(--muted); margin: 8px 0"
+        ></div>
+        <button class="btn btn-primary" onclick="submitHeartbeat()">
+          Diffuser à tous les pairs
+        </button>
       </div>
     </div>
 
     <script>
+      // ── LOG DES ROUTES API (console navigateur) ──────────────────────────
+      // Intercepte tous les fetch() — pas besoin de modifier chaque appel.
+      (function logApiCalls() {
+        const origFetch = window.fetch;
+        window.fetch = function (url, opts = {}) {
+          const method = (opts.method || "GET").toUpperCase();
+          let body = "";
+          if (opts.body) {
+            try {
+              body = JSON.parse(opts.body);
+            } catch {
+              body = opts.body;
+            }
+          }
+          console.log(`[API] ${method} ${url}`, body);
+          return origFetch(url, opts);
+        };
+      })();
+
       // ── NAV ──────────────────────────────────────────────────────────────
       function showPage(id) {
         document
@@ -1503,6 +1557,7 @@
           sessions: 3,
           trust: 4,
           logs: 5,
+          coalition: 6,
         };
         document.querySelectorAll(".nav-tab")[map[id]].classList.add("active");
       }
@@ -1543,6 +1598,25 @@
       }
       let _tokenCache = "";
       let _tokenExpiresAt = 0;
+      // Déduit le node_id local depuis le port de la page — le dashboard est
+      // servi par chaque nœud (3001 université, 3002 PME, 3003 FAI, 3004
+      // datacenter) et doit s'authentifier comme LUI-MÊME, pas toujours
+      // comme université.
+      function localNodeId() {
+        const port = window.location.port || "3001";
+        const found = MAIN_NODES.find((n) => String(n.port) === String(port));
+        return found ? found.name : "node-university";
+      }
+      (function setBrandNodeName() {
+        const port = window.location.port || "3001";
+        const found = MAIN_NODES.find((n) => String(n.port) === String(port));
+        const label = found
+          ? `${found.label} Dashboard`
+          : "Coalition Dashboard";
+        const el = document.getElementById("brand-node-name");
+        if (el) el.textContent = label;
+        document.title = label;
+      })();
       async function getToken() {
         // Réutilise le token tant qu'il reste valable plus de 60s — évite
         // de redemander un JWT à chaque cycle de polling (5 timers en
@@ -1553,7 +1627,7 @@
           const d = await api(PRIMARY_PORT, "/auth/token", {
             method: "POST",
             body: {
-              node_id: "node-university",
+              node_id: localNodeId(),
               node_secret: "shieldnet-secret-key-2025",
             },
           });
@@ -1583,18 +1657,28 @@
       function renderCards(peersMap, trustMap) {
         const grid = document.getElementById("nodes-grid");
         grid.innerHTML = "";
+        const selfName = localNodeId();
         let active = 0;
         MAIN_NODES.forEach((cfg) => {
           const peer = peersMap[cfg.name] || {};
+          const status = peer.status || (peer.peer_id ? "ACTIVE" : "OFFLINE");
+          if (status === "ACTIVE") active++;
+        });
+        document.getElementById("node-count").textContent = active;
+
+        // Le nœud local ne s'affiche pas comme une carte parmi ses pairs —
+        // il EST le dashboard, pas un pair qu'il observe.
+        MAIN_NODES.filter((cfg) => cfg.name !== selfName).forEach((cfg) => {
+          const peer = peersMap[cfg.name] || {};
           const trust = trustMap[peer.peer_id] || trustMap[cfg.name] || {};
           const level = trust.trust_level || "UNKNOWN";
+          const levelLabel = level === "UNKNOWN" ? "-" : level;
           const score =
             trust.overall_score != null ? Number(trust.overall_score) : null;
           const status = peer.status || (peer.peer_id ? "ACTIVE" : "OFFLINE");
-          if (status === "ACTIVE") active++;
           const pct = score != null ? Math.round(score * 100) : 0;
           const card = document.createElement("div");
-          card.className = `node-card ${tc(level)}`;
+          card.className = `node-card ${status === "BANNED" ? "banned" : tc(level)}`;
           card.innerHTML = `
       <div class="nc-type">${cfg.type}</div>
       <div class="nc-name">${cfg.label}</div>
@@ -1604,9 +1688,13 @@
         <span>${status}</span>
         ${peer.declared_available_gbps != null ? `<span style="margin-left:auto;color:var(--faint);font-family:var(--font-mono);font-size:11px">${Number(peer.declared_available_gbps).toFixed(1)} Gbps</span>` : ""}
       </div>
-      <span class="tier-badge badge-${level}">${level}</span>
+      ${
+        status === "BANNED"
+          ? `<div style="text-align:center;padding:10px 0;color:var(--red);font-weight:700;font-size:13px;letter-spacing:0.05em">BANNED</div>`
+          : `<span class="tier-badge badge-${level}">${levelLabel}</span>
       <div class="nc-score-row"><span>PeerTrust</span><span>${score != null ? score.toFixed(3) : "N/A"}</span></div>
-      <div class="nc-bar-bg"><div class="nc-bar-fill fill-${level}" style="width:${pct}%"></div></div>
+      <div class="nc-bar-bg"><div class="nc-bar-fill fill-${level}" style="width:${pct}%"></div></div>`
+      }
       <div class="nc-metrics">
         <div>Charge <span>${
           peer.declared_available_gbps != null &&
@@ -1625,7 +1713,6 @@
       </div>`;
           grid.appendChild(card);
         });
-        document.getElementById("node-count").textContent = active;
       }
 
       // ── TABLE ─────────────────────────────────────────────────────────────
@@ -1634,7 +1721,7 @@
         document.getElementById("peers-table-count").textContent = peers.length;
         if (peers.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Aucun pair.</td></tr>';
+            '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Aucun pair.</td></tr>';
           return;
         }
         const sorted = [...peers].sort((a, b) => {
@@ -1648,24 +1735,25 @@
           .map((p, i) => {
             const trust = trustMap[p.peer_id] || {};
             const level = trust.trust_level || "UNKNOWN";
-            const score =
-              trust.overall_score != null
-                ? Number(trust.overall_score).toFixed(3)
-                : "—";
+            const levelLabel = level === "UNKNOWN" ? "-" : level;
             const stCls =
               p.status === "ACTIVE"
                 ? "s-ok"
                 : p.status === "BANNED"
                   ? "s-ban"
                   : "s-off";
-            return `<tr>
+            return `<tr style="cursor:pointer" onclick="openPeerDetail('${p.peer_id}')">
       <td style="color:var(--faint);font-family:var(--font-mono)">${i + 1}</td>
       <td style="font-weight:500">${p.peer_name || "—"}</td>
       <td style="color:var(--muted)">${p.organization_name || "—"}</td>
       <td style="color:var(--muted);font-family:var(--font-mono);font-size:11px">${p.organization_type || "—"}</td>
       <td class="${stCls}">${p.status || "—"}</td>
-      <td><span class="tl-badge tl-${level}">${level}</span></td>
-      <td style="font-family:var(--font-mono);color:var(--blue)">${score}</td>
+      <td><span class="tl-badge tl-${level}">${levelLabel}</span></td>
+      <td style="font-size:10px;font-family:var(--font-mono)">${
+        p.reciprocity_ledger
+          ? `<span style="color:var(--green)">↓${Number(p.reciprocity_ledger.credits_received).toFixed(1)}</span> <span style="color:var(--red)">↑${Number(p.reciprocity_ledger.credits_given).toFixed(1)}</span>`
+          : '<span style="color:var(--faint)">—</span>'
+      }</td>
       <td style="color:var(--muted);font-family:var(--font-mono)">${p.declared_available_gbps != null ? Number(p.declared_available_gbps).toFixed(1) + " Gbps" : "—"}</td>
       <td style="color:var(--muted);font-family:var(--font-mono)">${p.max_scrubbing_capacity_gbps > 0 ? (100 - (Number(p.declared_available_gbps) / Number(p.max_scrubbing_capacity_gbps)) * 100).toFixed(0) + "%" : "—"}</td>
     </tr>`;
@@ -1838,11 +1926,12 @@
           peers.forEach((p) => {
             if (p.peer_name) peersMap[p.peer_name] = p;
           });
-          // Ajouter le nœud local (university) depuis /status — absent de PEERS
+          // Ajouter le nœud local (lui-même) depuis /metrics — absent de PEERS
           if (metricsRaw.value) {
             const m = metricsRaw.value;
-            peersMap["node-university"] = {
-              peer_name: "node-university",
+            const selfName = localNodeId();
+            peersMap[selfName] = {
+              peer_name: selfName,
               organization_name: "ESI Alger",
               status: "ACTIVE",
               declared_available_gbps: m.available_gbps,
@@ -1860,8 +1949,12 @@
           renderActiveSessions(
             Array.isArray(sessRaw.value) ? sessRaw.value : [],
           );
+          renderIncomingRequests(
+            Array.isArray(sessRaw.value) ? sessRaw.value : [],
+          );
           renderSessionHistory();
           renderCoalition();
+          renderCapacity();
           document.getElementById("last-refresh").textContent;
         } catch (e) {
           console.error(e);
@@ -1901,11 +1994,15 @@
           btn.disabled = false;
           return;
         }
-        status.textContent = "Création de 100 nœuds (GOLD/SILVER/BRONZE/SUSPECT/BANNED)…";
+        status.textContent =
+          "Création de 100 nœuds (GOLD/SILVER/BRONZE/SUSPECT/BANNED)…";
         try {
           const r = await fetch("/api/v1/simulation/seed-peers", {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({}),
             signal: AbortSignal.timeout(60000),
           });
@@ -1913,7 +2010,11 @@
           if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
           simPeerIds = (d.peers || []).map((p) => p.peer_id).filter(Boolean);
           const dist = d.distribution || {};
-          status.textContent = `✓ ${simPeerIds.length} nœuds créés — ${Object.entries(dist).map(([k, v]) => `${k}:${v}`).join(" ")}`;
+          status.textContent = `✓ ${simPeerIds.length} nœuds créés — ${Object.entries(
+            dist,
+          )
+            .map(([k, v]) => `${k}:${v}`)
+            .join(" ")}`;
         } catch (e) {
           status.textContent = `Erreur : ${e.message}`;
         }
@@ -1966,28 +2067,22 @@
 
       async function attackStart() {
         const btnAtk = document.getElementById("btn-attack");
-        const btnEnd = document.getElementById("btn-end");
         btnAtk.disabled = true;
         stepsReset();
         sessionIds = [];
         showPage("attacks");
-        const protocol = document.getElementById("atk-protocol").value;
-        const port = document.getElementById("atk-port").value || "80";
-        const target =
-          document.getElementById("atk-target").value || "0.0.0.0/0";
-        const severity = document.getElementById("atk-severity").value;
-        const volumeGbps =
-          parseFloat(document.getElementById("atk-volume").value) || 25;
+        // Plus de formulaire à remplir — valeurs par défaut représentatives,
+        // un seul bouton "Alerter la coalition".
+        const protocol = "UDP";
+        const port = "80";
+        const target = "192.168.100.0/24";
         const token = await getToken();
         const hdr = token ? { Authorization: `Bearer ${token}` } : {};
 
         stepSet(1, "active", "Enregistrement de l'attaque en base…");
         await sleep(700);
-        let attackId, nodeState, localNodeId;
+        let attackId;
         try {
-          const sr = await fetch("/api/v1/status", { headers: hdr });
-          const sd = await sr.json();
-          localNodeId = sd.node_id;
           const r = await fetch("/api/v1/simulation/attack/detect", {
             method: "POST",
             headers: { ...hdr, "Content-Type": "application/json" },
@@ -1996,8 +2091,6 @@
               target_protocol: protocol,
               target_port: parseInt(port) || null,
               target_service: "Coalition ShieldNet",
-              severity,
-              volume_gbps: volumeGbps,
             }),
           });
           const d = await r.json();
@@ -2011,7 +2104,6 @@
             return;
           }
           attackId = d.attack?.attack_id || d.attack?.id;
-          nodeState = d.node_state || {};
           currentAttackId = attackId;
         } catch (e) {
           stepSet(
@@ -2022,61 +2114,142 @@
           btnAtk.disabled = false;
           return;
         }
-        stepSet(
-          1,
-          "done",
-          `Cible : <strong>${target}</strong> | Proto : <strong>${protocol}</strong> | Port : <strong>${port}</strong>`,
-        );
+        stepSet(1, "done", ``);
         await sleep(400);
 
         stepSet(
           2,
           "active",
-          "Algorithme WSM — sélection des pairs éligibles…",
+          "Sollicitation — diffusion à tous les pairs ACTIVE…",
         );
-        await sleep(1100);
-        const localCap = nodeState.local_capacity_gbps ?? 0;
-        const available = nodeState.available_gbps ?? 0;
-        // Peuplement coalition — pairs virtuels
-        let seededCount = 0;
+        await sleep(700);
+        let nbSolicited = 0;
         try {
-          const rs = await fetch("/api/v1/simulation/seed-peers", {
+          const r3 = await fetch("/api/v1/help/request/broadcast", {
             method: "POST",
             headers: { ...hdr, "Content-Type": "application/json" },
-            body: JSON.stringify({}),
+            body: JSON.stringify({ attack_id: attackId }),
           });
-          const ds = await rs.json();
-          if (rs.ok && ds.distribution) {
-            const d = ds.distribution;
-            seededCount = Object.values(d).reduce((a, b) => a + b, 0);
+          const d3 = await r3.json();
+          if (!r3.ok) {
+            stepSet(
+              2,
+              "done",
+              `<span style="color:var(--red)">Erreur ${r3.status} : ${d3.error || JSON.stringify(d3)}</span>`,
+            );
+            btnAtk.disabled = false;
+            return;
           }
+          nbSolicited = d3.nb_peers_solicited ?? (d3.sessions || []).length;
+        } catch (e) {
+          stepSet(
+            2,
+            "done",
+            `<span style="color:var(--red)">Erreur : ${e.message}</span>`,
+          );
+          btnAtk.disabled = false;
+          return;
+        }
+        stepSet(
+          2,
+          "done",
+          `<strong>${nbSolicited}</strong> pair(s) sollicité(s) — en attente de réponse.`,
+        );
+        document.getElementById("btn-continue").style.display = "block";
+        document.getElementById("btn-continue").disabled = false;
+        await refresh();
+      }
+
+      async function attackContinue() {
+        const btnCont = document.getElementById("btn-continue");
+        const btnEnd = document.getElementById("btn-end");
+        btnCont.disabled = true;
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        const seededCount = 0;
+        // Volume inconnu côté victime — seule la congestion est observable
+        // (cf. /simulation/attack/detect) ; valeur indicative pour la
+        // visualisation pédagogique du WRR uniquement.
+        const volumeGbps = 25;
+        let available = 0;
+        try {
+          const sd = await fetch("/api/v1/status", { headers: hdr }).then((r) =>
+            r.json(),
+          );
+          available = sd.available_gbps ?? 0;
         } catch (e) {}
 
-        let wsmPlan = [];
-        // Scoring WSM — calculé et affiché AVANT l'envoi des demandes (CU4)
+        // Relire l'état réel des sessions — les pairs ont pu accepter/refuser
+        // depuis leur PROPRE dashboard entre-temps (onglet Coalition).
+        let helpSessions = [];
         try {
-          const r2 = await fetch("/api/v1/trust/select-peers", {
-            method: "POST",
-            headers: { ...hdr, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              overflow_gbps: Math.max(0, volumeGbps - available),
-            }),
-          });
-          const d2 = await r2.json();
-          wsmPlan = d2.ranked_peers || d2.selected_peers || d2.plan || [];
+          const atk = await fetch(`/api/v1/attacks/${currentAttackId}`, {
+            headers: hdr,
+          }).then((r) => r.json());
+          helpSessions = atk.help_sessions || [];
         } catch (e) {}
-        // Carte des scores WSM pour lookup rapide
+
+        const acceptedReqs = helpSessions
+          .filter((s) => s.status === "ACCEPTED")
+          .map((s) => ({
+            session_id: s.session_id,
+            peer_id: s.helping_peer_id,
+            peer_name: s.helping_peer?.peer_name || "?",
+            accepted_volume_gbps: Number(s.accepted_volume_gbps ?? 0),
+          }));
+        const rejectedNow = helpSessions.filter(
+          (s) => s.status === "REJECTED",
+        ).length;
+        const pendingNow = helpSessions.filter((s) =>
+          ["OFFERED", "REQUESTED", "NEGOTIATING"].includes(s.status),
+        ).length;
+
+        if (acceptedReqs.length === 0) {
+          stepSet(
+            2,
+            "done",
+            `<span style="color:var(--amber)">Aucun pair n'a encore accepté</span> (<strong>${pendingNow}</strong> en attente, <strong>${rejectedNow}</strong> refusé(s)).`,
+          );
+          btnCont.disabled = false;
+          return;
+        }
+
+        stepSet(
+          2,
+          "done",
+          `<strong>${acceptedReqs.length}</strong> pair(s) ont accepté, <strong>${rejectedNow}</strong> refusé(s), <strong>${pendingNow}</strong> encore en attente.`,
+        );
+        btnCont.style.display = "none";
+
+        stepSet(
+          3,
+          "active",
+          "Allocation WSM — calculée sur les pairs ayant accepté…",
+        );
+        await sleep(900);
+        let wsmPlan = [];
+        if (acceptedReqs.length > 0) {
+          try {
+            const r2 = await fetch(
+              `/api/v1/attack/${currentAttackId}/allocate`,
+              {
+                method: "POST",
+                headers: { ...hdr, "Content-Type": "application/json" },
+              },
+            );
+            const d2 = await r2.json();
+            wsmPlan = d2.plan || [];
+          } catch (e) {}
+        }
         const wsmById = {};
         wsmPlan.forEach((p) => {
           const pid = p.peer_id || p.peer?.peer_id;
           if (pid) wsmById[pid] = p;
         });
 
-        // Table WSM détaillée — affichée dès que la sélection est connue,
-        // avant l'envoi des demandes d'aide (ordre conforme au CU4)
         const wsmTable =
           wsmPlan.length === 0
-            ? "<em>Aucun pair disponible</em>"
+            ? "<em>Aucun pair n'a accepté</em>"
             : `
           <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">
             <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
@@ -2134,74 +2307,14 @@
             </tbody>
           </table>
           <div style="font-size:10px;color:var(--faint);margin-top:4px;font-family:var(--font-mono)">
-            WSM = 0.52·C + 0.20·L + 0.20·T + 0.08·R &nbsp;|&nbsp; ${wsmPlan.length} pairs scorés (éligibles) &nbsp;|&nbsp; Σ Score<sub>j</sub> = ${wsmPlan.reduce((s, p) => s + (p.wsm_score || 0), 0).toFixed(3)}${seededCount > 0 ? ` &nbsp;|&nbsp; coalition totale : ${seededCount} pairs` : ""}
+             capacité C = volume déclaré à l'acceptation
+            &nbsp;|&nbsp; ${wsmPlan.length} pair(s) accepteur(s) &nbsp;|&nbsp; Σ Score<sub>j</sub> = ${wsmPlan.reduce((s, p) => s + (p.wsm_score || 0), 0).toFixed(3)}${seededCount > 0 ? ` &nbsp;|&nbsp; coalition totale : ${seededCount} pairs` : ""}
           </div>`;
-        stepSet(2, "done", wsmTable);
+        stepSet(3, "done", wsmTable);
 
-        stepSet(3, "active", "Envoi des demandes d'aide aux pairs sélectionnés…");
-        await sleep(900);
-        // CU4 : seuls les pairs retournés par la sélection WSM reçoivent une
-        // demande d'aide — pas l'ensemble de la coalition (cf. §3.3.2 chap.3)
-        const peersToAlert = wsmPlan
-          .map((p) => ({
-            peer_id: p.peer_id || p.peer?.peer_id,
-            peer_name: p.peer_name || p.peer?.peer_name || "?",
-          }))
-          .filter((p) => p.peer_id && p.peer_id !== localNodeId);
-        const allResults = [];
-        for (let i = 0; i < peersToAlert.length; i += BATCH) {
-          const batch = peersToAlert.slice(i, i + BATCH);
-          const batchResults = await Promise.all(
-            batch.map(async (p) => {
-              const peerId = p.peer_id;
-              const wsmEntry = wsmById[peerId];
-              const alloc =
-                wsmEntry?.weight != null ? wsmEntry.weight * 100 : 1;
-              try {
-                const r3 = await fetch("/api/v1/help/request", {
-                  method: "POST",
-                  headers: { ...hdr, "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    attack_id: attackId,
-                    helping_peer_id: peerId,
-                    requesting_node_id: localNodeId,
-                    allocation_pct: alloc,
-                    direction: "OUTBOUND_REQUEST",
-                    status: "REQUESTED",
-                  }),
-                });
-                if (!r3.ok) return null;
-                const d3 = await r3.json();
-                const sid = d3.session_id || d3.id || d3.dataValues?.session_id;
-                return {
-                  session_id: sid,
-                  peer_id: peerId,
-                  peer_name: p.peer_name || "?",
-                  alloc,
-                  wsm: wsmEntry?.wsm_score || 0,
-                  rejected: d3.status === "REJECTED",
-                };
-              } catch {
-                return null;
-              }
-            }),
-          );
-          allResults.push(...batchResults);
-        }
-        const validReqs = allResults.filter(Boolean);
-        const acceptedReqs = validReqs.filter((r) => !r.rejected);
-        const rejectedCount =
-          peersToAlert.length -
-          validReqs.length +
-          validReqs.filter((r) => r.rejected).length;
-        stepSet(
-          3,
-          "done",
-          `<strong>${peersToAlert.length}</strong> demandes envoyées — <strong>${acceptedReqs.length}</strong> acceptées, <strong>${rejectedCount}</strong> refusées`,
-        );
         // Mettre l'attaque en ESCALATED_TO_COALITION
-        if (attackId) {
-          fetch(`/api/v1/attacks/${attackId}`, {
+        if (currentAttackId) {
+          fetch(`/api/v1/attacks/${currentAttackId}`, {
             method: "PATCH",
             headers: { ...hdr, "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -2212,53 +2325,119 @@
         }
         await sleep(400);
 
-        stepSet(4, "active", "Activation tunnels GRE — redirection trafic…");
-        await sleep(400);
-        const activeSessions = [];
-        const validWithSession = acceptedReqs.filter((r) => r.session_id);
-        // Réallocation post-refus : seuls les pairs ayant accepté forment la
-        // rotation WRR (cf. §4.3.3 chap.3). Leur part est renormalisée pour
-        // couvrir l'overflow, plafonnée par leur capacité réelle déclarée —
-        // un pair refusé n'est jamais "perdu", il n'a simplement jamais fait
-        // partie de la rotation.
+        stepSet(4, "active", "Round-Robin pondéré — répartition en paquets…");
+        await sleep(700);
+        // Allocation du trafic : convertit les pourcentages WSM (allocation_pct)
+        // en quotas de paquets par cycle (alloc_i), puis simule la distribution
+        // WRR (cf. utils/trafficDistributor.js) — même algorithme, exécuté ici
+        // côté client pour l'affichage pédagogique.
+        const wrrPeers = wsmPlan.map((p) => ({
+          peer_id: p.peer_id || p.peer?.peer_id,
+          peer_name: p.peer_name || p.peer?.peer_name || "?",
+          alloc_i: Math.max(1, p.allocation_pct || 1),
+        }));
         const overflowGbps = Math.max(0, volumeGbps - available);
-        const totalAcceptedAlloc =
-          validWithSession.reduce((s, r) => s + r.alloc, 0) || 1;
-        for (let i = 0; i < validWithSession.length; i += BATCH) {
-          const batch = validWithSession.slice(i, i + BATCH);
+        const nPackets = Math.max(
+          100,
+          Math.round((overflowGbps || volumeGbps) * 100),
+        );
+        const cycleSize = wrrPeers.reduce((s, p) => s + p.alloc_i, 0);
+        const wrrDist = wrrPeers.map((p) => ({ ...p, packets_received: 0 }));
+        let packetIdx = 0,
+          cycles = 0;
+        while (packetIdx < nPackets) {
+          cycles++;
+          let full = true;
+          for (let i = 0; i < wrrDist.length; i++) {
+            if (packetIdx >= nPackets) {
+              full = false;
+              break;
+            }
+            for (
+              let k = 0;
+              k < wrrDist[i].alloc_i && packetIdx < nPackets;
+              k++
+            ) {
+              packetIdx++;
+              wrrDist[i].packets_received++;
+            }
+          }
+          if (!full) break;
+        }
+        const wrrRows = wrrDist
+          .map((p) => {
+            const wsmEntry = wsmById[p.peer_id];
+            const score =
+              wsmEntry?.wsm_score != null
+                ? Number(wsmEntry.wsm_score).toFixed(3)
+                : "—";
+            return `<tr style="border-bottom:1px solid var(--bg)">
+              <td style="padding:3px 6px;font-weight:600">${p.peer_name}</td>
+              <td style="padding:3px 6px;text-align:right;color:var(--blue)">${score}</td>
+              <td style="padding:3px 6px;text-align:right">${p.alloc_i}</td>
+            </tr>`;
+          })
+          .join("");
+        const wrrTable = `
+          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">
+            <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:3px 6px">Pair</th>
+              <th style="text-align:right;padding:3px 6px">Score WSM</th>
+              <th style="text-align:right;padding:3px 6px">Paquets/cycle</th>
+            </tr></thead>
+            <tbody>${wrrRows}</tbody>
+          </table>
+          <div style="font-size:10px;color:var(--faint);margin-top:4px;font-family:var(--font-mono)">
+            n = ${nPackets} paquets &nbsp;|&nbsp; taille de cycle Σalloc<sub>i</sub> = ${cycleSize} &nbsp;|&nbsp; ${cycles} cycle(s) complets
+          </div>`;
+        stepSet(4, "done", wrrTable);
+        await sleep(300);
+
+        // Activation tunnels GRE — redirection trafic (pas d'étape visible
+        // dédiée : on enchaîne directement de l'allocation WRR à la clôture).
+        // Le volume vient directement de ce que le pair a
+        // déclaré à l'acceptation (accepted_volume_gbps) — plus aucun
+        // recalcul/renormalisation côté dashboard, le backend a déjà tout
+        // calculé via POST /attack/:id/allocate.
+        const activeSessions = [];
+        for (let i = 0; i < acceptedReqs.length; i += BATCH) {
+          const batch = acceptedReqs.slice(i, i + BATCH);
           await Promise.all(
             batch.map(async (req) => {
-              const capDisp = wsmById[req.peer_id]?.declared_available_gbps;
-              const renormalizedShare = req.alloc / totalAcceptedAlloc;
-              let gbps = Math.max(
-                0.1,
-                Math.round(overflowGbps * renormalizedShare * 100) / 100,
-              );
-              if (capDisp != null) gbps = Math.min(gbps, capDisp);
+              const gbps = req.accepted_volume_gbps || 0.1;
               req.finalGbps = gbps;
-              req.finalAllocPct = Number((renormalizedShare * 100).toFixed(2));
+              const entry = wsmById[req.peer_id];
+              req.finalAllocPct = entry?.allocation_pct ?? 0;
+
+              // Le volume réellement livré peut être inférieur à la promesse
+              // (accepted_volume_gbps) — corrélé au niveau de confiance, pour
+              // illustrer concrètement S(u,i) < 1 dans le calcul de T(u) à la
+              // clôture. "absorbé" (ci-dessous) reste le volume PROMIS ;
+              // c'est actual_volume_gbps (envoyé ici) qui portera l'écart.
+              const level =
+                entry?.trust_level || entry?.peer?.trust_level || "BRONZE";
+              // Fourchette par palier (pas une valeur fixe) — deux pairs du
+              // même niveau peuvent livrer très différemment d'une session à
+              // l'autre, comme dans la réalité (congestion, charge variable...).
+              const DELIVERY_RANGE = {
+                GOLD: [0.9, 1.0],
+                SILVER: [0.7, 0.95],
+                BRONZE: [0.45, 0.85],
+                SUSPECT: [0.15, 0.55],
+              };
+              const [dMin, dMax] = DELIVERY_RANGE[level] ?? [0.5, 0.9];
+              const deliveryFactor = dMin + Math.random() * (dMax - dMin);
+              const actualGbps = Math.round(gbps * deliveryFactor * 100) / 100;
+              req.actualGbps = actualGbps;
+
               try {
-                const rA = await fetch(
-                  `/api/v1/help/${req.session_id}/accept`,
-                  {
-                    method: "PUT",
-                    headers: { ...hdr, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      accepted_volume_gbps: gbps,
-                      tunnel_type: "GRE",
-                      response_time_ms: Math.floor(Math.random() * 50 + 10),
-                      responded_at: new Date().toISOString(),
-                    }),
-                  },
-                );
-                if (!rA.ok) return;
                 const rR = await fetch("/api/v1/traffic/redirect", {
                   method: "POST",
                   headers: { ...hdr, "Content-Type": "application/json" },
                   body: JSON.stringify({
                     session_id: req.session_id,
                     tunnel_type: "GRE",
-                    volume_gbps: gbps,
+                    volume_gbps: actualGbps,
                     activated_at: new Date().toISOString(),
                   }),
                 });
@@ -2269,54 +2448,13 @@
           );
         }
         sessionIds = activeSessions;
-        const activeReqs = validReqs.filter((r) =>
-          activeSessions.includes(r.session_id),
-        );
-        // Trier par volume décroissant — les valeurs finalGbps/finalAllocPct
-        // ont déjà été recalculées sur le sous-ensemble des accepteurs
-        // (réallocation post-refus, cf. plus haut).
-        activeReqs.sort((a, b) => (b.finalGbps || 0) - (a.finalGbps || 0));
-        const totalGbps = activeReqs
-          .reduce((s, r) => s + (r.finalGbps || 0), 0)
-          .toFixed(1);
-        const tunnelRows =
-          activeReqs
-            .slice(0, 10)
-            .map((r) => {
-              const name = r.peer_name || r.peer?.peer_name || "?";
-              return `<tr style="border-bottom:1px solid var(--bg)">
-              <td style="padding:3px 6px;font-weight:600">${name}</td>
-              <td style="padding:3px 6px;text-align:right;color:var(--green)">${r.finalGbps} Gbps</td>
-              <td style="padding:3px 6px;text-align:right">${Number(r.finalAllocPct).toFixed(2)}%</td>
-              <td style="padding:3px 6px;color:var(--muted);font-size:10px">GRE</td>
-            </tr>`;
-            })
-            .join("") +
-          (activeReqs.length > 10
-            ? `<tr><td colspan="4" style="padding:4px 6px;color:var(--muted);font-size:10px">… +${activeReqs.length - 10} autres tunnels actifs</td></tr>`
-            : "");
-        const tunnelDetail = `
-          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:6px">
-            <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
-              <th style="text-align:left;padding:3px 6px">Nœud aidant</th>
-              <th style="text-align:right;padding:3px 6px">Volume</th>
-              <th style="text-align:right;padding:3px 6px">Alloc</th>
-              <th style="padding:3px 6px">Tunnel</th>
-            </tr></thead>
-            <tbody>${tunnelRows || '<tr><td colspan="4" style="padding:6px;color:var(--muted)">Aucun tunnel actif</td></tr>'}</tbody>
-          </table>
-          <div id="attack-counter" style="margin-top:6px;font-size:11px;color:var(--muted)">
-            <strong>${activeSessions.length}</strong> tunnel(s) actif(s) — absorbé : <strong style="color:var(--green)">${totalGbps} Gbps</strong> — durée : <strong>0s</strong>
-          </div>`;
-        stepSet(4, "done", tunnelDetail);
         btnEnd.style.display = "block";
         btnEnd.disabled = false;
         attackSeconds = 0;
+        // Compteur silencieux (aucun affichage) — alimente uniquement
+        // attack_duration_seconds envoyé à la clôture.
         attackTimer = setInterval(() => {
           attackSeconds++;
-          const ctr = document.getElementById("attack-counter");
-          if (ctr)
-            ctr.innerHTML = `<strong>${activeSessions.length}</strong> tunnel(s) actif(s) — absorbé : <strong style="color:var(--green)">${totalGbps} Gbps</strong> — durée : <strong>${attackSeconds}s</strong>`;
         }, 1000);
         await refresh();
         renderAuditLog();
@@ -2329,7 +2467,6 @@
           attackTimer = null;
         }
         const btnEnd = document.getElementById("btn-end");
-        const btnAtk = document.getElementById("btn-attack");
         btnEnd.disabled = true;
         btnEnd.textContent = "Clôture…";
         stepSet(
@@ -2371,6 +2508,7 @@
           }
           await sleep(200);
           let activeCount = 0;
+          let completedSessions = [];
           try {
             let helpingPeerIds = [];
             if (currentAttackId) {
@@ -2378,9 +2516,19 @@
                 const atk = await fetch(`/api/v1/attacks/${currentAttackId}`, {
                   headers: hdr,
                 }).then((r) => r.json());
-                helpingPeerIds = (atk.help_sessions || [])
+                // Ne recalculer que les pairs ayant réellement participé
+                // (acceptée/active/complétée) — pas l'ensemble des pairs
+                // sollicités lors de la diffusion initiale, dont la plupart
+                // ont refusé et n'ont aucune session COMPLETED à évaluer.
+                const involved = (atk.help_sessions || []).filter((s) =>
+                  ["ACCEPTED", "ACTIVE", "COMPLETED"].includes(s.status),
+                );
+                helpingPeerIds = involved
                   .map((s) => s.helping_peer_id)
                   .filter(Boolean);
+                completedSessions = (atk.help_sessions || []).filter(
+                  (s) => s.status === "COMPLETED",
+                );
               } catch {}
             }
             if (helpingPeerIds.length === 0) {
@@ -2413,10 +2561,81 @@
             null;
           const totalVol =
             totalVolRaw != null ? Number(totalVolRaw).toFixed(1) : "?";
+
+          // Tableau de calcul de T(u) — Score(u) = Σ[S·Cr·D] / Σ[Cr·D] —
+          // construit à partir des VRAIES valeurs persistées par le backend
+          // (cr_value, actual_volume_gbps), pas une estimation côté client.
+          const SEVERITY_D = {
+            LOW: 0.25,
+            MEDIUM: 0.5,
+            HIGH: 0.75,
+            CRITICAL: 1.0,
+          };
+          const D = SEVERITY_D[finalSev] ?? 0.25;
+          let tuTable = "";
+          if (completedSessions.length > 0) {
+            const trustResults = await Promise.all(
+              completedSessions.map((s) =>
+                fetch(`/api/v1/trust/${s.helping_peer_id}`, { headers: hdr })
+                  .then((r) => (r.ok ? r.json() : null))
+                  .catch(() => null),
+              ),
+            );
+            const tuRows = completedSessions
+              .map((s, i) => {
+                const accepted = Number(s.accepted_volume_gbps ?? 0);
+                const actual = Number(s.actual_volume_gbps ?? 0);
+                const S = accepted > 0 ? Math.min(1, actual / accepted) : 0;
+                const cr = Number(s.cr_value ?? 0.5);
+                const name = s.helping_peer?.peer_name || "?";
+                const trust = trustResults[i]?.peer?.trust_score || {};
+                const newScore =
+                  trust.overall_score != null
+                    ? Number(trust.overall_score).toFixed(3)
+                    : "—";
+                const newLevel = trust.trust_level || "—";
+                const sColor =
+                  S >= 0.99
+                    ? "var(--green)"
+                    : S >= 0.7
+                      ? "var(--amber)"
+                      : "var(--red)";
+                return `<tr style="border-bottom:1px solid var(--bg)">
+                  <td style="padding:3px 6px;font-weight:600">${name}</td>
+                  <td style="padding:3px 6px;text-align:right">${accepted.toFixed(2)} Gbps</td>
+                  <td style="padding:3px 6px;text-align:right">${actual.toFixed(2)} Gbps</td>
+                  <td style="padding:3px 6px;text-align:right;color:${sColor};font-weight:600">${S.toFixed(3)}</td>
+                  <td style="padding:3px 6px;text-align:right;color:var(--muted)">${cr.toFixed(3)}</td>
+                  <td style="padding:3px 6px;text-align:right;color:var(--muted)">${D.toFixed(2)}</td>
+                  <td style="padding:3px 6px;text-align:right;font-weight:600;color:var(--blue)">${newScore}</td>
+                  <td style="padding:3px 6px;font-size:10px">${newLevel}</td>
+                </tr>`;
+              })
+              .join("");
+            tuTable = `
+              <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">
+                <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
+                  <th style="text-align:left;padding:3px 6px">Pair</th>
+                  <th style="text-align:right;padding:3px 6px">Accepté</th>
+                  <th style="text-align:right;padding:3px 6px">Réel</th>
+                  <th style="text-align:right;padding:3px 6px">S(u,i)</th>
+                  <th style="text-align:right;padding:3px 6px">Cr</th>
+                  <th style="text-align:right;padding:3px 6px">D</th>
+                  <th style="text-align:right;padding:3px 6px">T(u)</th>
+                  <th style="padding:3px 6px">Niveau</th>
+                </tr></thead>
+                <tbody>${tuRows}</tbody>
+              </table>
+              <div style="font-size:10px;color:var(--faint);margin-top:4px;font-family:var(--font-mono)">
+                S(u,i) = min(1, réel/accepté) &nbsp;|&nbsp; T(u) = Σ[S·Cr·D] / Σ[Cr·D] &nbsp;|&nbsp; D = ${D.toFixed(2)} (sévérité ${finalSev})
+              </div>`;
+          }
+
           stepSet(
             5,
             "done",
-            ` Volume filtré : <strong>${totalVol} Gbps</strong> | Sévérité : <strong>${finalSev}</strong> | ${activeCount} pairs mis à jour`,
+            ` Volume filtré : <strong>${totalVol} Gbps</strong> | Sévérité : <strong>${finalSev}</strong> | ${activeCount} pairs mis à jour` +
+              tuTable,
           );
           currentAttackId = null;
           sessionIds = [];
@@ -2424,14 +2643,13 @@
           btnEnd.style.display = "none";
           btnEnd.disabled = false;
           btnEnd.textContent = "Terminer la mitigation";
-          btnAtk.disabled = false;
+          document.getElementById("btn-attack").disabled = false;
           await refresh();
           renderAuditLog();
         } catch (e) {
           console.error(e);
           btnEnd.disabled = false;
           btnEnd.textContent = "Terminer la mitigation";
-          btnAtk.disabled = false;
         }
       }
 
@@ -2595,7 +2813,7 @@
           }
         }
         await Promise.all(tasks);
-        log("Coalition initialisée — 3 pairs actifs.", "#1d6b45");
+        log("Coalition initialisée / 3 pairs actifs.", "#1d6b45");
         btn.disabled = false;
         await sleep(500);
         await refresh();
@@ -2640,16 +2858,19 @@
             '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:12px;font-size:12px">Lance une attaque pour voir les sessions.</td></tr>';
           return;
         }
+        // Voir le commentaire équivalent dans renderSessionHistory() :
+        // requesting_node_id pointe toujours vers CE nœud (placeholder FK),
+        // donc seul "direction" indique le vrai rôle de chacun.
+        const myNameActive = localNodeId();
         el.innerHTML = allSessions
           .map((s) => {
-            const victim =
-              s.requesting_node?.node_name ||
-              (s.requesting_node_id || "").slice(0, 12) ||
-              "?";
-            const helper =
+            const isInboundActive = s.direction !== "OUTBOUND_REQUEST";
+            const otherPartyActive =
               s.helping_peer?.peer_name ||
               (s.helping_peer_id || "").slice(0, 8) ||
               "?";
+            const victim = isInboundActive ? otherPartyActive : myNameActive;
+            const helper = isInboundActive ? myNameActive : otherPartyActive;
             const st = s.status || "?";
             const col = STAT_COL[st] || "var(--muted)";
             return `<tr>
@@ -2663,6 +2884,489 @@
     </tr>`;
           })
           .join("");
+      }
+
+      // ── DEMANDES D'AIDE REÇUES (rôle pair aidant) ────────────────────────
+      function renderIncomingRequests(activeSessions) {
+        const tbody = document.getElementById("incoming-requests-body");
+        const countEl = document.getElementById("incoming-requests-count");
+
+        const incoming = activeSessions.filter(
+          (s) =>
+            s.direction === "INBOUND_OFFER" &&
+            ["OFFERED", "REQUESTED", "NEGOTIATING"].includes(s.status),
+        );
+
+        // Notification persistante en haut du dashboard, visible sur tous les onglets.
+        const notif = document.getElementById("incoming-request-notif");
+        const notifText = document.getElementById(
+          "incoming-request-notif-text",
+        );
+        if (notif && notifText) {
+          if (incoming.length > 0) {
+            const names = incoming
+              .slice(0, 3)
+              .map((s) => (s.helping_peer?.peer_name || "?").slice(0, 12))
+              .join(", ");
+            notifText.textContent =
+              incoming.length === 1
+                ? `Nouvelle demande d'aide reçue de ${names}`
+                : `${incoming.length} demandes d'aide reçues (${names}${incoming.length > 3 ? "…" : ""})`;
+            notif.style.display = "flex";
+          } else {
+            notif.style.display = "none";
+          }
+        }
+
+        if (!tbody) return;
+
+        if (countEl) countEl.textContent = incoming.length;
+
+        if (incoming.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:14px">Aucune demande reçue.</td></tr>';
+          return;
+        }
+
+        const STAT_COL = {
+          OFFERED: "var(--amber)",
+          REQUESTED: "var(--amber)",
+          NEGOTIATING: "#7c3aed",
+        };
+
+        tbody.innerHTML = incoming
+          .map((s) => {
+            // Le pair demandeur est enregistré sous helping_peer (quirk du schéma P2P) :
+            // peer_name = node_id du demandeur, api_endpoint_url = son URL de rappel.
+            const requesterName =
+              s.helping_peer?.peer_name?.slice(0, 12) ||
+              (s.requesting_node_id || "").slice(0, 8) ||
+              "?";
+            const endpoint = s.helping_peer?.api_endpoint_url || "";
+            const col = STAT_COL[s.status] || "var(--muted)";
+            const ep = endpoint.replace(/"/g, "&quot;");
+            return `<tr>
+      <td style="padding:5px 6px;font-weight:500">${requesterName}</td>
+      <td style="padding:5px 6px;color:${col};font-weight:500;font-family:var(--font-mono);font-size:11px">${s.status}</td>
+      <td style="padding:5px 6px;text-align:center;white-space:nowrap">
+        <button class="btn-inline success" onclick="acceptIncomingRequest('${s.session_id}','${ep}')">Accepter</button>
+        <button class="btn-inline danger" onclick="rejectIncomingRequest('${s.session_id}','${ep}')">Refuser</button>
+      </td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      async function acceptIncomingRequest(sessionId, requestingNodeEndpoint) {
+        const volStr = prompt(
+          "Volume accepté pour aider ce pair (Gbps) ?",
+          "1",
+        );
+        if (volStr === null) return;
+        const vol = parseFloat(volStr) || 0.1;
+        const token = await getToken();
+        const hdr = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        try {
+          await fetch(`/api/v1/help/${sessionId}/accept`, {
+            method: "PUT",
+            headers: hdr,
+            body: JSON.stringify({
+              accepted_volume_gbps: vol,
+              tunnel_type: "GRE",
+              ...(requestingNodeEndpoint
+                ? { requesting_node_endpoint: requestingNodeEndpoint }
+                : {}),
+            }),
+          });
+        } catch (e) {}
+        refresh();
+      }
+
+      async function rejectIncomingRequest(sessionId, requestingNodeEndpoint) {
+        const reason =
+          prompt("Raison du refus ?", "Capacité insuffisante") ||
+          "Refusé depuis le dashboard";
+        const token = await getToken();
+        const hdr = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        try {
+          await fetch(`/api/v1/help/${sessionId}/reject`, {
+            method: "PUT",
+            headers: hdr,
+            body: JSON.stringify({
+              rejection_reason: reason,
+              ...(requestingNodeEndpoint
+                ? { requesting_node_endpoint: requestingNodeEndpoint }
+                : {}),
+            }),
+          });
+        } catch (e) {}
+        refresh();
+      }
+
+      // ── FICHE DÉTAIL PAIR (GET /peers/{id} + GET /trust/{id}) ────────────
+      async function openPeerDetail(peerId) {
+        const backdrop = document.getElementById("peer-modal-backdrop");
+        const title = document.getElementById("peer-modal-title");
+        const body = document.getElementById("peer-modal-body");
+        backdrop.style.display = "flex";
+        title.textContent = "Chargement…";
+        body.innerHTML = "Chargement…";
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        try {
+          const [peer, trustRes] = await Promise.all([
+            fetch(`/api/v1/peers/${peerId}`, { headers: hdr }).then((r) =>
+              r.json(),
+            ),
+            fetch(`/api/v1/trust/${peerId}`, { headers: hdr }).then((r) =>
+              r.json(),
+            ),
+          ]);
+          const trust = trustRes.peer?.trust_score || {};
+          const violations = trustRes.recent_violations || [];
+          const ledger = peer.reciprocity_ledger || {};
+          title.textContent = `${peer.peer_name || "?"} — ${peer.organization_name || "?"}`;
+          const caps =
+            (peer.capabilities || [])
+              .map(
+                (c) =>
+                  `${Number(c.declared_capacity_gbps).toFixed(1)} Gbps${c.verified ? " ✓ vérifié" : ""}`,
+              )
+              .join(", ") || "—";
+          const violRows =
+            violations
+              .map(
+                (v) =>
+                  `<tr><td style="padding:3px 6px">${v.violation_type}</td><td style="padding:3px 6px;color:var(--red)">${v.severity}</td><td style="padding:3px 6px">${v.sanction_applied}</td></tr>`,
+              )
+              .join("") ||
+            '<tr><td colspan="3" style="padding:6px;color:var(--muted)">Aucune violation</td></tr>';
+          const statusCol =
+            peer.status === "BANNED"
+              ? "var(--red)"
+              : peer.status === "SUSPECTED"
+                ? "var(--amber)"
+                : peer.status === "ACTIVE"
+                  ? "var(--green)"
+                  : "var(--muted)";
+          const banBanner =
+            peer.status === "BANNED"
+              ? '<div style="margin-bottom:10px;padding:8px 10px;background:var(--red-bg);color:var(--red);border-radius:6px;font-weight:600;font-size:12px"> Ce pair est banni — exclu de la coalition (sélection WSM, demandes d\'aide, authentification, découverte). Aucune route ne permet de débannir automatiquement.</div>'
+              : "";
+          body.innerHTML = `
+            ${banBanner}
+            <div style="font-size:12px;line-height:1.8">
+              <div><strong>ID :</strong> <span style="font-family:var(--font-mono);font-size:11px">${peer.peer_id}</span></div>
+              <div><strong>Type :</strong> ${peer.organization_type || "—"} (${peer.country_code || "—"})</div>
+              <div><strong>Statut :</strong> <span style="color:${statusCol};font-weight:600">${peer.status || "—"}</span> / ${peer.membership_status || "—"}</div>
+              <div><strong>Endpoint :</strong> <span style="font-family:var(--font-mono);font-size:11px">${peer.api_endpoint_url || "—"}</span></div>
+              <div><strong>Capacité déclarée :</strong> ${peer.declared_available_gbps ?? "—"} / ${peer.max_scrubbing_capacity_gbps ?? "—"} Gbps</div>
+              <div><strong>Capacités publiées :</strong> ${caps}</div>
+              <div><strong>Latence mesurée :</strong> ${peer.measured_latency_ms ?? "—"} ms</div>
+              <div><strong>Confiance :</strong> ${trust.overall_score != null ? Number(trust.overall_score).toFixed(3) : "—"} (${trust.trust_level || "—"})</div>
+              <div><strong>Réciprocité :</strong> reçu ${ledger.credits_received ?? 0} / donné ${ledger.credits_given ?? 0} Gbps</div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;font-weight:600;color:var(--muted)">Violations récentes</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:4px">
+              <tbody>${violRows}</tbody>
+            </table>
+            <div style="margin-top:14px;display:flex;gap:8px">
+              ${
+                peer.status === "BANNED"
+                  ? ""
+                  : `<button class="btn-inline danger" onclick="quickBanPeer('${peer.peer_id}')">Bannir ce pair</button>`
+              }
+              <button class="btn-inline" onclick="peerGoodbye('${peer.peer_id}')">Mettre en maintenance</button>
+            </div>
+          `;
+        } catch (e) {
+          body.innerHTML = `<span style="color:var(--red)">Erreur : ${e.message}</span>`;
+        }
+      }
+
+      function closePeerDetail() {
+        document.getElementById("peer-modal-backdrop").style.display = "none";
+      }
+
+      // ── ADMIN : goodbye / advertise capacity / discover ──────────────────
+      async function peerGoodbye(peerId) {
+        const token = await getToken();
+        const hdr = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        try {
+          await fetch("/api/v1/peers/goodbye", {
+            method: "POST",
+            headers: hdr,
+            body: JSON.stringify({ peer_id: peerId, reason: "MAINTENANCE" }),
+          });
+        } catch (e) {}
+        closePeerDetail();
+        refresh();
+      }
+
+      // Raccourci : bannir directement depuis la fiche pair, sans passer par
+      // le formulaire "Appliquer une violation" de la page Confiance.
+      async function quickBanPeer(peerId) {
+        const reason = prompt(
+          "Raison du bannissement ?",
+          "Comportement suspect détecté",
+        );
+        if (reason === null) return;
+        const token = await getToken();
+        const hdr = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        try {
+          await fetch(`/api/v1/trust/${peerId}/violation`, {
+            method: "POST",
+            headers: hdr,
+            body: JSON.stringify({
+              violation_type: "SUSPICIOUS_BEHAVIOR",
+              severity: "CRITICAL",
+              description: reason || "Bannissement manuel depuis le dashboard",
+              sanction_applied: "PERMANENT_BAN",
+            }),
+          });
+        } catch (e) {}
+        closePeerDetail();
+        refresh();
+        renderAuditLog();
+      }
+
+      async function discoverPeers() {
+        const statusEl = document.getElementById("sim-status");
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        try {
+          const r = await fetch("/api/v1/peers/discover", {
+            method: "POST",
+            headers: { ...hdr, "Content-Type": "application/json" },
+            body: JSON.stringify({ max_results: 20 }),
+          });
+          const d = await r.json();
+          if (statusEl)
+            statusEl.textContent = `Découverte : ${d.count} pair(s) actif(s)`;
+        } catch (e) {
+          if (statusEl)
+            statusEl.textContent = "Erreur découverte : " + e.message;
+        }
+        refresh();
+      }
+
+      // ── HEARTBEAT BROADCAST ──────────────────────────────────────────────
+      // Ouvre la modale pré-remplie avec les valeurs actuelles du nœud local.
+      async function broadcastHeartbeat() {
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        const self = COALITION_NODES.find((n) => n.name === localNodeId());
+        let myStatus = {};
+        try {
+          myStatus = await fetch("/api/v1/status", { headers: hdr }).then((r) =>
+            r.json(),
+          );
+        } catch (e) {}
+        document.getElementById("hb-load-pct").value =
+          myStatus.current_load_pct ?? 20;
+        document.getElementById("hb-max-capacity").value = self
+          ? self.capacity
+          : 10;
+        document.getElementById("hb-reported-status").value = "ACTIVE";
+        updateHbPreview();
+        document.getElementById("heartbeat-modal-backdrop").style.display =
+          "flex";
+      }
+
+      function closeHeartbeatModal() {
+        document.getElementById("heartbeat-modal-backdrop").style.display =
+          "none";
+      }
+
+      function updateHbPreview() {
+        const load =
+          parseFloat(document.getElementById("hb-load-pct").value) || 0;
+        const max =
+          parseFloat(document.getElementById("hb-max-capacity").value) || 0;
+        const avail = Math.max(0, max * (1 - load / 100)).toFixed(2);
+        document.getElementById("hb-preview").textContent =
+          `Capacité disponible recalculée : ${avail} Gbps`;
+      }
+
+      // 1. Met à jour MA capacité locale (LocalNodeConfig, via /simulation/node/init)
+      // 2. Relit mon nouvel état (/status)
+      // 3. Diffuse /heartbeat EN PARALLÈLE vers tous mes pairs avec la valeur fraîche.
+      async function submitHeartbeat() {
+        const statusEl = document.getElementById("sim-status");
+        const newLoad = Math.max(
+          0,
+          Math.min(
+            100,
+            parseFloat(document.getElementById("hb-load-pct").value) || 0,
+          ),
+        );
+        const maxCap =
+          parseFloat(document.getElementById("hb-max-capacity").value) || 0;
+        const reportedStatus =
+          document.getElementById("hb-reported-status").value;
+        closeHeartbeatModal();
+
+        const token2 = await getToken();
+        const hdr = token2 ? { Authorization: `Bearer ${token2}` } : {};
+        try {
+          // 1. Mettre à jour ma propre charge et capacité déclarées.
+          const self = COALITION_NODES.find((n) => n.name === localNodeId());
+          if (self) {
+            await fetch("/api/v1/simulation/node/init", {
+              method: "POST",
+              headers: { ...hdr, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                node_name: self.name,
+                organization_name: self.org,
+                organization_type: self.type,
+                country_code: "DZ",
+                api_endpoint_url: `https://node-${self.cert}:8443/api/v1`,
+                public_key: `DEMO_KEY_${self.cert}`,
+                max_scrubbing_capacity_gbps: maxCap,
+                current_load_percent: newLoad,
+              }),
+            });
+          }
+
+          // 2. Relire mon état à jour (charge, capacité disponible recalculée).
+          const myStatus = await fetch("/api/v1/status", { headers: hdr }).then(
+            (r) => r.json(),
+          );
+          // Tous mes pairs connus — chacun reçoit le heartbeat directement.
+          const peers = await fetch("/api/v1/peers", { headers: hdr }).then(
+            (r) => r.json(),
+          );
+          // api_endpoint_url contient des noms Docker internes (node-isp:8443),
+          // résolubles seulement entre conteneurs — depuis le navigateur on
+          // doit viser localhost:<port> comme le fait coalitionReset().
+          const targets = (Array.isArray(peers) ? peers : [])
+            .filter((p) => p.status !== "BANNED")
+            .map((p) => {
+              const main = MAIN_NODES.find((n) => n.name === p.peer_name);
+              return main
+                ? { ...p, browserUrl: `https://localhost:${main.port}/api/v1` }
+                : null;
+            })
+            .filter(Boolean);
+
+          // Diffusion EN PARALLÈLE — un POST /heartbeat direct vers chaque pair,
+          // pas un par un séquentiellement (cf. heartbeatSender.announceToCoalition).
+          const results = await Promise.allSettled(
+            targets.map((p) =>
+              fetch(`${p.browserUrl}/heartbeat`, {
+                method: "POST",
+                headers: {
+                  "X-Node-Secret": "shieldnet-secret-key-2025",
+                  "X-Node-Id": myStatus.node_id,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  peer_id: myStatus.node_id,
+                  reported_status: reportedStatus,
+                  reported_load_pct: myStatus.current_load_pct,
+                  reported_available_gbps: myStatus.available_gbps,
+                  round_trip_time_ms: null,
+                }),
+                signal: AbortSignal.timeout(6000),
+              }),
+            ),
+          );
+          const ok = results.filter(
+            (r) => r.status === "fulfilled" && r.value.ok,
+          ).length;
+          if (statusEl) statusEl.textContent = ``;
+        } catch (e) {
+          if (statusEl)
+            statusEl.textContent = "Erreur diffusion : " + e.message;
+        }
+        refresh();
+      }
+
+      // ── CAPACITÉ LOCALE (GET /capacity) ──────────────────────────────────
+      async function renderCapacity() {
+        const el = document.getElementById("capacity-detail");
+        if (!el) return;
+        const token = await getToken();
+        const hdr = token ? { Authorization: `Bearer ${token}` } : {};
+        try {
+          const c = await fetch("/api/v1/capacity", { headers: hdr }).then(
+            (r) => r.json(),
+          );
+          const caps =
+            (c.capabilities || [])
+              .map(
+                (s) =>
+                  `<tr><td style="padding:3px 6px">${Number(s.max_capacity_gbps).toFixed(1)} Gbps</td><td style="padding:3px 6px">${(s.filtering_accuracy * 100).toFixed(0)}%</td><td style="padding:3px 6px">${s.is_active ? "Active" : "Inactive"}</td></tr>`,
+              )
+              .join("") || "";
+          el.innerHTML = ``;
+        } catch (e) {
+          el.innerHTML = `<span style="color:var(--red)">Erreur : ${e.message}</span>`;
+        }
+      }
+
+      // ── SIMULATEUR WRR (POST /simulation/distribute) ─────────────────────
+      async function runWrrSimulation() {
+        const resEl = document.getElementById("wrr-sim-result");
+        const nPackets =
+          parseInt(document.getElementById("wrr-sim-packets").value) || 1000;
+        const overflowGbps =
+          parseFloat(document.getElementById("wrr-sim-overflow").value) || 8;
+        resEl.innerHTML = "Calcul…";
+        const token = await getToken();
+        const hdr = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        try {
+          const r = await fetch("/api/v1/simulation/distribute", {
+            method: "POST",
+            headers: hdr,
+            body: JSON.stringify({
+              n_packets: nPackets,
+              overflow_gbps: overflowGbps,
+            }),
+          });
+          const d = await r.json();
+          if (!r.ok) {
+            resEl.innerHTML = `<span style="color:var(--red)">${d.error}</span>`;
+            return;
+          }
+          const rows = (d.peers || [])
+            .map(
+              (p) =>
+                `<tr><td style="padding:3px 6px">${p.peer_name}</td><td style="padding:3px 6px;text-align:right">${p.wsm_score != null ? p.wsm_score.toFixed(3) : "—"}</td><td style="padding:3px 6px;text-align:right">${p.alloc_per_cycle}</td><td style="padding:3px 6px;text-align:right;color:var(--green)">${p.packets_received}</td><td style="padding:3px 6px;text-align:right">${p.share_pct}%</td></tr>`,
+            )
+            .join("");
+          resEl.innerHTML = `
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
+                <th style="text-align:left;padding:3px 6px">Pair</th>
+                <th style="text-align:right;padding:3px 6px">Score WSM</th>
+                <th style="text-align:right;padding:3px 6px">Alloc/cycle</th>
+                <th style="text-align:right;padding:3px 6px">Paquets reçus</th>
+                <th style="text-align:right;padding:3px 6px">Part</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <div style="font-size:10px;color:var(--faint);margin-top:6px;font-family:var(--font-mono)">
+              ${d.total_peers} pair(s) · cycle = ${d.cycle_size} · ${d.total_cycles} cycle(s)
+            </div>`;
+        } catch (e) {
+          resEl.innerHTML = `<span style="color:var(--red)">Erreur : ${e.message}</span>`;
+        }
       }
 
       // ── SESSION HISTORY ───────────────────────────────────────────────────
@@ -2692,17 +3396,24 @@
             FAILED: "var(--red)",
             CANCELLED: "var(--faint)",
           };
+          // IMPORTANT : "requesting_node_id" pointe TOUJOURS vers ce nœud
+          // lui-même (contrainte FK : seul LOCAL_NODE_CONFIG est admis ici),
+          // que ce nœud soit réellement victime OU aidant. La seule façon
+          // fiable de savoir qui joue quel rôle est le champ "direction" :
+          // OUTBOUND_REQUEST = je suis vraiment la victime (j'ai demandé) ;
+          // sinon (INBOUND_OFFER) = je suis vraiment l'aidant, et l'autre
+          // partie (helping_peer, malgré son nom) est la vraie victime.
+          const myName = localNodeId();
           tbody.innerHTML = sessions
             .map((s) => {
               const sid = (s.session_id || "").slice(0, 8) + "…";
-              const victim =
-                s.requesting_node?.node_name ||
-                (s.requesting_node_id || "").slice(0, 8) ||
-                "?";
-              const helper =
+              const isInbound = s.direction !== "OUTBOUND_REQUEST";
+              const otherParty =
                 s.helping_peer?.peer_name ||
                 (s.helping_peer_id || "").slice(0, 8) ||
                 "?";
+              const victim = isInbound ? otherParty : myName;
+              const helper = isInbound ? myName : otherParty;
               const st = s.status || "?";
               const col = STAT_COL[st] || "var(--muted)";
               const aid = (s.attack_id || "").slice(0, 8) + "…";
@@ -2765,7 +3476,7 @@
         const token = await getToken();
         const hdr = token ? { Authorization: `Bearer ${token}` } : {};
         try {
-          await fetch(`/api/v1/trust/${peerId}/violation`, {
+          const v = await fetch(`/api/v1/trust/${peerId}/violation`, {
             method: "POST",
             headers: { ...hdr, "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -2778,7 +3489,21 @@
                   ? new Date(Date.now() + 86400000).toISOString()
                   : null,
             }),
-          });
+          }).then((r) => r.json());
+
+          if (v.error) throw new Error(v.error);
+
+          // Statut réel du pair APRÈS la sanction — c'est ça qui dit "banni",
+          // pas le score PeerTrust (qui dépend de l'historique des sessions
+          // et peut rester BRONZE même si le pair est banni sans historique).
+          const peerStatus = v.peer?.status || "?";
+          const statusCol =
+            peerStatus === "BANNED"
+              ? "var(--red)"
+              : peerStatus === "SUSPECTED"
+                ? "var(--amber)"
+                : "var(--green)";
+
           const d2 = await fetch(`/api/v1/trust/${peerId}/recalculate`, {
             method: "POST",
             headers: hdr,
@@ -2788,15 +3513,21 @@
               ? d2.overall_score.toFixed(3)
               : "?";
           const level = d2.trust_level ?? "?";
-          const col =
-            level === "BANNED"
-              ? "var(--red)"
-              : level === "SUSPECT"
-                ? "var(--amber)"
-                : level === "BRONZE"
-                  ? "#a06030"
-                  : "var(--blue)";
-          result.innerHTML = `Pair : <strong>${peerName.split("—")[0].trim()}</strong><br>Type : ${type} | Sévérité : ${sev}<br>Sanction : <strong style="color:var(--amber)">${sanction}</strong><br><br>Score → <strong style="color:${col}">${score}</strong> | Niveau : <strong style="color:${col}">${level}</strong>${level === "BANNED" ? '<br><span style="color:var(--red)">Pair banni — exclu de la coalition</span>' : ""}`;
+
+          result.innerHTML = `
+            Pair : <strong>${peerName.split("—")[0].trim()}</strong><br>
+            Type : ${type} | Sévérité : ${sev}<br>
+            Sanction appliquée : <strong style="color:var(--amber)">${sanction}</strong><br>
+            Statut du pair : <strong style="color:${statusCol}">${peerStatus}</strong><br>
+            
+            ${
+              peerStatus === "BANNED"
+                ? '<div style="margin-top:8px;padding:6px 8px;background:var(--red-bg);color:var(--red);border-radius:4px;font-weight:600">Pair banni </br> exclu de la coalition</div>'
+                : peerStatus === "SUSPECTED"
+                  ? '<div style="margin-top:8px;padding:6px 8px;background:var(--amber-bg);color:var(--amber);border-radius:4px;font-weight:600">⚠ Pair suspendu temporairement</div>'
+                  : ""
+            }
+          `;
           await refresh();
           renderAuditLog();
           populateViolPeers();
@@ -2958,6 +3689,15 @@
                       m.reported_available_gbps != null
                         ? `· dispo <strong>${m.reported_available_gbps} Gbps</strong>`
                         : "";
+                    const STATUS_COL = {
+                      ACTIVE: "var(--green)",
+                      BUSY: "var(--amber)",
+                      DEGRADED: "var(--amber)",
+                      UNDER_ATTACK: "var(--red)",
+                    };
+                    const status = m.reported_status
+                      ? `· <span style="color:${STATUS_COL[m.reported_status] || "var(--muted)"};font-weight:600">${m.reported_status}</span>`
+                      : "";
                     const dir =
                       m.direction === "SENT"
                         ? '<span style="color:var(--green)">→</span>'
@@ -2967,7 +3707,7 @@
         <span style="width:20px;text-align:center;flex-shrink:0">${dir}</span>
         <span style="color:var(--border-strong);font-size:10px;font-weight:600;flex-shrink:0">HB</span>
         <span style="font-size:10px;font-weight:600;flex-shrink:0">${name}</span>
-        <span style="flex:1;font-size:10px;color:var(--muted);font-family:var(--font-mono)">${load} ${avail}</span>
+        <span style="flex:1;font-size:10px;color:var(--muted);font-family:var(--font-mono)">${load} ${avail} ${status}</span>
       </div>`;
                   })
                   .join("");

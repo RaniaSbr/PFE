@@ -8,7 +8,7 @@
  * Fonctionnement :
  *   - Le nœud s'authentifie avec son node_id + node_secret (JWT_SECRET local)
  *   - Le serveur génère un JWT signé avec la CLÉ PRIVÉE du nœud local (RS256)
- *   - Le token est valable 60 secondes (anti-rejeu)
+ *   - Le token est valable 15 minutes
  *
  * Vérification côté récepteur :
  *   - Lit le claim `iss` (issuer = node_id de l'émetteur)
@@ -30,10 +30,10 @@ const JWT_EXPIRES_IN = "15m";
  * /auth/token:
  *   post:
  *     tags: [Auth]
- *     summary: Obtenir un token JWT (RS256, 60s)
+ *     summary: Obtenir un token JWT (RS256, 15 min)
  *     description: >
  *       Génère un JWT signé avec la clé privée du nœud local (RS256).
- *       Le token est valable 60 secondes pour limiter les attaques par rejeu.
+ *       Le token est valable 15 minutes.
  *       Le nœud récepteur vérifiera la signature avec la clé publique de l'émetteur.
  *     requestBody:
  *       required: true
@@ -58,7 +58,7 @@ const JWT_EXPIRES_IN = "15m";
  *               type: object
  *               properties:
  *                 token:       { type: string, description: "JWT signé RS256" }
- *                 expires_in:  { type: string, example: "60s" }
+ *                 expires_in:  { type: string, example: "15m" }
  *                 node_id:     { type: string }
  *                 role:        { type: string, enum: [local, peer] }
  *                 algorithm:   { type: string, example: "RS256" }

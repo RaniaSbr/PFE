@@ -3114,34 +3114,32 @@
     <bcf:citekey order="48" intorder="1">mirkovic2003defcom</bcf:citekey>
     <bcf:citekey order="49" intorder="1">xiong2004peertrust</bcf:citekey>
     <bcf:citekey order="50" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="51" intorder="1">drawio2024</bcf:citekey>
-    <bcf:citekey order="52" intorder="1">lucidchart2024</bcf:citekey>
-    <bcf:citekey order="53" intorder="1">omguml251</bcf:citekey>
-    <bcf:citekey order="54" intorder="1">rfc4122uuid</bcf:citekey>
+    <bcf:citekey order="51" intorder="1">lua2005survey</bcf:citekey>
+    <bcf:citekey order="52" intorder="1">rfc4122uuid</bcf:citekey>
+    <bcf:citekey order="53" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="54" intorder="1">stormwall2024severity</bcf:citekey>
     <bcf:citekey order="55" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="56" intorder="1">stormwall2024severity</bcf:citekey>
-    <bcf:citekey order="57" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="58" intorder="1">xiong2004peertrust</bcf:citekey>
-    <bcf:citekey order="59" intorder="1">hwang1981wsm</bcf:citekey>
-    <bcf:citekey order="60" intorder="1">saaty1980ahp</bcf:citekey>
-    <bcf:citekey order="61" intorder="1">rfc8446tls13</bcf:citekey>
-    <bcf:citekey order="62" intorder="1">rfc7519jwt</bcf:citekey>
-    <bcf:citekey order="63" intorder="1">rfc7518jwa</bcf:citekey>
-    <bcf:citekey order="64" intorder="1">fielding2000rest</bcf:citekey>
-    <bcf:citekey order="65" intorder="1">nodejs2024</bcf:citekey>
-    <bcf:citekey order="66" intorder="1">nodejs2024</bcf:citekey>
-    <bcf:citekey order="67" intorder="1">expressjs2024</bcf:citekey>
-    <bcf:citekey order="68" intorder="1">postgresql2024</bcf:citekey>
-    <bcf:citekey order="69" intorder="1">sequelize2024</bcf:citekey>
-    <bcf:citekey order="70" intorder="1">jsonwebtoken2024</bcf:citekey>
-    <bcf:citekey order="71" intorder="1">rfc7519jwt</bcf:citekey>
-    <bcf:citekey order="72" intorder="1">openapi3</bcf:citekey>
-    <bcf:citekey order="73" intorder="1">docker2024</bcf:citekey>
-    <bcf:citekey order="74" intorder="1">git2024</bcf:citekey>
-    <bcf:citekey order="75" intorder="1">github2024</bcf:citekey>
-    <bcf:citekey order="76" intorder="1">pythonasyncio</bcf:citekey>
-    <bcf:citekey order="77" intorder="1">aiohttp2024</bcf:citekey>
-    <bcf:citekey order="78" intorder="2" nocite="1">batata_igl</bcf:citekey>
+    <bcf:citekey order="56" intorder="1">xiong2004peertrust</bcf:citekey>
+    <bcf:citekey order="57" intorder="1">hwang1981wsm</bcf:citekey>
+    <bcf:citekey order="58" intorder="1">saaty1980ahp</bcf:citekey>
+    <bcf:citekey order="59" intorder="1">rfc8446tls13</bcf:citekey>
+    <bcf:citekey order="60" intorder="1">rfc7519jwt</bcf:citekey>
+    <bcf:citekey order="61" intorder="1">rfc7518jwa</bcf:citekey>
+    <bcf:citekey order="62" intorder="1">fielding2000rest</bcf:citekey>
+    <bcf:citekey order="63" intorder="1">nodejs2024</bcf:citekey>
+    <bcf:citekey order="64" intorder="1">nodejs2024</bcf:citekey>
+    <bcf:citekey order="65" intorder="1">expressjs2024</bcf:citekey>
+    <bcf:citekey order="66" intorder="1">postgresql2024</bcf:citekey>
+    <bcf:citekey order="67" intorder="1">sequelize2024</bcf:citekey>
+    <bcf:citekey order="68" intorder="1">jsonwebtoken2024</bcf:citekey>
+    <bcf:citekey order="69" intorder="1">rfc7519jwt</bcf:citekey>
+    <bcf:citekey order="70" intorder="1">openapi3</bcf:citekey>
+    <bcf:citekey order="71" intorder="1">docker2024</bcf:citekey>
+    <bcf:citekey order="72" intorder="1">git2024</bcf:citekey>
+    <bcf:citekey order="73" intorder="1">github2024</bcf:citekey>
+    <bcf:citekey order="74" intorder="1">pythonasyncio</bcf:citekey>
+    <bcf:citekey order="75" intorder="1">aiohttp2024</bcf:citekey>
+    <bcf:citekey order="76" intorder="2" nocite="1">batata_igl</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

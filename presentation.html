@@ -179,6 +179,7 @@
       th { background: #1b2a5e; color: #fff; padding: 12px 16px; text-align: left; }
       td { padding: 11px 16px; border-bottom: 1px solid #e5e5e5; color: #2c2c2c; }
       tr:nth-child(even) td { background: #f8f9ff; }
+      table.table-compact th, table.table-compact td { padding: 7px 9px; line-height: 1.35; }
 
       /* ── Formula box ── */
       .formula {
@@ -755,6 +756,114 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SLIDE 8d2 — Ch.2 : Mécanismes et limites des travaux connexes -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="slide" style="justify-content:flex-start;">
+      <div class="tag">02 — État de l'art</div>
+      <h2>Mécanismes de base et limites des travaux connexes</h2>
+      <div class="sep"></div>
+      <table class="table-compact" style="font-size:11.5px; margin-top:10px;">
+        <thead>
+          <tr>
+            <th style="width:24%">Système (type)</th>
+            <th style="width:36%">Mécanisme de base</th>
+            <th style="width:40%">Limites principales</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Standard de signalisation inter-domaines — <em>DOTS</em></td>
+            <td>Signalisation client-serveur (CoAP/DTLS + RESTCONF/HTTPS) pour demander une mitigation</td>
+            <td>Hiérarchique, pas de coordination entre pairs, pas de partage de signatures</td>
+          </tr>
+          <tr>
+            <td>Coalition de partage de métadonnées — <em>DDoS Clearing House</em></td>
+            <td>Partage de fingerprints via hub central, conversion en règles locales</td>
+            <td>Hub = SPOF, partage a posteriori (délai), pas d'orchestration active</td>
+          </tr>
+          <tr>
+            <td>Mutualisation opérationnelle de scrubbing centers — <em>NaWas/NBIP</em></td>
+            <td>Redirection BGP vers scrubbing center mutualisé</td>
+            <td>Semi-centralisé, activation manuelle, pas de coordination entre membres</td>
+          </tr>
+          <tr>
+            <td>Overlay coopératif distribué — <em>DefCOM</em></td>
+            <td>Overlay (V/C/S-nodes), rate limiting hiérarchique, gossip</td>
+            <td>Prototype simulé seulement, pas de modèle de confiance, peu interopérable</td>
+          </tr>
+          <tr>
+            <td>Architecture P2P basée sur DHT — <em>Saad et al.</em></td>
+            <td>Stockage P2P (Pastry/HMAC) des métriques d'attaque</td>
+            <td>Seuils statiques, pas de mitigation coordonnée, pas de gestion de confiance</td>
+          </tr>
+          <tr>
+            <td>Point d'échange d'informations entre IXP — <em>Wagner et al. (DXP)</em></td>
+            <td>Hub d'échange entre IXP (réflecteurs/victimes)</td>
+            <td>Hub central = SPOF, dépend du nombre d'IXP, pas de vérification croisée</td>
+          </tr>
+          <tr>
+            <td>Protocole de gossip directionnel — <em>Zhang et al.</em></td>
+            <td>Gossip directionnel vers la victime + rate limiting local</td>
+            <td>Routage symétrique supposé, paramétrage difficile, pas de modèle de menace</td>
+          </tr>
+          <tr>
+            <td>Marquage XOR collaboratif — <em>Tariq et al.</em></td>
+            <td>Alertes multi-clés + marquage XOR dans l'en-tête IP</td>
+            <td>Limité à 16 bits, conflit avec fragmentation IP, jamais déployé réellement</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SLIDE 8d3 — Ch.2 : Comparaison multicritère des travaux connexes -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="slide" style="justify-content:flex-start;">
+      <div class="tag">02 — État de l'art</div>
+      <h2>Comparaison multicritère des travaux connexes</h2>
+      <div class="sep"></div>
+      <table class="table-compact" style="font-size:11.5px; margin-top:10px;">
+        <thead>
+          <tr>
+            <th>Système / Proposition</th>
+            <th style="text-align:center">Décentralisé</th>
+            <th style="text-align:center">P2P</th>
+            <th style="text-align:center">Partage métadonnées</th>
+            <th style="text-align:center">Sync. actions</th>
+            <th style="text-align:center">Mutualisation</th>
+            <th>Modèle confiance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DOTS</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td style="text-align:center">✓ (partiel)</td><td style="text-align:center">✓</td><td style="text-align:center">✕</td><td>PKI/PSK</td>
+          </tr>
+          <tr>
+            <td>DDoS Clearing House</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td style="text-align:center">✓</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td>Implicite</td>
+          </tr>
+          <tr>
+            <td>NaWas/NBIP</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td style="text-align:center">✓</td><td>Contrat</td>
+          </tr>
+          <tr>
+            <td>DefCOM (Mirkovic et al.)</td><td style="text-align:center">✓</td><td style="text-align:center">✓</td><td style="text-align:center">✓ (partiel)</td><td style="text-align:center">✓ (partiel)</td><td style="text-align:center">✕</td><td>Implicite</td>
+          </tr>
+          <tr>
+            <td>Saad et al. (DHT)</td><td style="text-align:center">✓</td><td style="text-align:center">✓ (DHT)</td><td style="text-align:center">✓</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td>HMAC</td>
+          </tr>
+          <tr>
+            <td>Wagner et al. (DXP)</td><td style="text-align:center">✓ (hub)</td><td style="text-align:center">✕</td><td style="text-align:center">✓</td><td style="text-align:center">✕</td><td style="text-align:center">✕</td><td>Low-trust / High-trust</td>
+          </tr>
+          <tr>
+            <td>Zhang et al. (gossip)</td><td style="text-align:center">✓</td><td style="text-align:center">✓</td><td style="text-align:center">✓ (partiel)</td><td style="text-align:center">✓ (partiel)</td><td style="text-align:center">✕</td><td>Implicite</td>
+          </tr>
+          <tr>
+            <td>Tariq et al. (XOR)</td><td style="text-align:center">✓</td><td style="text-align:center">✓</td><td style="text-align:center">✓</td><td style="text-align:center">✓ (alerte)</td><td style="text-align:center">✕</td><td>Cryptographique</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
     <!-- SLIDE 8e — Ch.2 §2.6 : Synthèse comparative -->
     <!-- ═══════════════════════════════════════════════════════ -->
     <div class="slide">
@@ -1051,203 +1160,33 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SLIDE 11 — Ch.3 §3.3.1 : Données — Configuration & politique -->
+    <!-- SLIDE 11 — Ch.3 §3.3.1 : Données — Modèle relationnel (14 tables) -->
     <!-- ═══════════════════════════════════════════════════════ -->
     <div class="slide" style="justify-content:flex-start;">
       <div class="tag">03 — Conception · Modèle de données</div>
-      <h2>Données — Configuration &amp; politique du nœud</h2>
+      <h2>Un modèle de données relationnel — 14 tables</h2>
       <div class="sep"></div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:10px;">
-        <div style="background:#f4f7ff; border-radius:10px; padding:16px 18px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:14px; margin-bottom:8px;">LocalNodeConfig</p>
-          <p style="font-size:11.5px; color:#666; margin-bottom:8px;">Identité et capacité du nœud</p>
-          <ul style="font-size:12px; color:#444; line-height:1.7; padding-left:14px; margin:0;">
-            <li>node_id, node_name</li>
-            <li>organization_type, country_code</li>
-            <li>api_endpoint_url, public_key</li>
-            <li>max_scrubbing_capacity_gbps</li>
-            <li>current_load_percent, status</li>
-          </ul>
+      <div class="tech-grid">
+        <div class="tech-box">
+          <h4>Configuration du nœud (2)</h4>
+          <p><code>LOCAL_NODE_CONFIG</code>, <code>POLICY_CONFIG</code> — identité, capacité, politique de participation</p>
         </div>
-        <div style="background:#f0faf5; border-radius:10px; padding:16px 18px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:14px; margin-bottom:8px;">PolicyConfig</p>
-          <p style="font-size:11.5px; color:#666; margin-bottom:8px;">Règles de participation à la coalition</p>
-          <ul style="font-size:12px; color:#444; line-height:1.7; padding-left:14px; margin:0;">
-            <li>min_trust_score_to_help</li>
-            <li>max_capacity_share_pct</li>
-            <li>heartbeat_interval_sec</li>
-            <li>auto_offer_enabled</li>
-          </ul>
+        <div class="tech-box">
+          <h4>Pairs &amp; confiance (6)</h4>
+          <p><code>PEERS</code>, <code>TRUST_SCORES</code>, <code>RECIPROCITY_LEDGER</code>, <code>PEER_CAPABILITIES</code>, <code>TRUST_VIOLATIONS</code>, <code>HEARTBEAT_LOG</code></p>
         </div>
-        <div style="background:#f4f7ff; border-radius:10px; padding:16px 18px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:14px; margin-bottom:8px;">ScrubbingCapability</p>
-          <p style="font-size:11.5px; color:#666; margin-bottom:8px;">Capacités de filtrage déclarées</p>
-          <ul style="font-size:12px; color:#444; line-height:1.7; padding-left:14px; margin:0;">
-            <li>max_capacity_gbps</li>
-            <li>filtering_accuracy</li>
-            <li>is_active</li>
-          </ul>
+        <div class="tech-box">
+          <h4>Mitigation &amp; traçabilité (5)</h4>
+          <p><code>ATTACKS</code>, <code>HELP_SESSIONS</code>, <code>RECIPROCITY_TRANSACTIONS</code>, <code>AUDIT_LOG</code>, <code>MESSAGE_LOG</code></p>
+        </div>
+        <div class="tech-box">
+          <h4>Capacités techniques (1)</h4>
+          <p><code>SCRUBBING_CAPABILITIES</code> — débit maximal, précision de filtrage</p>
         </div>
       </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SLIDE 12 — Ch.3 §3.3.1 : Données — Gestion des pairs et confiance -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div class="slide" style="justify-content:flex-start;">
-      <div class="tag">03 — Conception · Modèle de données</div>
-      <h2>Données — Gestion des pairs et confiance</h2>
-      <div class="sep"></div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px;">
-        <div style="background:#f4f7ff; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">Peer</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>peer_id, organization_type</li>
-            <li>status, membership_status</li>
-            <li>declared_available_gbps</li>
-            <li>measured_latency_ms</li>
-          </ul>
-        </div>
-        <div style="background:#f0faf5; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">PeerCapability</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>declared_capacity_gbps</li>
-            <li>verified, verified_at</li>
-          </ul>
-        </div>
-        <div style="background:#f4f7ff; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">TrustScore</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>overall_score, trust_level</li>
-            <li>reliability_score</li>
-            <li>performance_score</li>
-            <li>reciprocity_score, stability_score</li>
-          </ul>
-        </div>
-        <div style="background:#f0faf5; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">ReciprocityLedger</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>credits_given</li>
-            <li>credits_received</li>
-            <li>balance</li>
-          </ul>
-        </div>
-        <div style="background:#f4f7ff; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">ReciprocityTransaction</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>transaction_type</li>
-            <li>credit_amount</li>
-          </ul>
-        </div>
-        <div style="background:#f0faf5; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">TrustViolation</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>violation_type, severity</li>
-            <li>sanction_applied</li>
-            <li>sanction_until</li>
-          </ul>
-        </div>
-      </div>
-      <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <span style="font-size:11px; color:#555; font-weight:600;">trust_level :</span>
-        <span style="font-size:11px; background:#1d6b47; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600;">GOLD ≥0,80</span>
-        <span style="font-size:11px; background:#1b2a5e; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600;">SILVER ≥0,60</span>
-        <span style="font-size:11px; background:#7c6d3a; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600;">BRONZE ≥0,40</span>
-        <span style="font-size:11px; background:#c0392b; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600;">SUSPECT ≥0,20</span>
-        <span style="font-size:11px; background:#555; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600;">BANNED &lt;0,20</span>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SLIDE 13 — Ch.3 §3.3.1 : Données — Activité opérationnelle -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div class="slide" style="justify-content:flex-start;">
-      <div class="tag">03 — Conception · Modèle de données</div>
-      <h2>Données — Activité opérationnelle</h2>
-      <div class="sep"></div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:8px;">
-        <div style="background:#f4f7ff; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">Attack</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>peak_volume_gbps</li>
-            <li>overflow_volume_gbps</li>
-            <li>severity, status</li>
-            <li>target_ip_range, target_service</li>
-            <li>coalition_helped, nb_peers_involved</li>
-          </ul>
-        </div>
-        <div style="background:#f0faf5; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">HelpSession</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>status (REQUESTED→…→COMPLETED)</li>
-            <li>allocation_pct</li>
-            <li>accepted_volume_gbps</li>
-            <li>actual_volume_gbps, cr_value</li>
-            <li>tunnel_type</li>
-          </ul>
-        </div>
-        <div style="background:#f4f7ff; border-radius:10px; padding:14px 16px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:13.5px; margin-bottom:6px;">HeartbeatLog</p>
-          <ul style="font-size:11.5px; color:#444; line-height:1.6; padding-left:14px; margin:0;">
-            <li>reported_status</li>
-            <li>reported_load_pct</li>
-            <li>reported_available_gbps</li>
-            <li>round_trip_time_ms</li>
-          </ul>
-        </div>
-      </div>
-      <div style="margin-top:16px; background:#f8f8f8; border-radius:10px; padding:14px 18px;">
-        <p style="font-weight:700; color:#1b2a5e; font-size:13px; margin-bottom:8px;">Échelle de sévérité — calculée selon le volume total filtré (échelle Stormwall)</p>
-        <div style="display:flex; gap:10px;">
-          <div style="flex:1; background:#fff; border-radius:8px; padding:8px; text-align:center;">
-            <div style="font-size:12px; font-weight:800; color:#1b2a5e;">LOW</div>
-            <div style="font-size:11px; color:#555;">&lt; 1 Gbps</div>
-          </div>
-          <div style="flex:1; background:#fff; border-radius:8px; padding:8px; text-align:center;">
-            <div style="font-size:12px; font-weight:800; color:#1b2a5e;">MEDIUM</div>
-            <div style="font-size:11px; color:#555;">≥ 1 Gbps</div>
-          </div>
-          <div style="flex:1; background:#fff; border-radius:8px; padding:8px; text-align:center;">
-            <div style="font-size:12px; font-weight:800; color:#1b2a5e;">HIGH</div>
-            <div style="font-size:11px; color:#555;">≥ 10 Gbps</div>
-          </div>
-          <div style="flex:1; background:#1b2a5e; border-radius:8px; padding:8px; text-align:center;">
-            <div style="font-size:12px; font-weight:800; color:#fff;">CRITICAL</div>
-            <div style="font-size:11px; color:#fff;">≥ 100 Gbps</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SLIDE 13bis — Ch.3 §3.3.1 : Données — Traçabilité & audit -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div class="slide" style="justify-content:flex-start;">
-      <div class="tag">03 — Conception · Modèle de données</div>
-      <h2>Données — Traçabilité &amp; audit</h2>
-      <div class="sep"></div>
-      <div class="two-col" style="margin-top:10px;">
-        <div class="col" style="background:#f4f7ff; border-radius:10px; padding:18px 20px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:15px; margin-bottom:10px;">MessageLog</p>
-          <p style="font-size:12.5px; color:#666; margin-bottom:10px;">Journal de tous les messages P2P échangés</p>
-          <ul style="font-size:13px; color:#444; line-height:1.8;">
-            <li>message_type (HELLO, HEARTBEAT, HELP_REQUEST, HELP_OFFER, TRAFFIC_REDIRECT...)</li>
-            <li>direction (SENT / RECEIVED)</li>
-            <li>signature_valid</li>
-            <li>processing_result (PROCESSED, REJECTED, FORWARDED, ERROR)</li>
-          </ul>
-        </div>
-        <div class="col" style="background:#f0faf5; border-radius:10px; padding:18px 20px;">
-          <p style="font-weight:700; color:#1b2a5e; font-size:15px; margin-bottom:10px;">AuditLog</p>
-          <p style="font-size:12.5px; color:#666; margin-bottom:10px;">Trace des événements système critiques</p>
-          <ul style="font-size:13px; color:#444; line-height:1.8;">
-            <li>event_type (PEER_BANNED, TRUST_LEVEL_CHANGED, AUTH_FAILURE...)</li>
-            <li>severity (INFO, WARNING, ERROR, CRITICAL)</li>
-            <li>actor, target</li>
-            <li>description, timestamp</li>
-          </ul>
-        </div>
-      </div>
+      <p style="font-size:13px; color:#777; margin-top:14px;">
+        PostgreSQL — UUID v4, ENUM, contraintes <code>FOREIGN KEY</code> avec politiques CASCADE / RESTRICT / SET NULL selon le rôle de chaque relation.
+      </p>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
@@ -1614,6 +1553,34 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SLIDE 19bis — Ch.4 : API sécurisées -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="slide" style="justify-content:flex-start;">
+      <div class="tag">04 — Implémentation</div>
+      <h2>Une API REST sécurisée par nœud</h2>
+      <div class="sep"></div>
+      <div class="two-col">
+        <div class="col">
+          <ul style="margin-bottom:20px">
+            <li><strong>REST / HTTPS</strong> — chaque nœud expose son API, documentée via <strong>Swagger / OpenAPI 3</strong></li>
+            <li><strong>JWT RS256</strong> — token signé par clé privée, vérifié par clé publique, durée de vie 15 min</li>
+            <li><strong>mTLS</strong> — chiffrement transport, certificat client/serveur (implémenté, désactivé par défaut)</li>
+            <li><strong>Toutes les routes protégées</strong> sauf <code>/auth/token</code> et <code>/peers/register</code></li>
+          </ul>
+          <div style="background:#f0f4ff; border-radius:10px; padding:16px 20px">
+            <p style="font-size:14px; color:#1b2a5e; font-weight:600">
+              Aucun secret partagé entre nœuds — chaque pair signe avec sa propre clé, la compromission d'un nœud n'expose pas les autres.
+            </p>
+          </div>
+        </div>
+        <div class="col-img">
+          <img src="memoire/figures/seq_auth_jwt.pdf" alt="JWT Auth"
+            onerror="this.src='memoire/figures/uc_role_pair.png'" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
     <!-- SLIDE 20 — Ch.4 §4.2 : Stack technique -->
     <!-- ═══════════════════════════════════════════════════════ -->
     <div class="slide">
@@ -1810,57 +1777,36 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SLIDE 24 — Ch.4 §4.7 : Tests & Scalabilité -->
+    <!-- SLIDE 24 — Ch.4 §4.7 : Tests -->
     <!-- ═══════════════════════════════════════════════════════ -->
     <div class="slide" style="justify-content:flex-start;">
       <div class="tag">04 — Implémentation · Évaluation</div>
-      <h2>Tests &amp; Scalabilité</h2>
+      <h2>Deux familles de tests complémentaires</h2>
       <div class="sep"></div>
-
-      <div style="display:flex; gap:40px; align-items:flex-start; margin-top:4px;">
-
-        <!-- Gauche : protocole de simulation -->
-        <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
-          <div style="background:#f0faf5; border-radius:10px; padding:14px 18px;">
-            <p style="font-weight:700; color:#1b2a5e; margin-bottom:6px; font-size:14px;">Pairs virtuels (simulation)</p>
-            <p style="font-size:13px; color:#444; margin:0; line-height:1.6;">
-              100 pairs simulés (<code>sim-001</code> … <code>sim-100</code>) enregistrés via URLs <code>*.shieldnet.local</code>, auto-acceptés par le middleware.<br/>
-              Chaque sim-peer dispose d'un niveau de confiance aléatoire (GOLD / SILVER / BRONZE / SUSPECT) et d'un taux de refus probabiliste pour simuler des comportements réels.
-            </p>
-          </div>
-          <div style="background:#f4f7ff; border-radius:10px; padding:14px 18px;">
-            <p style="font-weight:700; color:#1b2a5e; margin-bottom:6px; font-size:14px;">Scénario de test</p>
-            <ul style="font-size:13px; color:#444; margin:0; padding-left:18px; line-height:1.8;">
-              <li>Attaque simulée à <strong>25 Gbps</strong> sur le nœud Université</li>
-              <li>WSM interroge les 100 pairs — filtre BANNED/INACTIVE</li>
-              <li>Top-N pairs sélectionnés, allocation WRR proportionnelle</li>
-              <li>Sessions activées et fermées via <code>POST /attack/over</code></li>
-            </ul>
-          </div>
+      <div style="display:flex; gap:32px; margin-top:4px;">
+        <div style="flex:1; background:#f4f7ff; border-radius:10px; padding:16px 20px;">
+          <p style="font-weight:700; color:#1b2a5e; margin-bottom:8px;">Isolation algorithmique</p>
+          <p style="font-size:13px; color:#444; line-height:1.7; margin:0 0 10px;">
+            Serveurs simulés en mémoire, sans Docker ni PostgreSQL — isole la complexité du protocole et de l'algorithme d'allocation de la variabilité réseau.
+          </p>
+          <ul style="font-size:13px; color:#444; padding-left:18px; margin:0; line-height:1.8;">
+            <li>Jusqu'à <strong>500 nœuds</strong> simulés</li>
+            <li>Allocation du trafic : croissance <strong>sous-linéaire</strong></li>
+            <li>Aucun point de rupture observé</li>
+          </ul>
         </div>
-
-        <!-- Droite : chiffres clés -->
-        <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
-          <div class="stats" style="flex-direction:column; gap:10px; margin:0;">
-            <div class="stat-box" style="padding:14px 20px;">
-              <div class="stat-num">100</div>
-              <div class="stat-label">pairs simulés enregistrés</div>
-            </div>
-            <div class="stat-box" style="padding:14px 20px;">
-              <div class="stat-num">48</div>
-              <div class="stat-label">nœuds éligibles retenus par le WSM</div>
-            </div>
-            <div class="stat-box" style="padding:14px 20px;">
-              <div class="stat-num">&lt; 10 s</div>
-              <div class="stat-label">mobilisation complète de la coalition</div>
-            </div>
-            <div class="stat-box" style="padding:14px 20px;">
-              <div class="stat-num">25 Gbps</div>
-              <div class="stat-label">attaque simulée mitigée</div>
-            </div>
-          </div>
+        <div style="flex:1; background:#f0faf5; border-radius:10px; padding:16px 20px;">
+          <p style="font-weight:700; color:#1b2a5e; margin-bottom:8px;">Intégration réelle (Docker)</p>
+          <p style="font-size:13px; color:#444; line-height:1.7; margin:0 0 10px;">
+            Contre le système réellement déployé — Node.js 20 LTS, PostgreSQL 15.
+          </p>
+          <ul style="font-size:13px; color:#444; padding-left:18px; margin:0; line-height:1.8;">
+            <li>Sécurité : 5 scénarios JWT/mTLS rejetés correctement</li>
+            <li>Parcours complet d'attaque de bout en bout</li>
+            <li>Heartbeat événementiel validé sur 2 conteneurs réels</li>
+            <li>Reconfiguration automatique testée lors d'une panne</li>
+          </ul>
         </div>
-
       </div>
     </div>
 

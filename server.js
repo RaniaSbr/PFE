@@ -4,6 +4,8 @@ const http = require("http");
 const https = require("https");
 const app = require("./app");
 const { initDatabase } = require("./models");
+const { bootstrapLocalNode } = require("./utils/bootstrapNode");
+const { bootstrapPeers } = require("./utils/bootstrapPeers");
 
 const PORT = process.env.API_PORT || process.env.NODE_PORT || 8443;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -43,6 +45,8 @@ function loadCertificates() {
 async function start() {
   try {
     await initDatabase();
+    await bootstrapLocalNode();
+    await bootstrapPeers();
 
     const tlsOptions = loadCertificates();
     let server;

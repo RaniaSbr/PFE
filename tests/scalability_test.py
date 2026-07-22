@@ -1,32 +1,20 @@
-"""
-ShieldNet — Test de Scalabilité (20 → 100 nœuds)
-=================================================
-Mesure les latences de :
-  - Enregistrement  : POST /peers/register × N (requêtes concurrentes)
-  - Heartbeat       : POST /heartbeat       × N (requêtes concurrentes)
-  - Sélection WSM   : POST /trust/select-peers  (1 requête sur N pairs)
-
-Paliers testés : 20 / 40 / 60 / 80 / 100 nœuds
-
-Génère :
-  tests/shieldnet_scalability.csv
-  tests/shieldnet_scalability.png  (si matplotlib est installé)
-
-Usage : python tests/scalability_test.py
-"""
-
 import asyncio
 import aiohttp
-from aiohttp import web
-import uuid
+import ssl
 import time
 import csv
-import random
 import os
-from node_utils import make_token, check_token, need_auth, SECRET
+import sys
+import random
+import argparse
+import statistics
+from datetime import datetime
 
-random.seed(42)
+# ── Encodage UTF-8 sur Windows ────────────────────────────────────────────────
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
 
+# ── Matplotlib optionnel ──────────────────────────────────────────────────────
 try:
     import matplotlib
     matplotlib.use("Agg")
@@ -36,315 +24,551 @@ except ImportError:
     HAS_MATPLOTLIB = False
     print("[WARN] matplotlib non installé — PNG ignoré (pip install matplotlib)")
 
-# ── Paramètres ────────────────────────────────────────────────────────────────
-STEPS      = [20, 40, 60, 80, 100]
-BASE_PORT  = 19200
-W_CAP, W_LOAD, W_TRUST, W_RECIP = 0.52, 0.20, 0.20, 0.08
+random.seed(42)
 
-CSV_PATH = os.path.join(os.path.dirname(__file__), "shieldnet_scalability.csv")
-PNG_PATH = os.path.join(os.path.dirname(__file__), "shieldnet_scalability.png")
+# ── Configuration par défaut (surchargeables via CLI) ─────────────────────────
+BASE_URL      = "https://localhost:3001/api/v1"
+NODE_ID       = "node-university"
+SECRET        = "shieldnet-secret-key-2025"
+
+SSL_CTX = ssl.create_default_context()
+SSL_CTX.check_hostname = False
+SSL_CTX.verify_mode    = ssl.CERT_NONE
+
+DEFAULT_STEPS         = [20, 40, 60, 80, 100, 150, 200, 300, 500]
+ALLOC_REPEATS         = 5
+REQ_TIMEOUT           = aiohttp.ClientTimeout(total=15)
+STEP_TIMEOUT_S        = 60
+STEP_PAUSE_S          = 5
+REGISTER_BATCH_SIZE   = 50    # enregistre les pairs par lots, pas tous d'un coup
+MEASURE_CONCURRENCY   = 80    # max requêtes simultanées pendant les mesures
+                               # (évite ServerDisconnectedError sur Node.js mono-thread)
+
+# Seuils SLA — le test échoue si ces valeurs sont dépassées
+DEFAULT_SLA_LATENCE_MS  = 2000   # latence moyenne max acceptable (ms)
+DEFAULT_SLA_ECHECS_PCT  = 5      # pourcentage d'échecs max acceptable
+
+ORG_TYPES = ["ISP", "DATACENTER", "PME", "UNIVERSITY", "GOVERNMENT", "STARTUP", "NGO", "OTHER"]
+
+DIR       = os.path.dirname(__file__)
+CSV_PATH  = os.path.join(DIR, "shieldnet_scalability_real.csv")
+PNG_PATH  = os.path.join(DIR, "shieldnet_scalability_real.png")
+
+FIELDNAMES = [
+    "noeuds", "timestamp",
+    "help_request_moy_ms", "help_request_p95_ms", "help_request_max_ms", "help_request_echecs",
+    "heartbeat_moy_ms",    "heartbeat_p95_ms",    "heartbeat_max_ms",    "heartbeat_echecs",
+    "allocate_moy_ms",     "allocate_p95_ms",
+    "allocate_peers_acceptes",
+    "sla_ok",
+]
+
+# ── Couleurs terminal ─────────────────────────────────────────────────────────
+GREEN, RED, YELLOW, CYAN, BOLD, RESET = (
+    "\033[92m", "\033[91m", "\033[93m", "\033[96m", "\033[1m", "\033[0m"
+)
+
+def ok(msg):    print(f"  {GREEN}[OK]{RESET}  {msg}")
+def warn(msg):  print(f"  {YELLOW}[WARN]{RESET} {msg}")
+def err(msg):   print(f"  {RED}[ERR]{RESET} {msg}")
+def info(msg):  print(f"  {msg}")
+def title(msg): print(f"\n{BOLD}{'='*66}\n  {msg}\n{'='*66}{RESET}")
+def section(msg): print(f"\n  {CYAN}── {msg}{RESET}")
 
 
-# ── État in-memory d'un nœud ──────────────────────────────────────────────────
-class NodeState:
-    def __init__(self, node_id, name, capacity, load, port):
-        self.node_id  = node_id
-        self.name     = name
-        self.capacity = capacity
-        self.load     = load
-        self.port     = port
-        self.peers    = {}
-        self.sessions = {}
-        self.trust    = {}
-        self.credits  = {}
-        self.heartbeats = []
+# ── Handler WinError 10054 (cosmétique sous Windows) ─────────────────────────
+def _install_quiet_winerror_handler():
+    if sys.platform != "win32":
+        return
+    def _handler(loop, context):
+        exc = context.get("exception")
+        if isinstance(exc, ConnectionResetError) and getattr(exc, "winerror", None) == 10054:
+            return
+        loop.default_exception_handler(context)
+    asyncio.get_running_loop().set_exception_handler(_handler)
 
 
-# ── Application aiohttp d'un nœud ────────────────────────────────────────────
-def build_app(st: NodeState) -> web.Application:
-    app = web.Application()
+# ── Percentile ────────────────────────────────────────────────────────────────
+def pct(values: list, p: float) -> float:
+    if not values:
+        return 0.0
+    sorted_v = sorted(values)
+    idx = max(0, int(len(sorted_v) * p / 100) - 1)
+    return round(sorted_v[idx], 2)
 
-    async def auth_token(req):
-        b = await req.json()
-        if b.get("node_secret") != SECRET:
-            return web.json_response({"error": "Invalid credentials"}, status=401)
-        if b.get("node_id") not in (st.node_id, st.name):
-            return web.json_response({"error": "Unknown node"}, status=401)
-        return web.json_response({"token": make_token(st.node_id),
-                                  "node_id": st.node_id})
 
-    async def peers_register(req):
-        b   = await req.json()
-        pid = b.get("peer_id") or str(uuid.uuid4())
-        peer = {
-            "peer_id":                     pid,
-            "peer_name":                   b.get("peer_name", "?"),
-            "organization_type":           b.get("organization_type", "ISP"),
-            "max_scrubbing_capacity_gbps": b.get("max_scrubbing_capacity_gbps", 10.0),
-            "declared_available_gbps":     b.get("declared_available_gbps", 8.0),
-            "status":                      "ACTIVE",
-            "overall_score":               round(random.uniform(0.4, 0.95), 4),
-            "trust_level":                 "BRONZE",
+# ── Vérification serveur ──────────────────────────────────────────────────────
+async def server_is_running(session) -> bool:
+    """
+    Retourne True si ShieldNet répond sur localhost:3001.
+    CORRECTION v2 : on vérifie status < 500 (pas < 200 comme en v1).
+    """
+    try:
+        async with session.get(
+            "https://localhost:3001/",
+            ssl=SSL_CTX,
+            timeout=aiohttp.ClientTimeout(total=4),
+        ) as r:
+            return r.status < 500   # ← CORRIGÉ (v1 utilisait < 200, toujours False)
+    except Exception:
+        return False
+
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+async def get_token(session) -> str:
+    async with session.post(
+        f"{BASE_URL}/auth/token",
+        json={"node_id": NODE_ID, "node_secret": SECRET},
+        ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+    ) as r:
+        d = await r.json()
+        token = d.get("token")
+        if not token:
+            raise RuntimeError(f"Token non obtenu : {d}")
+        return token
+
+
+def hdrs(token):
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+
+# ── Reset + Init ──────────────────────────────────────────────────────────────
+async def reset_and_init(session) -> str:
+    RESET_TIMEOUT = aiohttp.ClientTimeout(total=120)
+    async with session.post(
+        f"{BASE_URL}/simulation/reset", ssl=SSL_CTX, timeout=RESET_TIMEOUT
+    ) as r:
+        pass
+
+    payload = {
+        "node_name":                    "victim-scalability",
+        "organization_name":            "ESI Alger",
+        "organization_type":            "UNIVERSITY",
+        "country_code":                 "DZ",
+        "api_endpoint_url":             "https://localhost:3001/api/v1",
+        "public_key":                   "SCALE_KEY",
+        "max_scrubbing_capacity_gbps":  10,
+        "current_load_percent":         20,
+    }
+    async with session.post(
+        f"{BASE_URL}/simulation/node/init",
+        json=payload, ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+    ) as r:
+        if r.status not in (200, 201):
+            raise RuntimeError(f"/simulation/node/init a échoué : {await r.text()}")
+
+    return await get_token(session)
+
+
+# ── Enregistrement des pairs par lots ─────────────────────────────────────────
+async def register_peers(session, n: int, offset: int) -> list:
+    """
+    Enregistre n pairs virtuels en lots de REGISTER_BATCH_SIZE.
+    Retourne la liste de leurs peer_id réels (UUID Postgres).
+
+    Pourquoi des lots ?  Envoyer 500 requêtes simultanées surcharge le pool
+    Sequelize (max=20) et fausse les mesures. Les lots répartissent la charge
+    de manière plus réaliste.
+    """
+    async def register_one(i):
+        cap = round(random.uniform(5.0, 50.0), 1)
+        payload = {
+            "peer_name":                   f"vscale-{i:05d}",
+            "organization_name":           f"Scale Org {i}",
+            "organization_type":           ORG_TYPES[i % len(ORG_TYPES)],
+            "country_code":                "DZ",
+            "api_endpoint_url":            f"https://vscale-{i}.shieldnet.local/api/v1",
+            "public_key":                  f"SCALEKEY_{i}",
+            "max_scrubbing_capacity_gbps": cap,
+            "declared_available_gbps":     round(cap * 0.8, 2),
         }
-        st.peers[pid] = peer
-        return web.json_response(peer, status=201)
+        try:
+            async with session.post(
+                f"{BASE_URL}/peers/register",
+                json=payload, ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+            ) as r:
+                d = await r.json()
+                return d.get("peer_id")
+        except Exception:
+            return None
 
-    async def heartbeat(req):
-        b   = await req.json()
-        pid = b.get("peer_id", "")
-        if pid not in st.peers:
-            return web.json_response({"error": "Unknown peer"}, status=404)
-        hb = {"heartbeat_id": str(uuid.uuid4()), "peer_id": pid,
-              "received_at":  time.time()}
-        st.heartbeats.append(hb)
-        st.peers[pid]["declared_available_gbps"] = b.get(
-            "reported_available_gbps", st.peers[pid].get("declared_available_gbps", 0))
-        return web.json_response(hb, status=201)
+    peer_ids = []
+    indices   = list(range(offset, offset + n))
 
-    @need_auth
-    async def trust_select(req):
-        b        = await req.json()
-        min_t    = float(b.get("min_trust_score", 0.0))
-        eligible = [p for p in st.peers.values()
-                    if p.get("status") != "BANNED"
-                    and p.get("overall_score", 0.5) >= min_t]
-        if not eligible:
-            return web.json_response({"selected_peers": [], "plan": []})
+    for batch_start in range(0, n, REGISTER_BATCH_SIZE):
+        batch = indices[batch_start : batch_start + REGISTER_BATCH_SIZE]
+        results = await asyncio.gather(*[register_one(i) for i in batch])
+        peer_ids.extend([p for p in results if p])
 
-        max_cap   = max(p.get("max_scrubbing_capacity_gbps", 1) for p in eligible) or 1
-        max_trust = max(p.get("overall_score", 0.5)             for p in eligible) or 1
-        max_cred  = max(st.credits.get(p["peer_id"], 0.01)      for p in eligible)
+    return peer_ids
 
-        scored = []
-        for p in eligible:
-            cap_n   = p.get("max_scrubbing_capacity_gbps", 1) / max_cap
-            avail   = p.get("declared_available_gbps",
-                            p.get("max_scrubbing_capacity_gbps", 1))
-            total_c = p.get("max_scrubbing_capacity_gbps", 1) or 1
-            load_n  = min(1.0, avail / total_c)
-            trust_n = p.get("overall_score", 0.5) / max_trust
-            recip_n = min(1.0, st.credits.get(p["peer_id"], 0) / max_cred)
-            wsm     = round(W_CAP*cap_n + W_LOAD*load_n
-                            + W_TRUST*trust_n + W_RECIP*recip_n, 4)
-            scored.append((p, wsm))
 
-        scored.sort(key=lambda x: x[1], reverse=True)
-        total = sum(sc for _, sc in scored) or 1.0
-        plan  = [{"peer_id":   p["peer_id"],
-                  "peer_name": p.get("peer_name", "?"),
-                  "wsm_score": wsm,
-                  "allocation_pct": round(wsm / total * 100, 2)}
-                 for p, wsm in scored]
-        return web.json_response({"selected_peers": plan, "plan": plan})
+# ── Création + clôture immédiate de l'attaque ─────────────────────────────────
+async def create_attack(session, token) -> str:
+    """
+    Crée une attaque puis la clôture immédiatement.
+    Sans clôture, chaque heartbeat/register déclenche reconsiderCoalition()
+    sur TOUTES les attaques ouvertes — ce qui sature Node.js mono-thread
+    et fausse les mesures de latence (observé : +6 000 ms dès 2 attaques ouvertes).
+    """
+    async with session.post(
+        f"{BASE_URL}/alert",
+        headers=hdrs(token),
+        json={
+            "peak_volume_gbps":            25,
+            "overflow_volume_gbps":        15,
+            "local_capacity_at_detection": 8,
+            "target_ip_range":             "10.0.9.0/24",
+            "target_service":              "DNS",
+            "target_protocol":             "UDP",
+        },
+        ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+    ) as r:
+        d = await r.json()
+        if r.status not in (200, 201):
+            raise RuntimeError(f"/alert a échoué : {d}")
+        attack_id = d.get("attack_id") or d.get("id")
+        if not attack_id:
+            raise RuntimeError(f"attack_id manquant dans : {d}")
 
-    app.router.add_post("/api/v1/auth/token",          auth_token)
-    app.router.add_post("/api/v1/peers/register",      peers_register)
-    app.router.add_post("/api/v1/heartbeat",           heartbeat)
-    app.router.add_post("/api/v1/trust/select-peers",  trust_select)
-    return app
+    # Clôture immédiate pour éviter la cascade reconsiderCoalition
+    async with session.post(
+        f"{BASE_URL}/simulation/attack/end",
+        headers=hdrs(token),
+        json={"attack_id": attack_id},
+        ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+    ) as r:
+        if r.status not in (200, 201):
+            warn(f"/simulation/attack/end a échoué (HTTP {r.status})"
+                 " — risque de cascade reconsiderCoalition()")
+
+    return attack_id
 
 
 # ── Mesures ───────────────────────────────────────────────────────────────────
-async def measure(http: aiohttp.ClientSession, n_peers: int,
-                  victim: NodeState, helpers: list) -> dict:
-    """Enregistrement, heartbeat et WSM sur n_peers pairs."""
+async def measure(session, token, attack_id, peer_ids, sla_ms, sla_echecs_pct) -> dict:
+    H = hdrs(token)
 
-    base = f"http://localhost:{victim.port}/api/v1"
+    # Sémaphore partagé — limite la concurrence vers Node.js mono-thread.
+    # Sans ça : 500 requêtes simultanées → ServerDisconnectedError.
+    sem = asyncio.Semaphore(MEASURE_CONCURRENCY)
 
-    # Token victime
-    async with http.post(f"{base}/auth/token",
-                         json={"node_id": victim.name,
-                               "node_secret": SECRET}) as r:
-        token = (await r.json()).get("token", "")
-    hdr = {"Authorization": f"Bearer {token}"}
+    # ── help/request × N (concurrence limitée) ───────────────────────────────
+    async def help_one(pid):
+        async with sem:
+            t0 = time.perf_counter()
+            try:
+                async with session.post(
+                    f"{BASE_URL}/help/request", headers=H,
+                    json={"attack_id": attack_id, "helping_peer_id": pid},
+                    ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+                ) as r:
+                    await r.json()
+                    return (time.perf_counter() - t0) * 1000, r.status in (200, 201)
+            except Exception:
+                return (time.perf_counter() - t0) * 1000, False
 
-    subset = helpers[:n_peers]
+    hr = await asyncio.gather(*[help_one(pid) for pid in peer_ids])
+    hr_times = [t for t, _ in hr]
+    hr_fail  = sum(1 for _, ok_ in hr if not ok_)
 
-    # ── Enregistrement concurrent ─────────────────────────────────────────────
-    async def register_one(h):
+    # ── heartbeat × N (concurrence limitée) ──────────────────────────────────
+    async def hb_one(pid):
+        async with sem:
+            t0 = time.perf_counter()
+            try:
+                async with session.post(
+                    f"{BASE_URL}/heartbeat", headers=H,
+                    json={
+                        "peer_id":                 pid,
+                        "reported_status":         "ACTIVE",
+                        "reported_load_pct":       round(random.uniform(0, 70), 1),
+                        "reported_available_gbps": round(random.uniform(5, 40), 1),
+                    },
+                    ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+                ) as r:
+                    await r.json()
+                    return (time.perf_counter() - t0) * 1000, r.status in (200, 201)
+            except Exception:
+                return (time.perf_counter() - t0) * 1000, False
+
+    hb = await asyncio.gather(*[hb_one(pid) for pid in peer_ids])
+    hb_times = [t for t, _ in hb]
+    hb_fail  = sum(1 for _, ok_ in hb if not ok_)
+
+    # ── Allocation WSM (ALLOC_REPEATS fois) ──────────────────────────────────
+    alloc_times, accepted_count = [], 0
+    for _ in range(ALLOC_REPEATS):
         t0 = time.perf_counter()
-        await http.post(f"{base}/peers/register", json={
-            "peer_id":                     h.node_id,
-            "peer_name":                   h.name,
-            "organization_type":           "ISP",
-            "max_scrubbing_capacity_gbps": h.capacity,
-            "declared_available_gbps":
-                round(h.capacity * (1 - h.load / 100), 2),
-        })
-        return (time.perf_counter() - t0) * 1000
+        async with session.post(
+            f"{BASE_URL}/attack/{attack_id}/allocate",
+            headers=H, ssl=SSL_CTX, timeout=REQ_TIMEOUT,
+        ) as r:
+            d = await r.json()
+        alloc_times.append((time.perf_counter() - t0) * 1000)
+        accepted_count = len(d.get("plan", []))
 
-    reg_times = await asyncio.gather(*[register_one(h) for h in subset])
-    reg_moy   = round(sum(reg_times) / len(reg_times), 2)
-    reg_max   = round(max(reg_times), 2)
-    reg_ok    = len(subset)
+    n = len(peer_ids)
+    hr_moy = round(statistics.mean(hr_times), 2)
+    hb_moy = round(statistics.mean(hb_times), 2)
+    alloc_moy = round(statistics.mean(alloc_times), 2)
 
-    # ── Heartbeat concurrent ──────────────────────────────────────────────────
-    async def heartbeat_one(h):
-        t0 = time.perf_counter()
-        await http.post(f"{base}/heartbeat", json={
-            "peer_id":                  h.node_id,
-            "reported_status":          "ACTIVE",
-            "reported_load_pct":        h.load,
-            "reported_available_gbps":  round(h.capacity*(1-h.load/100), 2),
-        })
-        return (time.perf_counter() - t0) * 1000
-
-    hb_times = await asyncio.gather(*[heartbeat_one(h) for h in subset])
-    hb_moy   = round(sum(hb_times) / len(hb_times), 2)
-    hb_max   = round(max(hb_times), 2)
-    hb_ok    = len(subset)
-
-    # ── WSM ───────────────────────────────────────────────────────────────────
-    t0 = time.perf_counter()
-    async with http.post(f"{base}/trust/select-peers",
-                         json={"min_trust_score": 0.0},
-                         headers=hdr) as r:
-        data = await r.json()
-    wsm_ms    = round((time.perf_counter() - t0) * 1000, 2)
-    wsm_peers = len(data.get("selected_peers", []))
+    # Évaluation SLA
+    hr_echecs_pct = (hr_fail / n * 100) if n else 0
+    hb_echecs_pct = (hb_fail / n * 100) if n else 0
+    sla_ok = (
+        hr_moy <= sla_ms and hb_moy <= sla_ms
+        and hr_echecs_pct <= sla_echecs_pct
+        and hb_echecs_pct <= sla_echecs_pct
+    )
 
     return {
-        "noeuds":           n_peers,
-        "register_ok":      reg_ok,
-        "register_moy_ms":  reg_moy,
-        "register_max_ms":  reg_max,
-        "heartbeat_ok":     hb_ok,
-        "heartbeat_moy_ms": hb_moy,
-        "heartbeat_max_ms": hb_max,
-        "wsm_ms":           wsm_ms,
-        "wsm_peers_trouves": wsm_peers,
+        "noeuds":                  n,
+        "timestamp":               datetime.now().isoformat(timespec="seconds"),
+        "help_request_moy_ms":     hr_moy,
+        "help_request_p95_ms":     pct(hr_times, 95),
+        "help_request_max_ms":     round(max(hr_times), 2),
+        "help_request_echecs":     hr_fail,
+        "heartbeat_moy_ms":        hb_moy,
+        "heartbeat_p95_ms":        pct(hb_times, 95),
+        "heartbeat_max_ms":        round(max(hb_times), 2),
+        "heartbeat_echecs":        hb_fail,
+        "allocate_moy_ms":         alloc_moy,
+        "allocate_p95_ms":         pct(alloc_times, 95),
+        "allocate_peers_acceptes": accepted_count,
+        "sla_ok":                  sla_ok,
     }
 
 
+# ── CSV ───────────────────────────────────────────────────────────────────────
+def save_csv(rows: list):
+    with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 # ── Graphique ─────────────────────────────────────────────────────────────────
-def generate_png(rows: list):
-    if not HAS_MATPLOTLIB:
+def generate_png(rows: list, sla_ms: float):
+    if not HAS_MATPLOTLIB or not rows:
         return
-    ns       = [r["noeuds"]           for r in rows]
-    reg_moy  = [r["register_moy_ms"]  for r in rows]
-    reg_max  = [r["register_max_ms"]  for r in rows]
-    hb_moy   = [r["heartbeat_moy_ms"] for r in rows]
-    hb_max   = [r["heartbeat_max_ms"] for r in rows]
-    wsm      = [r["wsm_ms"]           for r in rows]
 
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
-    fig.suptitle("ShieldNet — Scalabilité (20 → 100 nœuds)", fontweight="bold")
+    ns       = [r["noeuds"]              for r in rows]
+    hr_moy   = [r["help_request_moy_ms"] for r in rows]
+    hr_p95   = [r["help_request_p95_ms"] for r in rows]
+    hb_moy   = [r["heartbeat_moy_ms"]    for r in rows]
+    hb_p95   = [r["heartbeat_p95_ms"]    for r in rows]
+    alloc    = [r["allocate_moy_ms"]     for r in rows]
 
-    # Enregistrement
-    axes[0].plot(ns, reg_moy, "o-",  color="#1f77b4", label="Moyenne")
-    axes[0].plot(ns, reg_max, "o--", color="#aec7e8", label="Maximum")
-    axes[0].set_title("Enregistrement — latence (ms)")
-    axes[0].set_xlabel("Nombre de nœuds")
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig.suptitle(
+        f"ShieldNet — Scalabilité réelle (Postgres + Sequelize + TLS) — {datetime.now():%Y-%m-%d}",
+        fontweight="bold", fontsize=12,
+    )
+
+    # ── Demande d'aide ────────────────────────────────────────────────────────
+    axes[0].plot(ns, hr_moy, "o-",  color="#1f77b4", label="Moyenne")
+    axes[0].plot(ns, hr_p95, "o--", color="#aec7e8", label="p95")
+    axes[0].axhline(sla_ms, color="red", linestyle=":", linewidth=1.2, label=f"SLA {sla_ms} ms")
+    axes[0].set_title("Demande d'aide — latence (ms)")
+    axes[0].set_xlabel("Nombre de pairs")
     axes[0].set_ylabel("ms")
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)
 
-    # Heartbeat
+    # ── Heartbeat ─────────────────────────────────────────────────────────────
     axes[1].plot(ns, hb_moy, "s-",  color="#2ca02c", label="Moyenne")
-    axes[1].plot(ns, hb_max, "s--", color="#98df8a", label="Maximum")
+    axes[1].plot(ns, hb_p95, "s--", color="#98df8a", label="p95")
+    axes[1].axhline(sla_ms, color="red", linestyle=":", linewidth=1.2, label=f"SLA {sla_ms} ms")
     axes[1].set_title("Heartbeat — latence (ms)")
-    axes[1].set_xlabel("Nombre de nœuds")
+    axes[1].set_xlabel("Nombre de pairs")
     axes[1].set_ylabel("ms")
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
 
-    # WSM
-    axes[2].plot(ns, wsm, "^-", color="#d62728")
-    axes[2].set_title("Sélection WSM — temps de calcul (ms)")
-    axes[2].set_xlabel("Nombre de nœuds")
+    # ── Allocation WSM ────────────────────────────────────────────────────────
+    axes[2].plot(ns, alloc, "^-", color="#d62728", label=f"Moyenne ({ALLOC_REPEATS} rép.)")
+    axes[2].set_title("Allocation WSM — temps de calcul (ms)")
+    axes[2].set_xlabel("Nombre de pairs")
     axes[2].set_ylabel("ms")
+    axes[2].legend()
     axes[2].grid(True, alpha=0.3)
 
     plt.tight_layout()
     plt.savefig(PNG_PATH, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  [OK] PNG généré → {PNG_PATH}")
+    ok(f"PNG généré → {PNG_PATH}")
+
+
+# ── Rapport final ─────────────────────────────────────────────────────────────
+def print_report(rows: list, steps: list, sla_ms: float, sla_echecs_pct: float):
+    title("Rapport de scalabilité ShieldNet")
+
+    passed = sum(1 for r in rows if r["sla_ok"])
+    failed = sum(1 for r in rows if not r["sla_ok"])
+    skipped = len(steps) - len(rows)
+
+    print(f"\n  Paliers réussis    : {GREEN}{len(rows)}/{len(steps)}{RESET}")
+    print(f"  SLA respecté       : {GREEN}{passed}{RESET} palier(s)")
+    print(f"  SLA violé          : {RED}{failed}{RESET} palier(s)")
+    print(f"  Paliers abandonnés : {YELLOW}{skipped}{RESET} (timeout serveur)")
+
+    if rows:
+        section("Détail des résultats")
+        print(f"\n  {'Pairs':<7} {'Aide moy':>9} {'Aide p95':>9} {'HB moy':>9}"
+              f" {'HB p95':>9} {'Alloc':>8} {'SLA':>5}")
+        print("  " + "─" * 60)
+        for r in rows:
+            sla_str = f"{GREEN}OK{RESET}" if r["sla_ok"] else f"{RED}KO{RESET}"
+            print(
+                f"  {r['noeuds']:<7}"
+                f" {r['help_request_moy_ms']:>8.0f}ms"
+                f" {r['help_request_p95_ms']:>8.0f}ms"
+                f" {r['heartbeat_moy_ms']:>8.0f}ms"
+                f" {r['heartbeat_p95_ms']:>8.0f}ms"
+                f" {r['allocate_moy_ms']:>7.0f}ms"
+                f"   {sla_str}"
+            )
+
+    section("Diagnostic")
+    if rows:
+        last = rows[-1]
+        alloc_last = last["allocate_moy_ms"]
+        hb_last    = last["heartbeat_moy_ms"]
+        ratio      = hb_last / alloc_last if alloc_last else 0
+
+        if ratio > 5:
+            print(f"\n  {YELLOW}Goulot identifié : pool Sequelize / I/O base de données{RESET}")
+            print(f"  → Heartbeat {hb_last:.0f}ms vs allocation WSM {alloc_last:.0f}ms"
+                  f" (ratio {ratio:.1f}×)")
+            print( "  → L'algorithme WSM est rapide ; c'est la couche BD qui ralentit.")
+            print( "  → Piste : augmenter pool.max dans config/database.js (actuellement 20)")
+            print( "             ou ajouter un index sur Peer.status + Peer.updated_at")
+        else:
+            print(f"\n  Ratio latence BD/WSM : {ratio:.1f}× — pas de goulot évident détecté.")
+
+    section("Recommandations")
+    violations = [r for r in rows if not r["sla_ok"]]
+    if not violations:
+        print(f"\n  {GREEN}Tous les paliers respectent le SLA ({sla_ms} ms, {sla_echecs_pct}% échecs).{RESET}")
+        print( "  Le système est scalable dans la plage testée.")
+    else:
+        first_fail = violations[0]["noeuds"]
+        print(f"\n  {RED}Le SLA est dépassé à partir de {first_fail} pairs.{RESET}")
+        print(f"  Seuils configurés : latence moy ≤ {sla_ms} ms, échecs ≤ {sla_echecs_pct}%")
+        print( "  Actions suggérées :")
+        print( "    1. Augmenter pool.max (database.js) — actuellement 20")
+        print( "    2. Ajouter index Postgres sur heartbeat_logs(peer_id, created_at)")
+        print( "    3. Envisager un cache Redis pour les heartbeats fréquents")
+
+    print()
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-async def main():
-    print("\nShieldNet — Test de Scalabilité")
-    print("=" * 50)
+async def main(steps, sla_ms, sla_echecs_pct):
+    _install_quiet_winerror_handler()
+    title(f"ShieldNet — Test de Scalabilité v2  [{datetime.now():%Y-%m-%d %H:%M}]")
+    print(f"  Paliers : {steps}")
+    print(f"  SLA     : latence moy ≤ {sla_ms} ms  |  échecs ≤ {sla_echecs_pct}%")
 
-    max_n = max(STEPS)
+    connector = aiohttp.TCPConnector(ssl=False, limit=0)
+    async with aiohttp.ClientSession(connector=connector) as session:
 
-    # Créer max_n + 1 nœuds (1 victime + max_n helpers)
-    victim = NodeState(
-        node_id  = str(uuid.uuid4()),
-        name     = "victim-university",
-        capacity = 10.0,
-        load     = 20.0,
-        port     = BASE_PORT,
-    )
+        # ── Vérification serveur ───────────────────────────────────────────────
+        if not await server_is_running(session):
+            err("ShieldNet Docker non disponible sur localhost:3001")
+            info("Lance : docker compose up -d  puis relance ce test.")
+            sys.exit(1)
 
-    helpers = []
-    for i in range(1, max_n + 1):
-        cap  = round(random.uniform(5.0, 50.0), 1)
-        load = round(random.uniform(0, 70), 1)
-        helpers.append(NodeState(
-            node_id  = str(uuid.uuid4()),
-            name     = f"helper-{i:03d}",
-            capacity = cap,
-            load     = load,
-            port     = BASE_PORT + i,
-        ))
+        ok("Serveur ShieldNet détecté.")
 
-    # Démarrer les serveurs
-    print(f"\nDémarrage de {max_n + 1} serveurs HTTP in-process...")
-    runners = []
-    all_nodes = [victim] + helpers
-    for st in all_nodes:
-        app    = build_app(st)
-        runner = web.AppRunner(app, access_log=None)
-        await runner.setup()
-        site   = web.TCPSite(runner, "localhost", st.port)
-        await site.start()
-        runners.append(runner)
-    print(f"  [OK] Ports {BASE_PORT}–{BASE_PORT + max_n}")
+        section("Initialisation")
+        token = await reset_and_init(session)
+        ok("Nœud local prêt, token obtenu.")
 
-    rows = []
+        rows, offset = [], 0
 
-    try:
-        async with aiohttp.ClientSession() as http:
-            print(f"\n{'Nœuds':<8} {'Reg moy':>10} {'Reg max':>10}"
-                  f" {'HB moy':>10} {'HB max':>10} {'WSM':>8} {'Pairs':>6}")
-            print("─" * 68)
+        async def run_one_step(n, off):
+            tok   = await get_token(session)
+            pids  = await register_peers(session, n, off)
+            if len(pids) < n:
+                warn(f"{n - len(pids)} pair(s) non enregistré(s) sur {n}")
+            aid = await create_attack(session, tok)
+            return await measure(session, tok, aid, pids, sla_ms, sla_echecs_pct)
 
-            for n in STEPS:
-                # Réinitialiser les pairs de la victime entre chaque palier
-                victim.peers.clear()
-                victim.heartbeats.clear()
+        section("Mesures par palier")
+        print(f"\n  {'Pairs':<7} {'Aide moy':>9} {'Aide p95':>9}"
+              f" {'HB moy':>9} {'HB p95':>9} {'Alloc':>8} {'SLA':>5}")
+        print("  " + "─" * 60)
 
-                row = await measure(http, n, victim, helpers)
+        for n in steps:
+            try:
+                row = await asyncio.wait_for(
+                    run_one_step(n, offset), timeout=STEP_TIMEOUT_S
+                )
+                offset += n
                 rows.append(row)
 
-                print(f"{n:<8} {row['register_moy_ms']:>9.2f}ms"
-                      f" {row['register_max_ms']:>9.2f}ms"
-                      f" {row['heartbeat_moy_ms']:>9.2f}ms"
-                      f" {row['heartbeat_max_ms']:>9.2f}ms"
-                      f" {row['wsm_ms']:>7.2f}ms"
-                      f" {row['wsm_peers_trouves']:>6}")
+                sla_str = f"{GREEN}OK{RESET}" if row["sla_ok"] else f"{RED}KO{RESET}"
+                print(
+                    f"  {n:<7}"
+                    f" {row['help_request_moy_ms']:>8.0f}ms"
+                    f" {row['help_request_p95_ms']:>8.0f}ms"
+                    f" {row['heartbeat_moy_ms']:>8.0f}ms"
+                    f" {row['heartbeat_p95_ms']:>8.0f}ms"
+                    f" {row['allocate_moy_ms']:>7.0f}ms"
+                    f"   {sla_str}"
+                )
 
-    finally:
-        for runner in runners:
-            await runner.cleanup()
+                if row["help_request_echecs"] or row["heartbeat_echecs"]:
+                    warn(
+                        f"  échecs : aide={row['help_request_echecs']},"
+                        f" heartbeat={row['heartbeat_echecs']}"
+                    )
 
-    # Export CSV
-    fieldnames = ["noeuds", "register_ok", "register_moy_ms", "register_max_ms",
-                  "heartbeat_ok", "heartbeat_moy_ms", "heartbeat_max_ms",
-                  "wsm_ms", "wsm_peers_trouves"]
-    with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-    print(f"\n  [OK] CSV → {CSV_PATH}")
+                save_csv(rows)
+                generate_png(rows, sla_ms)
 
-    # Générer PNG
-    generate_png(rows)
+            except asyncio.TimeoutError:
+                offset += n
+                err(f"Palier {n} pairs — timeout ({STEP_TIMEOUT_S}s dépassé)")
+                warn("Palier abandonné — on continue.")
+            except Exception as e:
+                offset += n
+                err(f"Palier {n} pairs — {type(e).__name__}: {e or '(vide)'}")
+                warn("Palier abandonné — on continue.")
+            finally:
+                await asyncio.sleep(STEP_PAUSE_S)
 
-    print("\n  Résultat : croissance linéaire confirmée")
-    print("  ShieldNet supporte 100 nœuds avec latences maîtrisées.\n")
+    if not rows:
+        err("Aucune mesure collectée.")
+        sys.exit(1)
+
+    print_report(rows, steps, sla_ms, sla_echecs_pct)
+    ok(f"CSV sauvegardé → {CSV_PATH}")
+
+    # Code de sortie : 1 si au moins un palier viole le SLA
+    if any(not r["sla_ok"] for r in rows):
+        sys.exit(1)
 
 
+# ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(
+        description="ShieldNet — Test de scalabilité v2"
+    )
+    parser.add_argument(
+        "--steps", type=int, nargs="+", default=DEFAULT_STEPS,
+        metavar="N", help="Paliers de pairs à tester (ex: 20 50 100 200)",
+    )
+    parser.add_argument(
+        "--sla-latence", type=float, default=DEFAULT_SLA_LATENCE_MS,
+        metavar="MS", help=f"Seuil SLA latence moyenne en ms (défaut: {DEFAULT_SLA_LATENCE_MS})",
+    )
+    parser.add_argument(
+        "--sla-echecs", type=float, default=DEFAULT_SLA_ECHECS_PCT,
+        metavar="PCT", help=f"Seuil SLA échecs en %% (défaut: {DEFAULT_SLA_ECHECS_PCT})",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(main(args.steps, args.sla_latence, args.sla_echecs))

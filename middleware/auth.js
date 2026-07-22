@@ -1,17 +1,3 @@
-/**
- * Middleware d'authentification — JWT (RS256) + mTLS
- *
- * Architecture P2P asymétrique :
- *   - Chaque nœud signe ses tokens avec sa CLEF PRIVÉE (node.key)
- *   - Le récepteur vérifie avec la CLÉ PUBLIQUE de l'émetteur (PEERS.public_key)
- *   - Payload : { iss: node_id, node_id, iat, exp }  — exp = 60 secondes
- *   - Algorithme : RS256 (asymétrique, clé unique par nœud)
- *
- * Avantages vs HS256 :
- *   - Un nœud compromis n'expose pas les autres (pas de secret partagé)
- *   - Impossible d'usurper l'identité d'un autre nœud
- *   - Tokens courts (60s) → résistance aux attaques par rejeu
- */
 
 const fs  = require("fs");
 const jwt = require("jsonwebtoken");

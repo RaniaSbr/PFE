@@ -113,6 +113,29 @@ const PEER_HEADERS = (extra = {}) => ({
  *       404:
  *         description: Attaque ou pair introuvable
  *
+ * /help/request/broadcast:
+ *   post:
+ *     tags: [Coalition]
+ *     summary: Sollicitation diffusee - demander l'aide a tous les pairs actifs en un seul appel
+ *     description: "Equivalent serveur de la boucle que fait le dashboard : cree une session REQUESTED pour chaque pair ACTIVE de la coalition, sans allocation (le volume/allocation n'existent qu'apres acceptation puis POST /attack/:id/allocate)."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [attack_id]
+ *             properties:
+ *               attack_id: { type: string, format: uuid }
+ *               direction: { type: string, enum: [OUTBOUND_REQUEST, INBOUND_REQUEST, OUTBOUND_OFFER, INBOUND_OFFER], default: OUTBOUND_REQUEST }
+ *     responses:
+ *       201:
+ *         description: Une session REQUESTED creee par pair actif sollicite
+ *       400:
+ *         description: Donnees invalides
+ *       404:
+ *         description: Attaque introuvable
+ *
  * /help/offer:
  *   post:
  *     tags: [Coalition]
@@ -264,6 +287,34 @@ const PEER_HEADERS = (extra = {}) => ({
  *         description: Session trouvee
  *       404:
  *         description: Session introuvable
+ *
+ * /sessions/{id}:
+ *   patch:
+ *     tags: [Coalition]
+ *     summary: Synchroniser l'etat final d'une session sur la copie locale de l'aidant
+ *     description: "Appele par la victime a la cloture pour propager allocation_pct, actual_volume_gbps, credits_exchanged et le statut COMPLETED vers la copie de la session que detient l'aidant."
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status: { type: string }
+ *               allocation_pct: { type: number }
+ *               actual_volume_gbps: { type: number }
+ *               credits_exchanged: { type: number }
+ *               completed_at: { type: string, format: date-time }
+ *     responses:
+ *       200:
+ *         description: Session mise a jour
+ *       404:
+ *         description: Session introuvable
  */
 
 // Échelle Stormwall Network : sévérité calculée à partir du volume total filtré
@@ -402,10 +453,6 @@ async function solicitPeer(attack, peer, requestingNodeId, extra = {}) {
           rejection_reason: reasons[Math.floor(Math.random() * reasons.length)],
         });
       } else {
-        // Le pair virtuel déclare sa capacité au moment de l'acceptation —
-        // simple métadonnée reprenant sa capacité déjà connue, pas un nouveau
-        // calcul. C'est cette valeur que /attack/:id/allocate utilisera
-        // comme critère C, à la place de l'ancienne capacité du WSM initial.
         await session.update({
           status: "ACCEPTED",
           accepted_volume_gbps: Number(peer.declared_available_gbps ?? 0),
@@ -425,7 +472,11 @@ async function solicitPeer(attack, peer, requestingNodeId, extra = {}) {
             attack_details:           attack.toJSON(),
             helping_peer_id:          peer.peer_id,
             requesting_node_id:       requestingNodeId,
+            requesting_node_name:     localNode?.node_name ?? null,
             requesting_node_endpoint: localNode?.api_endpoint_url ?? null,
+            requesting_node_org:      localNode?.organization_name ?? null,
+            requesting_node_type:     localNode?.organization_type ?? null,
+            requesting_node_capacity: localNode?.max_scrubbing_capacity_gbps ?? null,
             direction:                "INBOUND_OFFER",
           },
           { headers: PEER_HEADERS({ "X-Node-Id": requestingNodeId }), timeout: 8000 }
@@ -574,15 +625,60 @@ router.post("/help/request", async (req, res) => {
     if (peer.membership_status === "EXPELLED") {
       return res.status(403).json({ error: "Peer has been expelled from the coalition" });
     }
-
-    // Sollicitation pure : "peux-tu aider ?" — ni allocation ni volume à ce
-    // stade. Le pair déclarera lui-même accepted_volume_gbps en acceptant ;
-    // l'allocation ne sera calculée qu'à POST /attack/:id/allocate.
     const session = await solicitPeer(attack, peer, requestingNodeId, {
       direction: req.body.direction,
     });
 
     return res.status(201).json(session);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// POST /help/request/broadcast
+router.post("/help/request/broadcast", async (req, res) => {
+  try {
+    if (!req.body.attack_id) {
+      return res.status(400).json({ error: "attack_id is required" });
+    }
+
+    const localNodeId = await getLocalNodeId();
+    const requestingNodeId = req.body.requesting_node_id || localNodeId;
+
+    if (!requestingNodeId) {
+      return res.status(400).json({ error: "Local node configuration is missing" });
+    }
+
+    const attack = await Attack.findByPk(req.body.attack_id);
+    if (!attack) {
+      return res.status(404).json({ error: "Attack not found" });
+    }
+
+    // Sollicitation diffusée : un seul appel, le backend interroge lui-même
+    // tous les pairs actifs de la coalition (équivalent serveur de la boucle
+    // que fait le dashboard côté client).
+    const peers = await Peer.findAll({
+      where: { status: "ACTIVE", membership_status: { [Op.ne]: "EXPELLED" } },
+    });
+
+    // Idempotence : un second appel broadcast pour la même attaque (page
+    // rechargée, double onglet, double clic) ne doit pas créer une 2e
+    // session pour un pair déjà sollicité.
+    const existingSessions = await HelpSession.findAll({
+      where: { attack_id: attack.attack_id, direction: "OUTBOUND_REQUEST" },
+    });
+    const alreadySolicited = new Set(existingSessions.map((s) => s.helping_peer_id));
+
+    const sessions = [];
+    for (const peer of peers) {
+      if (alreadySolicited.has(peer.peer_id)) continue;
+      const session = await solicitPeer(attack, peer, requestingNodeId, {
+        direction: req.body.direction,
+      });
+      sessions.push(session);
+    }
+
+    return res.status(201).json({ attack_id: attack.attack_id, nb_peers_solicited: sessions.length, sessions: [...existingSessions, ...sessions] });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -616,20 +712,26 @@ router.post("/help/offer", async (req, res) => {
       }
     }
 
-    // Le helping_peer_id peut être inconnu sur ce nœud (ID venant d'une autre BDD)
-    // On l'auto-enregistre comme pair minimal pour satisfaire la FK
-    let peer = await Peer.findByPk(req.body.helping_peer_id);
+    // IMPORTANT : "helping_peer_id" envoyé par l'appelant correspond à
+    // l'identité que LUI utilise pour désigner CE nœud (donc moi-même) —
+    // jamais une entrée de pair valide ici, puisqu'un nœud ne s'enregistre
+    // jamais comme son propre pair. La VRAIE autre partie de cette session
+    // est "requesting_node_id" (l'identité réelle de l'appelant) : c'est
+    // elle qu'il faut chercher/créer comme pair, pas helping_peer_id.
+    let peer = await Peer.findByPk(req.body.requesting_node_id);
     if (!peer) {
-      if (req.body.helping_peer_id) {
+      if (req.body.requesting_node_id) {
         peer = await Peer.create({
-          peer_id:            req.body.helping_peer_id,
-          peer_name:          req.body.requesting_node_id || "remote-peer",
-          organization_name:  "Remote Node",
-          organization_type:  "UNIVERSITY",
-          country_code:       "DZ",
-          api_endpoint_url:   req.body.requesting_node_endpoint || "",
-          public_key:         "REMOTE_KEY",
-          status:             "ACTIVE",
+          peer_id:                     req.body.requesting_node_id,
+          peer_name:                   req.body.requesting_node_name || `remote-${req.body.requesting_node_id.slice(0, 8)}`,
+          organization_name:           req.body.requesting_node_org || "Remote Node",
+          organization_type:           req.body.requesting_node_type || "UNIVERSITY",
+          country_code:                "DZ",
+          api_endpoint_url:            req.body.requesting_node_endpoint || "",
+          public_key:                  "REMOTE_KEY",
+          max_scrubbing_capacity_gbps: req.body.requesting_node_capacity ?? 0,
+          declared_available_gbps:     req.body.requesting_node_capacity ?? 0,
+          status:                      "ACTIVE",
         });
       } else {
         return res.status(404).json({ error: "Peer not found" });
@@ -642,7 +744,10 @@ router.post("/help/offer", async (req, res) => {
     const sessionPayload = {
       attack_id:            req.body.attack_id,
       requesting_node_id:   requestingNodeId,
-      helping_peer_id:      req.body.helping_peer_id,
+      // Convention de schéma P2P : ce champ référence "l'autre partie" de
+      // la session sur CE nœud, peu importe son rôle réel (cf. contrainte
+      // FK qui n'admet que LOCAL_NODE_CONFIG pour requesting_node_id).
+      helping_peer_id:      peer.peer_id,
       direction:            req.body.direction || "INBOUND_OFFER",
       status:               req.body.status || "OFFERED",
       allocation_pct:       req.body.allocation_pct ?? null,
@@ -729,6 +834,31 @@ router.get("/sessions/:id", async (req, res) => {
   }
 });
 
+// PATCH /sessions/:id — synchronise l'état final (allocation, volume réel,
+// crédits, clôture) sur la copie locale de l'aidant. La victime est seule à
+// calculer ces valeurs (allocate, redirect, over) ; sans cette synchro,
+// l'aidant ne voit jamais ce qu'il a fini par recevoir/livrer sur SA propre
+// copie de la session.
+router.patch("/sessions/:id", async (req, res) => {
+  try {
+    const session = await HelpSession.findByPk(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: "Help session not found" });
+    }
+
+    const allowed = ["status", "allocation_pct", "actual_volume_gbps", "credits_exchanged", "completed_at"];
+    const updates = {};
+    for (const field of allowed) {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
+    await session.update({ ...updates, updated_at: new Date() });
+
+    return res.json(session);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
 // PUT /help/:id/accept
 router.put("/help/:id/accept", async (req, res) => {
   try {
@@ -757,6 +887,24 @@ router.put("/help/:id/accept", async (req, res) => {
     });
 
     logMessage({ message_type: "HELP_ACCEPT", direction: "SENT", peer_id: session.helping_peer_id, priority: "HIGH" });
+
+    // Si CE nœud est le pair aidant (pas le demandeur d'origine), il vient de
+    // s'engager à donner acceptedVolume — on l'enregistre tout de suite dans
+    // son propre ledger (credits_given), avec la valeur qu'il connaît déjà.
+    // Le nœud demandeur (direction OUTBOUND_REQUEST) ne touche pas ce champ ici :
+    // sa propre comptabilité (credits_received) se fait à la clôture (POST /attack/over).
+    if (session.direction !== "OUTBOUND_REQUEST" && acceptedVolume) {
+      const [ledger] = await ReciprocityLedger.findOrCreate({
+        where: { peer_id: session.helping_peer_id },
+        defaults: { peer_id: session.helping_peer_id, credits_received: 0, credits_given: 0, balance: 0 },
+      });
+      await ledger.update({
+        credits_given: Number(ledger.credits_given) + Number(acceptedVolume),
+        balance: Number(ledger.balance) - Number(acceptedVolume),
+        last_transaction_at: new Date(),
+        updated_at: new Date(),
+      });
+    }
 
     // Notifier le nœud demandeur si on connaît son endpoint (pas de boucle si X-No-Callback)
     if (!req.headers["x-no-callback"] && req.body.requesting_node_endpoint) {
@@ -976,8 +1124,11 @@ router.post("/attack/over", async (req, res) => {
           where: { peer_id: session.helping_peer_id },
           defaults: { peer_id: session.helping_peer_id, credits_received: 0, credits_given: 0, balance: 0 },
         });
+        // Ce pair vient de m'aider : c'est moi qui REÇOIS des crédits de lui
+        // (credits_received), pas l'inverse — utilisé par le critère Rp du WSM
+        // pour favoriser les pairs qui ont déjà été généreux envers ce nœud.
         await ledger.update({
-          credits_given: ledger.credits_given + volume,
+          credits_received: ledger.credits_received + volume,
           balance: ledger.balance + volume,
           last_transaction_at: new Date(),
           updated_at: new Date(),
@@ -1008,6 +1159,43 @@ router.post("/attack/over", async (req, res) => {
       nb_peers_involved: sessionIds.length || attack.nb_peers_involved,
       severity: computeSeverity(totalFiltered),
     });
+
+    // Chaque pair réel sollicité a sa PROPRE copie locale de cette attaque
+    // (créée lors du transfert de /help/offer) — rien ne la ferme
+    // automatiquement de son côté. On notifie chaque pair réel impliqué pour
+    // que son bandeau "Attaque en cours" se mette aussi à jour. Best-effort :
+    // un pair injoignable ne bloque pas la clôture côté victime.
+    const involvedSessions = await HelpSession.findAll({
+      where: { attack_id: req.body.attack_id },
+      include: [{ model: Peer, as: "helping_peer" }],
+    });
+    const notifiedEndpoints = new Set();
+    for (const s of involvedSessions) {
+      const ep = s.helping_peer?.api_endpoint_url;
+      if (!ep || ep.includes(".shieldnet.local")) continue;
+
+      // Synchroniser SA propre copie de cette session (allocation, volume
+      // réel, crédits, statut final) — sans ça, l'aidant ne voit jamais ce
+      // qu'il a réellement reçu/livré sur son propre historique de sessions.
+      httpsClient
+        .patch(`${ep}/sessions/${s.session_id}`, {
+          status: s.status,
+          allocation_pct: s.allocation_pct,
+          actual_volume_gbps: s.actual_volume_gbps,
+          credits_exchanged: s.credits_exchanged,
+          completed_at: s.completed_at,
+        }, { headers: PEER_HEADERS(), timeout: 5000 })
+        .catch(() => {});
+
+      if (notifiedEndpoints.has(ep)) continue;
+      notifiedEndpoints.add(ep);
+      httpsClient
+        .patch(`${ep}/attacks/${req.body.attack_id}`, {
+          status: "ENDED",
+          ended_at: req.body.timestamp || new Date(),
+        }, { headers: PEER_HEADERS(), timeout: 5000 })
+        .catch(() => {});
+    }
 
     return res.json({ ...attack.toJSON(), total_filtered_gbps: totalFiltered });
   } catch (error) {

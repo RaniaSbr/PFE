@@ -786,6 +786,7 @@
       \field{note}{Utilisé pour la conception des diagrammes UML}
       \field{title}{draw.io / diagrams.net --- Collaborative Diagramming Tool}
       \field{year}{2024}
+      \true{nocite}
       \verb{urlraw}
       \verb https://www.drawio.com
       \endverb
@@ -960,6 +961,7 @@
       \field{note}{Utilisé pour la conception des diagrammes de cas d'utilisation et de séquence}
       \field{title}{Lucidchart --- Diagramming and Visual Communication Platform}
       \field{year}{2024}
+      \true{nocite}
       \verb{urlraw}
       \verb https://www.lucidchart.com
       \endverb
@@ -1318,6 +1320,7 @@
       \field{howpublished}{OMG Document formal/17-12-05, \url{https://www.omg.org/spec/UML/2.5.1/}}
       \field{title}{{Unified Modeling Language (UML) Specification, Version 2.5.1}}
       \field{year}{2017}
+      \true{nocite}
     \endentry
     \entry{openapi3}{online}{}{}
       \name{author}{1}{}{%
@@ -2845,6 +2848,7 @@
       \field{note}{Utilisé pour la conception des diagrammes UML}
       \field{title}{draw.io / diagrams.net --- Collaborative Diagramming Tool}
       \field{year}{2024}
+      \true{nocite}
       \verb{urlraw}
       \verb https://www.drawio.com
       \endverb
@@ -3019,6 +3023,7 @@
       \field{note}{Utilisé pour la conception des diagrammes de cas d'utilisation et de séquence}
       \field{title}{Lucidchart --- Diagramming and Visual Communication Platform}
       \field{year}{2024}
+      \true{nocite}
       \verb{urlraw}
       \verb https://www.lucidchart.com
       \endverb
@@ -3377,6 +3382,7 @@
       \field{howpublished}{OMG Document formal/17-12-05, \url{https://www.omg.org/spec/UML/2.5.1/}}
       \field{title}{{Unified Modeling Language (UML) Specification, Version 2.5.1}}
       \field{year}{2017}
+      \true{nocite}
     \endentry
     \entry{openapi3}{online}{}{}
       \name{author}{1}{}{%

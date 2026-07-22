@@ -1,24 +1,4 @@
 /**
- * utils/trafficDistributor.js
- *
- * Algorithme de redistribution Weighted Round-Robin (WRR)
- *
- * Principe (cf. schéma §4.x mémoire) :
- *   - Le nœud victime Nv dispose de n paquets (P1, P2, ..., Pn)
- *   - m nœuds pairs (Np1, ..., Npm) sont prêts à absorber le trafic
- *   - Chaque pair Npi possède un quota alloc_i (paquets par cycle)
- *     dérivé de l'allocation WSM : alloc_i = allocation_pct_i
- *
- * Déroulement d'un cycle :
- *   Np1 reçoit P_1 .. P_alloc1
- *   Np2 reçoit P_alloc1+1 .. P_alloc1+alloc2
- *   ...
- *   Npm reçoit P_(1+Σj<m alloc_j) .. P_(Σj alloc_j)
- *   → retour à Np1 pour le cycle suivant
- *
- * Le processus s'arrête dès que Pn est distribué,
- * indépendamment de Σ alloc_i (indicateur, pas contrainte d'égalité).
- *
  * @param {number}   nPackets  Nombre total de paquets à distribuer
  * @param {{ peer_id: string, peer_name: string, alloc_i: number }[]} peers
  *   Pairs triés dans l'ordre de priorité WSM (Np1 en premier)

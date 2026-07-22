@@ -1,10 +1,3 @@
-"""
-seed_trust_demo.py
-Injecte 100 pairs virtuels avec des scores de confiance variés dans ShieldNet.
-Usage : python tests/seed_trust_demo.py
-"""
-import asyncio, aiohttp, json
-
 BASE_URL = "https://localhost:3001"
 SECRET   = "shieldnet-secret-key-2025"
 NODE_ID  = "node-university"

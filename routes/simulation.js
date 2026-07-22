@@ -28,14 +28,14 @@ const router = express.Router();
  * /simulation/node/init:
  *   post:
  *     tags: [Simulation]
- *     summary: Initialiser le nœud local
+ *     summary: Initialiser ou mettre a jour le nœud local
+ *     description: "Tous les champs sont requis pour la creation initiale. Si le nœud existe deja, accepte un body partiel (ex: changer uniquement max_scrubbing_capacity_gbps)."
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [node_name, organization_name, organization_type, tier, country_code, api_endpoint_url, public_key, max_scrubbing_capacity_gbps]
  *             properties:
  *               node_name: { type: string }
  *               organization_name: { type: string }
@@ -97,10 +97,10 @@ const router = express.Router();
  * /simulation/seed-peers:
  *   post:
  *     tags: [Simulation]
- *     summary: Injecter 100 pairs virtuels avec scores de confiance varies
+ *     summary: Injecter 30 pairs virtuels avec scores de confiance varies
  *     responses:
  *       201:
- *         description: 100 pairs crees
+ *         description: 30 pairs crees
  *       400:
  *         description: Noeud local non initialise
  *
@@ -150,24 +150,29 @@ router.post("/simulation/reset", async (req, res) => {
 // Initialise ou met à jour la configuration du nœud local
 router.post("/simulation/node/init", async (req, res) => {
   try {
-    const required = [
-      "node_name",
-      "organization_name",
-      "organization_type",
-      "country_code",
-      "api_endpoint_url",
-      "public_key",
-      "max_scrubbing_capacity_gbps",
-    ];
-
-    for (const field of required) {
-      if (req.body[field] === undefined || req.body[field] === null) {
-        return res.status(400).json({ error: `${field} is required` });
-      }
-    }
-
     let node = await LocalNodeConfig.findOne();
     let created = false;
+
+    // Tous les champs sont requis pour la création initiale ; une mise à
+    // jour d'un nœud déjà initialisé accepte un body partiel (ex : changer
+    // uniquement max_scrubbing_capacity_gbps sans tout re-spécifier).
+    if (!node) {
+      const required = [
+        "node_name",
+        "organization_name",
+        "organization_type",
+        "country_code",
+        "api_endpoint_url",
+        "public_key",
+        "max_scrubbing_capacity_gbps",
+      ];
+
+      for (const field of required) {
+        if (req.body[field] === undefined || req.body[field] === null) {
+          return res.status(400).json({ error: `${field} is required` });
+        }
+      }
+    }
 
     if (node) {
       await node.update({ ...req.body, last_updated: new Date() });
@@ -350,7 +355,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
 
     const PROFILES = [
       {
-        level: "GOLD", count: 20,
+        level: "GOLD", count: 6,
         // S élevés → T ≈ 0.88–0.95
         sessions: [
           { S: 0.95, sev: "HIGH"     },
@@ -360,7 +365,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
         ],
       },
       {
-        level: "SILVER", count: 25,
+        level: "SILVER", count: 8,
         // S moyens-hauts → T ≈ 0.65–0.75
         sessions: [
           { S: 0.75, sev: "HIGH"     },
@@ -370,7 +375,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
         ],
       },
       {
-        level: "BRONZE", count: 25,
+        level: "BRONZE", count: 7,
         // S mixtes → T ≈ 0.45–0.55
         sessions: [
           { S: 0.55, sev: "MEDIUM" },
@@ -380,7 +385,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
         ],
       },
       {
-        level: "SUSPECT", count: 20,
+        level: "SUSPECT", count: 6,
         // S faibles → T ≈ 0.25–0.32
         sessions: [
           { S: 0.25, sev: "HIGH"     },
@@ -390,7 +395,7 @@ router.post("/simulation/seed-peers", async (req, res) => {
         ],
       },
       {
-        level: "BANNED", count: 10,
+        level: "BANNED", count: 3,
         // S très faibles → T ≈ 0.06–0.10
         sessions: [
           { S: 0.08, sev: "CRITICAL" },
@@ -407,7 +412,11 @@ router.post("/simulation/seed-peers", async (req, res) => {
     for (const profile of PROFILES) {
       for (let i = 0; i < profile.count; i++, idx++) {
         const orgType = ORG_TYPES[(idx - 1) % ORG_TYPES.length];
-        const cap     = CAPS[(idx - 1) % CAPS.length];
+        // Variation continue autour du palier de base du profil (±30 %) —
+        // évite que des dizaines de pairs partagent exactement la même
+        // capacité du seul fait du cycle modulo sur un tableau de 4 valeurs.
+        const baseCap = CAPS[(idx - 1) % CAPS.length];
+        const cap     = Math.round(baseCap * (0.7 + Math.random() * 0.6) * 10) / 10;
 
         // Légère variation de S pour que chaque pair ait un score distinct
         const jitter = (Math.random() - 0.5) * 0.04;

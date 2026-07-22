@@ -1,0 +1,7 @@
+label,nb_active,nb_secured,volume_active_gbps,volume_secured_gbps
+"T0
+avant chaos",5,45,1.56,432.0
+"T1
+juste après",4,44,1.29,424.0
+"T2
+après reconsid.",3,58,0.88,572.0

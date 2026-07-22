@@ -42,6 +42,7 @@ async function sendAnnounceToPeer(peer, localNode) {
     reported_load_pct:        localNode.current_load_percent ?? 0,
     reported_available_gbps:  localNode.max_scrubbing_capacity_gbps *
                                (1 - (localNode.current_load_percent ?? 0) / 100),
+    reported_max_capacity_gbps: localNode.max_scrubbing_capacity_gbps,
     round_trip_time_ms:       null,
   };
 

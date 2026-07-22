@@ -6,23 +6,29 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {2.1}{\ignorespaces Comparaison des systèmes existants et positionnement de la contribution.}}{28}{table.caption.26}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Identification des cas d'utilisation.}}{38}{table.caption.32}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{39}{table.caption.33}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{40}{table.caption.34}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sélection WSM)}.}}{41}{table.caption.35}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{42}{table.caption.36}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{43}{table.caption.37}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{44}{table.caption.38}%
-\contentsline {table}{\numberline {3.8}{\ignorespaces Description des tables de la base de données.}}{46}{table.caption.39}%
-\contentsline {table}{\numberline {3.9}{\ignorespaces Classes — Configuration du nœud local.}}{49}{table.caption.42}%
-\contentsline {table}{\numberline {3.10}{\ignorespaces Classes — Gestion des pairs et de la confiance.}}{51}{table.caption.44}%
-\contentsline {table}{\numberline {3.11}{\ignorespaces Classes — Sessions de mitigation et traçabilité.}}{54}{table.caption.46}%
-\contentsline {table}{\numberline {3.12}{\ignorespaces Principales clés étrangères et politiques de suppression.}}{55}{table.caption.47}%
-\contentsline {table}{\numberline {3.13}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{56}{table.caption.48}%
-\contentsline {table}{\numberline {3.14}{\ignorespaces Niveaux de confiance dans le système.}}{57}{table.caption.49}%
-\contentsline {table}{\numberline {3.15}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{58}{table.caption.50}%
-\contentsline {table}{\numberline {3.16}{\ignorespaces Endpoints principaux de l'API REST.}}{68}{table.caption.56}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Identification des cas d'utilisation.}}{37}{table.caption.32}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Identification des cas d'utilisation.}}{38}{table.caption.33}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Documentation du cas d'utilisation \textit {Obtenir un token JWT RS256}.}}{39}{table.caption.34}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer un heartbeat}.}}{40}{table.caption.35}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Documentation du cas d'utilisation \textit {Envoyer une requête d'aide (sollicitation diffusée)}.}}{41}{table.caption.36}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Documentation du cas d'utilisation \textit {Calculer l'allocation WSM}.}}{42}{table.caption.37}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Documentation du cas d'utilisation \textit {Accepter ou rejeter une session d'aide}.}}{43}{table.caption.38}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Documentation du cas d'utilisation \textit {Clôturer l'attaque}.}}{44}{table.caption.39}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Documentation du cas d'utilisation \textit {Recalculer le score PeerTrust}.}}{45}{table.caption.40}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Description des tables de la base de données.}}{47}{table.caption.41}%
+\contentsline {table}{\numberline {3.11}{\ignorespaces Description des tables de la base de données.}}{48}{table.3.11}%
+\contentsline {table}{\numberline {3.12}{\ignorespaces Classes — Configuration du nœud local.}}{51}{table.caption.44}%
+\contentsline {table}{\numberline {3.13}{\ignorespaces Classes — Configuration du nœud local.}}{52}{table.caption.45}%
+\contentsline {table}{\numberline {3.14}{\ignorespaces Classes — Gestion des pairs et de la confiance.}}{54}{table.caption.47}%
+\contentsline {table}{\numberline {3.15}{\ignorespaces Classes — Gestion des pairs et de la confiance.}}{55}{table.3.15}%
+\contentsline {table}{\numberline {3.16}{\ignorespaces Classes — Sessions de mitigation et traçabilité.}}{59}{table.caption.49}%
+\contentsline {table}{\numberline {3.17}{\ignorespaces Classes — Sessions de mitigation et traçabilité.}}{60}{table.caption.50}%
+\contentsline {table}{\numberline {3.18}{\ignorespaces Principales clés étrangères et politiques de suppression.}}{61}{table.caption.51}%
+\contentsline {table}{\numberline {3.19}{\ignorespaces Facteur contextuel $D(u,i)$ selon la sévérité de l'attaque.}}{62}{table.caption.52}%
+\contentsline {table}{\numberline {3.20}{\ignorespaces Niveaux de confiance dans le système.}}{63}{table.caption.53}%
+\contentsline {table}{\numberline {3.21}{\ignorespaces Matrice AHP de comparaison des critères de sélection des pairs.}}{64}{table.caption.54}%
+\contentsline {table}{\numberline {3.22}{\ignorespaces Endpoints principaux de l'API REST.}}{74}{table.caption.60}%
+\contentsline {table}{\numberline {3.23}{\ignorespaces Endpoints principaux de l'API REST.}}{75}{table.caption.61}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Scénarios de validation du calcul de $T(u)$.}}{83}{table.caption.61}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{83}{table.caption.62}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Tests de validation du mécanisme d'authentification}}{85}{table.caption.68}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Résultats des tests de scalabilité (20 à 100 nœuds).}}{91}{table.caption.66}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Tests de validation du mécanisme d'authentification}}{93}{table.caption.68}%

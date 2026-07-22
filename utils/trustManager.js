@@ -1,5 +1,4 @@
 /**
- * Gestionnaire de Confiance — modèle PeerTrust (Xiong & Liu, 2004, Éq. 6)
  *
  * Formule originale (Éq. 6) :
  *   T(u) = Σ_{i=1}^{I(u)} S(u,i) · Cr(p(u,i)) · D(u,i)
@@ -67,22 +66,19 @@ async function fetchCrFromPeer(peer, localNodeId) {
 }
 
 /**
- * Mécanisme PeerTrust : interroge TOUS les pairs actifs (sauf le pair évalué)
+ * Interroge TOUS les pairs actifs (sauf le pair évalué)
  * pour obtenir leur opinion sur le nœud local → Cr(p) = moyenne des T(nœud_local).
  *
- * University interroge PME et Datacenter : "Quel est votre T(University) ?"
  * Cr = moyenne des réponses reçues.
  * Si aucun pair ne répond → DEFAULT_TRUST (0.5).
  */
 async function fetchCrFromNetwork(localNodeId, excludePeerId) {
   const { Op } = require("sequelize");
 
-  const { Op: Op2 } = require("sequelize");
   const peers = await Peer.findAll({
     where: {
       status: ["ACTIVE", "INACTIVE"],
-      peer_id:           { [Op.ne]:   excludePeerId },
-      api_endpoint_url:  { [Op2.like]: "%localhost%" },
+      peer_id: { [Op.ne]: excludePeerId },
     },
     attributes: ["peer_id", "api_endpoint_url"],
   });
@@ -104,13 +100,8 @@ async function fetchCrFromNetwork(localNodeId, excludePeerId) {
 }
 
 /**
- * Calcule T(u) pour un pair donné selon PeerTrust Éq. 6 (Xiong & Liu, 2004).
  *
  * T(u) = Σ[ S(u,i) · Cr(u,i) · D(u,i) ] / Σ[ Cr(u,i) · D(u,i) ]
- *
- * Cr(u,i) est capturé à la clôture de chaque session (cr_value en base).
- * Chaque session conserve ainsi la crédibilité du réseau au moment des faits.
- * Retourne { score, level, session_count }.
  */
 async function computeTrustScore(peer_id) {
   const sessions = await HelpSession.findAll({
@@ -123,9 +114,6 @@ async function computeTrustScore(peer_id) {
   }
 
   // T(u) = Σ[S·Cr_i·D] / Σ[Cr_i·D]
-  // Cr_i = cr_value sauvegardé à la clôture de la session i.
-  // Chaque session ayant potentiellement un Cr différent, Cr ne s'annule plus.
-  // Normalisation inspirée de l'Éq. 3 (Xiong & Liu, 2004) → T(u) ∈ [0,1].
   let numerator   = 0;
   let denominator = 0;
 

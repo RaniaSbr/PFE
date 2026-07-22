@@ -264,13 +264,29 @@ router.post("/heartbeat", async (req, res) => {
       round_trip_time_ms,
     });
 
+    // reported_status (ACTIVE/BUSY/DEGRADED/UNDER_ATTACK) décrit l'état
+    // opérationnel ponctuel du pair ; on le traduit vers les statuts de
+    // coalition existants (PEER_STATUSES) sans jamais débannir un pair.
+    // Seul ACTIVE laisse le pair sélectionnable par le WSM (selectPeers ne
+    // requête que status=ACTIVE) — tout autre état le rend INACTIVE.
+    let nextStatus = "ACTIVE";
+    if (reported_status !== "ACTIVE") {
+      nextStatus = "INACTIVE";
+    }
+    if (peer.status === "BANNED") {
+      nextStatus = "BANNED";
+    }
+
     await peer.update({
       last_heartbeat: new Date(),
       declared_available_gbps: reported_available_gbps,
-      current_load_percent: reported_load_pct,
+      // Garde la capacité max du pair synchronisée avec sa valeur réelle —
+      // sinon le "Charge %" affiché ailleurs se base sur une capacité figée
+      // à l'enregistrement initial et peut diverger si le pair change.
+      max_scrubbing_capacity_gbps: req.body.reported_max_capacity_gbps ?? peer.max_scrubbing_capacity_gbps,
       measured_latency_ms: round_trip_time_ms ?? peer.measured_latency_ms,
       consecutive_missed_heartbeats: 0,
-      status: peer.status === "BANNED" ? "BANNED" : "ACTIVE",
+      status: nextStatus,
       updated_at: new Date(),
     });
 
@@ -371,7 +387,10 @@ router.post("/peers/register", async (req, res) => {
 router.get("/peers", async (req, res) => {
   try {
     const peers = await Peer.findAll({
-      include: [{ model: PeerCapability, as: "capabilities" }],
+      include: [
+        { model: PeerCapability, as: "capabilities" },
+        { model: ReciprocityLedger, as: "reciprocity_ledger" },
+      ],
       order: [["created_at", "DESC"]],
     });
 

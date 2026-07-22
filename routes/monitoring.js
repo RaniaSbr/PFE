@@ -151,17 +151,6 @@ router.get("/incidents", async (req, res) => {
   }
 });
 
-// GET /attacks/:id
-router.get("/attacks/:id", async (req, res) => {
-  try {
-    const attack = await Attack.findByPk(req.params.id);
-    if (!attack) return res.status(404).json({ error: "Attack not found" });
-    return res.json(attack);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
 // PATCH /attacks/:id
 router.patch("/attacks/:id", async (req, res) => {
   try {

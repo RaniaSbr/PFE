@@ -1,14 +1,3 @@
-#!/bin/bash
-# ==============================================================================
-# Génération des certificats mTLS pour ShieldNet
-#
-# Génère :
-#   certs/ca.key + ca.crt       — Autorité de certification coalition
-#   certs/<node>/node.key + node.crt — Certificat de chaque nœud
-#
-# Usage : bash scripts/generate-certs.sh
-# ==============================================================================
-
 set -e
 
 CERTS_DIR="./certs"
@@ -19,10 +8,6 @@ NODES=("university" "pme" "isp" "datacenter")
 
 mkdir -p "$CERTS_DIR"
 
-echo "======================================"
-echo "  Génération CA ShieldNet Coalition"
-echo "======================================"
-
 # --- CA (Autorité de Certification de la coalition) ---
 openssl genrsa -out "$CERTS_DIR/ca.key" 4096
 
@@ -32,7 +17,7 @@ openssl req -new -x509 \
   -days $DAYS_CA \
   -subj "/C=DZ/O=ShieldNet Coalition/CN=ShieldNet-CA"
 
-echo "✓ CA générée : $CERTS_DIR/ca.crt"
+echo "CA générée : $CERTS_DIR/ca.crt"
 
 # --- Certificat par nœud ---
 for NODE in "${NODES[@]}"; do

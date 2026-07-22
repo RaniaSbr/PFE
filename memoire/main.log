@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  19 JUN 2026 21:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.5)  23 JUN 2026 17:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1436,6 +1436,25 @@ File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) (main.aux
 Package babel Info: 'french' activates 'french' shorthands.
 (babel)             Reported on input line 19.
+
+
+LaTeX Warning: Label `tab:cu_identification' multiply defined.
+
+
+LaTeX Warning: Label `tab:tables' multiply defined.
+
+
+LaTeX Warning: Label `tab:classes_local' multiply defined.
+
+
+LaTeX Warning: Label `tab:classes_peers' multiply defined.
+
+
+LaTeX Warning: Label `tab:classes_sessions' multiply defined.
+
+
+LaTeX Warning: Label `tab:api' multiply defined.
+
 )
 \openout1 = `main.aux'.
 
@@ -1458,6 +1477,7 @@ LaTeX Font Info:    ... okay on input line 195.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 195.
 LaTeX Font Info:    ... okay on input line 195.
 LaTeX Info: Redefining \degres on input line 195.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -1596,7 +1616,7 @@ Package biblatex Info: Reference segment=0 on input line 195.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-<figures/esi_logo.png, id=598, 1402.48969pt x 499.8675pt>
+<figures/esi_logo.png, id=594, 1402.48969pt x 499.8675pt>
 File: figures/esi_logo.png Graphic file (type png)
 <use figures/esi_logo.png>
 Package pdftex.def Info: figures/esi_logo.png  used on input line 7.
@@ -1759,14 +1779,14 @@ S Open Threat Si-gna-ling (DOTS)[][] :
 
  [13{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.
 enc}{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}
-] (main.lot)
+] (main.lot [14
+
+
+])
 \tf@lot=\write11
 \openout11 = `main.lot'.
 
- [14
-
-
-] (chapters/introduction.tex
+ [15] (chapters/introduction.tex
 Overfull \hbox (14.1751pt too wide) in paragraph at lines 11--12
 \T1/lmr/m/n/12 prin-ci-pales me-naces af-fec-tant la dis-po-ni-bi-lité des ser-
 vices nu-mé-riques. Ces at-taques consistent
@@ -2031,7 +2051,7 @@ Overfull \hbox (15.0372pt too wide) in paragraph at lines 373--373
 
 [14] [15]) (chapters/chapter2.tex [16]
 Chapitre 2.
-<figures/do.png, id=1204, 513.92pt x 538.01pt>
+<figures/do.png, id=1215, 513.92pt x 538.01pt>
 File: figures/do.png Graphic file (type png)
 <use figures/do.png>
 Package pdftex.def Info: figures/do.png  used on input line 30.
@@ -2079,7 +2099,7 @@ lo-cale : règles \T1/lmtt/m/n/12 iptables\T1/lmr/m/n/12 /\T1/lmtt/m/n/12 nftabl
 es
  []
 
-<figures/clearing_house.png, id=1259, 1167.36125pt x 479.7925pt>
+<figures/clearing_house.png, id=1270, 1167.36125pt x 479.7925pt>
 File: figures/clearing_house.png Graphic file (type png)
 <use figures/clearing_house.png>
 Package pdftex.def Info: figures/clearing_house.png  used on input line 104.
@@ -2100,7 +2120,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [21 <./figures/clearing_house.png>]
-<figures/nawas.png, id=1280, 1309.89375pt x 498.36188pt>
+<figures/nawas.png, id=1292, 1309.89375pt x 498.36188pt>
 File: figures/nawas.png Graphic file (type png)
 <use figures/nawas.png>
 Package pdftex.def Info: figures/nawas.png  used on input line 147.
@@ -2141,7 +2161,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [24]
-<figures/defcom.png, id=1314, 612.03656pt x 576.65437pt>
+<figures/defcom.png, id=1325, 612.03656pt x 576.65437pt>
 File: figures/defcom.png Graphic file (type png)
 <use figures/defcom.png>
 Package pdftex.def Info: figures/defcom.png  used on input line 205.
@@ -2190,6 +2210,9 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 [29]
 Chapitre 3.
 
+LaTeX Warning: Citation 'lua2005survey' on page 30 undefined on input line 22.
+
+
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
 (fancyhdr)                \setlength{\headheight}{14.1595pt}.
@@ -2210,10 +2233,10 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 pdfTeX warning: pdflatex.exe (file ./figures/archi_redirection.pdf): PDF inclus
 ion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/archi_redirection.pdf, id=1393, 1541.76pt x 1027.84pt>
+<figures/archi_redirection.pdf, id=1396, 1541.76pt x 1027.84pt>
 File: figures/archi_redirection.pdf Graphic file (type pdf)
 <use figures/archi_redirection.pdf>
-Package pdftex.def Info: figures/archi_redirection.pdf  used on input line 86.
+Package pdftex.def Info: figures/archi_redirection.pdf  used on input line 87.
 (pdftex.def)             Requested size: 455.24411pt x 303.49248pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2223,36 +2246,31 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [32 <./figures/archi_redirection.pdf>]
-Overfull \hbox (32.67159pt too wide) in paragraph at lines 102--103
-[]\T1/lmr/m/n/12 Le n÷ud vic-time ini-tie la sé-quence en \T1/lmr/bx/n/12 en-vo
-yant une re-quête d'aide \T1/lmr/m/n/12 (POST /help/request),
- []
+
+LaTeX Warning: File `figures/uc_mitigation_collaborative1.pdf' not found on inp
+ut line 121.
 
 
+! Package pdftex.def Error: File `figures/uc_mitigation_collaborative1.pdf' not
+ found: using draft setting.
 
-pdfTeX warning: pdflatex.exe (file ./figures/uc_mitigation_collaborative.pdf): 
-PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/uc_mitigation_collaborative.pdf, id=1624, 807.015pt x 774.49359pt>
-File: figures/uc_mitigation_collaborative.pdf Graphic file (type pdf)
-<use figures/uc_mitigation_collaborative.pdf>
-Package pdftex.def Info: figures/uc_mitigation_collaborative.pdf  used on input
- line 106.
-(pdftex.def)             Requested size: 455.24411pt x 436.90427pt.
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.121 ...figures/uc_mitigation_collaborative1.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[33 <./figures/uc_mitigation_collaborative.pdf>]
 
 pdfTeX warning: pdflatex.exe (file ./figures/uc_moteur_confiance.pdf): PDF incl
 usion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/uc_moteur_confiance.pdf, id=1918, 801.09297pt x 824.2797pt>
+<figures/uc_moteur_confiance.pdf, id=1627, 801.09297pt x 824.2797pt>
 File: figures/uc_moteur_confiance.pdf Graphic file (type pdf)
 <use figures/uc_moteur_confiance.pdf>
-Package pdftex.def Info: figures/uc_moteur_confiance.pdf  used on input line 12
+Package pdftex.def Info: figures/uc_moteur_confiance.pdf  used on input line 14
 1.
 (pdftex.def)             Requested size: 455.24411pt x 468.43562pt.
 
@@ -2262,7 +2280,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[34]
+[33]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2270,21 +2288,14 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[35 <./figures/uc_moteur_confiance.pdf>]
-Overfull \hbox (16.19685pt too wide) in paragraph at lines 138--139
-[]\T1/lmr/m/n/12 Le groupe \T1/lmr/bx/n/12 Sé-cu-rité \T1/lmr/m/n/12 couvre l'\
-T1/lmr/bx/n/12 obtention d'un to-ken JWT RS256 \T1/lmr/m/n/12 (POST /auth/token
-),
- []
-
-
+[34 <./figures/uc_moteur_confiance.pdf>]
 
 pdfTeX warning: pdflatex.exe (file ./figures/uc_role_pair.pdf): PDF inclusion: 
 found PDF version <1.7>, but at most version <1.5> allowed
-<figures/uc_role_pair.pdf, id=2245, 761.8471pt x 1000.9397pt>
+<figures/uc_role_pair.pdf, id=1954, 761.8471pt x 1000.9397pt>
 File: figures/uc_role_pair.pdf Graphic file (type pdf)
 <use figures/uc_role_pair.pdf>
-Package pdftex.def Info: figures/uc_role_pair.pdf  used on input line 142.
+Package pdftex.def Info: figures/uc_role_pair.pdf  used on input line 162.
 (pdftex.def)             Requested size: 455.24411pt x 598.10948pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2293,38 +2304,47 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[36]
-Underfull \hbox (badness 10000) in paragraph at lines 176--176
-[]|\T1/lmr/m/n/10.95 Authentification au-près
+[35]
+
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.174 \begin{comment}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Underfull \hbox (badness 2556) in paragraph at lines 197--197
+\T1/lmr/m/n/10.95 l'API via une clé pri-vée
  []
 
 
-Underfull \hbox (badness 1533) in paragraph at lines 176--176
-\T1/lmr/m/n/10.95 vée RS256 ; to-ken va-lable
- []
-
-
-Underfull \hbox (badness 5147) in paragraph at lines 176--176
+Underfull \hbox (badness 5147) in paragraph at lines 197--197
 []|\T1/lmr/m/n/10.95 Signal pé-rio-dique (30 s)
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--176
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
 []|\T1/lmr/m/n/10.95 Sélection WSM des
  []
 
 
-Underfull \hbox (badness 2753) in paragraph at lines 176--176
+Underfull \hbox (badness 2753) in paragraph at lines 197--197
 \T1/lmr/m/n/10.95 pairs et en-voi de POST
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--176
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
 []|\T1/lmr/m/n/10.95 Réponse à une re-quête
  []
 
 
-Underfull \hbox (badness 8151) in paragraph at lines 176--176
+Underfull \hbox (badness 8151) in paragraph at lines 197--197
 \T1/lmr/m/n/10.95 d'aide se-lon la ca-pa-cité
  []
 
@@ -2335,29 +2355,55 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[37 <./figures/uc_role_pair.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 191--191
+[36 <./figures/uc_role_pair.pdf>]
+
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.199 \end{comment}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (6.06346pt too wide) in paragraph at lines 247--247
+[]|\T1/lmr/m/n/12 CU 5bis|  
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[37]
+Underfull \hbox (badness 10000) in paragraph at lines 283--283
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 193--193
+Underfull \hbox (badness 10000) in paragraph at lines 285--285
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 197--197
+Underfull \hbox (badness 10000) in paragraph at lines 289--289
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 1038) in paragraph at lines 198--204
+Underfull \hbox (badness 1038) in paragraph at lines 290--296
 \T1/lmr/bx/n/12 3. \T1/lmr/m/n/12 Le sys-tème gé-nère un JWT si-gné conte-nant 
 {iss,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 207--207
+Underfull \hbox (badness 10000) in paragraph at lines 299--299
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2369,22 +2415,28 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [38]
-Underfull \hbox (badness 10000) in paragraph at lines 229--229
+Underfull \hbox (badness 10000) in paragraph at lines 321--321
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--231
+Underfull \hbox (badness 10000) in paragraph at lines 323--323
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 235--235
+Underfull \hbox (badness 10000) in paragraph at lines 327--327
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--243
+Underfull \hbox (badness 3168) in paragraph at lines 328--333
+\T1/lmr/bx/n/12 2. \T1/lmr/m/n/12 Chaque pair des-ti-na-taire met à jour le cha
+mp
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 336--336
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2396,22 +2448,22 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [39]
-Underfull \hbox (badness 10000) in paragraph at lines 264--264
+Underfull \hbox (badness 10000) in paragraph at lines 361--361
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 266--266
+Underfull \hbox (badness 10000) in paragraph at lines 363--363
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 270--270
+Underfull \hbox (badness 10000) in paragraph at lines 367--367
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 282--282
+Underfull \hbox (badness 10000) in paragraph at lines 375--375
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2423,44 +2475,32 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [40]
-Underfull \hbox (badness 10000) in paragraph at lines 303--303
+Underfull \hbox (badness 10000) in paragraph at lines 396--396
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 305--305
+Underfull \hbox (badness 10000) in paragraph at lines 398--398
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 309--309
+Underfull \hbox (badness 10000) in paragraph at lines 402--402
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 310--318
-[]|\T1/lmr/m/n/12 Ce CU dé-marre dès ré-cep-tion d'une re-quête POST
+Underfull \hbox (badness 1342) in paragraph at lines 403--410
+[]|\T1/lmr/m/n/12 Ce CU dé-marre lorsque le n÷ud vic-time juge avoir
  []
 
 
-Underfull \hbox (badness 3861) in paragraph at lines 310--318
-\T1/lmr/bx/n/12 1. \T1/lmr/m/n/12 Le pair consulte sa ca-pa-cité dis-po-nible (
-re-por-
+Underfull \hbox (badness 10000) in paragraph at lines 403--410
+\T1/lmr/bx/n/12 1. \T1/lmr/m/n/12 Le n÷ud vic-time ap-pelle POST
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 310--318
-\T1/lmr/m/n/12 ted_available_gbps) et sa charge ac-tuelle (re-por-
- []
-
-
-Underfull \hbox (badness 1888) in paragraph at lines 310--318
-\T1/lmr/bx/n/12 * \T1/lmr/m/n/12 Le pair en-voie PUT /api/v1/help/{id}/accept ;
- la
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 321--321
+Underfull \hbox (badness 10000) in paragraph at lines 413--413
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2472,28 +2512,49 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [41]
-Underfull \hbox (badness 10000) in paragraph at lines 342--342
+Underfull \hbox (badness 10000) in paragraph at lines 439--439
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 344--344
+Underfull \hbox (badness 10000) in paragraph at lines 441--441
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 348--348
+Underfull \hbox (badness 10000) in paragraph at lines 445--445
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 1490) in paragraph at lines 349--355
-\T1/lmr/bx/n/12 2. \T1/lmr/m/n/12 Le sys-tème cal-cule le ra-tio de sa-tis-fac-
-tion $\OML/lmm/m/it/12 S \OT1/lmr/m/n/12 =
+Underfull \hbox (badness 2027) in paragraph at lines 446--454
+[]|\T1/lmr/m/n/12 Ce CU dé-marre dès ré-cep-tion d'une re-quête POST
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 358--358
+Underfull \hbox (badness 2103) in paragraph at lines 446--454
+\T1/lmr/bx/n/12 1. \T1/lmr/m/n/12 Le pair consulte sa ca-pa-cité dis-po-nible c
+ou-rante
+ []
+
+
+Underfull \hbox (badness 2401) in paragraph at lines 446--454
+\T1/lmr/bx/n/12 * \T1/lmr/m/n/12 Le pair en-voie PUT /api/v1/help/{id}/accept e
+n
+ []
+
+
+Underfull \hbox (badness 6978) in paragraph at lines 446--454
+\T1/lmr/m/n/12 dé-cla-rant lui-même la ca-pa-cité qu'il offre (ac-cep-
+ []
+
+
+Underfull \hbox (badness 2689) in paragraph at lines 455--456
+[]|\T1/lmr/m/n/12 La ses-sion est en sta-tut AC-CEP-TED (avec ac-cep-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 457--457
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2505,22 +2566,28 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [42]
-Underfull \hbox (badness 10000) in paragraph at lines 379--379
+Underfull \hbox (badness 10000) in paragraph at lines 478--478
 []|\T1/lmr/bx/n/12 Acteurs pri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 381--381
+Underfull \hbox (badness 10000) in paragraph at lines 480--480
 []|\T1/lmr/bx/n/12 Acteurs se-con-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 385--385
+Underfull \hbox (badness 10000) in paragraph at lines 486--486
 []|\T1/lmr/bx/n/12 Enchaînement
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 401--401
+Underfull \hbox (badness 1490) in paragraph at lines 487--493
+\T1/lmr/bx/n/12 2. \T1/lmr/m/n/12 Le sys-tème cal-cule le ra-tio de sa-tis-fac-
+tion $\OML/lmm/m/it/12 S \OT1/lmr/m/n/12 =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 496--496
 []|\T1/lmr/bx/n/12 Enchaînements
  []
 
@@ -2532,17 +2599,33 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
 [43]
+Underfull \hbox (badness 10000) in paragraph at lines 520--520
+[]|\T1/lmr/bx/n/12 Acteurs pri-
+ []
 
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[44]
-Overfull \hbox (5.9199pt too wide) in paragraph at lines 424--425
-\T1/lmr/m/n/12 BEAT_LOG (si-gnaux de pré-sence), RE-CI-PRO-CITY_LEDGER (solde c
-ré-dit/débit unique
+Underfull \hbox (badness 10000) in paragraph at lines 522--522
+[]|\T1/lmr/bx/n/12 Acteurs se-con-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 526--526
+[]|\T1/lmr/bx/n/12 Enchaînement
+ []
+
+
+Underfull \hbox (badness 1062) in paragraph at lines 527--531
+[]|\T1/lmr/m/n/12 Ce CU dé-marre au-to-ma-ti-que-ment à la clô-ture d'une
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 527--531
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 545--545
+[]|\T1/lmr/bx/n/12 Enchaînements
  []
 
 
@@ -2552,7 +2635,60 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
+[44]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
 [45]
+Overfull \hbox (5.9199pt too wide) in paragraph at lines 567--568
+\T1/lmr/m/n/12 BEAT_LOG (si-gnaux de pré-sence), RE-CI-PRO-CITY_LEDGER (solde c
+ré-dit/débit unique
+ []
+
+
+Overfull \hbox (20.28653pt too wide) in paragraph at lines 569--570
+\T1/lmr/m/n/12 Chaque ses-sion peut gé-né-rer plu-sieurs tran-sac-tions dans RE
+-CI-PRO-CITY_TRANSACTIONS,
+ []
+
+
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.572 \begin{comment}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.613 \end{comment}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[46]
 Overfull \vbox (93.11772pt too high) has occurred while \output is active []
 
 
@@ -2563,14 +2699,48 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[46]
+[47]
+Overfull \hbox (8.12813pt too wide) in alignment at lines 619--626
+ [] [] 
+ []
+
+
+Overfull \hbox (8.12813pt too wide) in alignment at lines 626--631
+ [] [] 
+ []
+
+
+Overfull \hbox (8.12813pt too wide) in alignment at lines 631--635
+ [] [] 
+ []
+
+
+Overfull \hbox (8.12813pt too wide) in alignment at lines 635--638
+ [] [] 
+ []
+
+
+Overfull \hbox (8.12813pt too wide) in alignment at lines 638--696
+ [] [] 
+ []
+
+
+ignored: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[48]
 
 pdfTeX warning: pdflatex.exe (file ./figures/ERD.pdf): PDF inclusion: found PDF
  version <1.7>, but at most version <1.5> allowed
-<figures/ERD.pdf, id=2991, 890.36638pt x 1287.85132pt>
+<figures/ERD.pdf, id=2714, 890.36638pt x 1287.85132pt>
 File: figures/ERD.pdf Graphic file (type pdf)
 <use figures/ERD.pdf>
-Package pdftex.def Info: figures/ERD.pdf  used on input line 474.
+Package pdftex.def Info: figures/ERD.pdf  used on input line 706.
 (pdftex.def)             Requested size: 455.24411pt x 658.48549pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2579,7 +2749,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[47]
+[49]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2587,39 +2757,85 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[48 <./figures/ERD.pdf>]
+[50 <./figures/ERD.pdf>]
+! Undefined control sequence.
+l.712 \FloatBarrier
+                   
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
 
 pdfTeX warning: pdflatex.exe (file ./figures/class_diagram_1_local.pdf): PDF in
 clusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/class_diagram_1_local.pdf, id=3020, 803.8833pt x 253.90858pt>
+<figures/class_diagram_1_local.pdf, id=2743, 803.8833pt x 253.90858pt>
 File: figures/class_diagram_1_local.pdf Graphic file (type pdf)
 <use figures/class_diagram_1_local.pdf>
 Package pdftex.def Info: figures/class_diagram_1_local.pdf  used on input line 
-486.
-(pdftex.def)             Requested size: 409.71692pt x 129.4103pt.
+719.
+(pdftex.def)             Requested size: 455.24411pt x 143.78793pt.
 
-Overfull \hbox (6.9228pt too wide) in paragraph at lines 513--513
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.724 \begin{comment}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (6.9228pt too wide) in paragraph at lines 747--747
 []|\T1/lmr/m/n/10.95 ScrubbingCapability| 
  []
 
 
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.749 \end{comment}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
 (fancyhdr)                \setlength{\headheight}{14.1595pt}.
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[49
+[51
 
  <./figures/class_diagram_1_local.pdf>]
+! Undefined control sequence.
+l.792 \FloatBarrier
+                   
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
 
 pdfTeX warning: pdflatex.exe (file ./figures/class_diagram_2_peers.pdf): PDF in
 clusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/class_diagram_2_peers.pdf, id=3039, 745.82639pt x 666.57025pt>
+<figures/class_diagram_2_peers.pdf, id=2763, 745.82639pt x 666.57025pt>
 File: figures/class_diagram_2_peers.pdf Graphic file (type pdf)
 <use figures/class_diagram_2_peers.pdf>
 Package pdftex.def Info: figures/class_diagram_2_peers.pdf  used on input line 
-522.
+799.
 (pdftex.def)             Requested size: 455.24411pt x 406.8717pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2628,7 +2844,41 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[50 <./figures/class_diagram_2_peers.pdf>]
+[52]
+
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.804 \begin{comment}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.845 \end{comment}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[53 <./figures/class_diagram_2_peers.pdf>]
 Overfull \vbox (97.7975pt too high) has occurred while \output is active []
 
 
@@ -2639,15 +2889,51 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[51]
+[54]
+Overfull \hbox (2.66809pt too wide) in paragraph at lines 873--873
+\T1/lmtt/m/n/12 consecutive_missed_heartbeats|  
+ []
+
+
+Overfull \hbox (3.51404pt too wide) in paragraph at lines 904--905
+\T1/lmtt/m/n/12 response_to_message 
+ []
+
+
+ignored: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[55]
+! Undefined control sequence.
+l.922 \FloatBarrier
+                   
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[56]
 
 pdfTeX warning: pdflatex.exe (file ./figures/class_diagram_3_sessions.pdf): PDF
  inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/class_diagram_3_sessions.pdf, id=3066, 731.8542pt x 1009.85275pt>
+<figures/class_diagram_3_sessions.pdf, id=2804, 731.8542pt x 1009.85275pt>
 File: figures/class_diagram_3_sessions.pdf Graphic file (type pdf)
 <use figures/class_diagram_3_sessions.pdf>
 Package pdftex.def Info: figures/class_diagram_3_sessions.pdf  used on input li
-ne 578.
+ne 929.
 (pdftex.def)             Requested size: 455.24411pt x 628.16707pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2656,19 +2942,46 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[52]
-Overfull \hbox (19.94168pt too wide) in paragraph at lines 609--609
+[57]
+
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.935 \begin{comment}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (19.94168pt too wide) in paragraph at lines 962--962
 []|\T1/lmr/m/n/10.95 ReciprocityTransaction| 
  []
 
 
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.964 \end{comment}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
 (fancyhdr)                \setlength{\headheight}{14.1595pt}.
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[53 <./figures/class_diagram_3_sessions.pdf>]
+[58 <./figures/class_diagram_3_sessions.pdf>]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2676,8 +2989,16 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[54]
-Overfull \hbox (23.23505pt too wide) in paragraph at lines 620--621
+[59]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[60]
+Overfull \hbox (23.23505pt too wide) in paragraph at lines 1019--1020
 \T1/lmr/m/n/12 Dans ce mo-dèle, au-cune re-la-tion M :N di-recte n'est pré-sent
 e ; la table HELP_SESSIONS
  []
@@ -2689,7 +3010,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[55]
+[61]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2697,7 +3018,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[56]
+[62]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2705,15 +3026,15 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[57]
+[63]
 
 pdfTeX warning: pdflatex.exe (file ./figures/wsm_distribution_figure.pdf): PDF 
 inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/wsm_distribution_figure.pdf, id=3140, 634.37pt x 306.14375pt>
+<figures/wsm_distribution_figure.pdf, id=2881, 634.37pt x 306.14375pt>
 File: figures/wsm_distribution_figure.pdf Graphic file (type pdf)
 <use figures/wsm_distribution_figure.pdf>
 Package pdftex.def Info: figures/wsm_distribution_figure.pdf  used on input lin
-e 792.
+e 1216.
 (pdftex.def)             Requested size: 455.24411pt x 219.70393pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2722,51 +3043,23 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[58]
+[64]
 
-pdfTeX warning: pdflatex.exe (file ./figures/activity_diagram.pdf): PDF inclusi
-on: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/activity_diagram.pdf, id=3151, 1157.28355pt x 811.11026pt>
-File: figures/activity_diagram.pdf Graphic file (type pdf)
-<use figures/activity_diagram.pdf>
-Package pdftex.def Info: figures/activity_diagram.pdf  used on input line 804.
-(pdftex.def)             Requested size: 455.24411pt x 319.06694pt.
+LaTeX Warning: File `figures/diagram_activity.pdf' not found on input line 1228
+.
 
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[59 <./figures/wsm_distribution_figure.pdf>]
+! Package pdftex.def Error: File `figures/diagram_activity.pdf' not found: usin
+g draft setting.
 
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[60 <./figures/activity_diagram.pdf>]
-
-pdfTeX warning: pdflatex.exe (file ./figures/seq_auth_jwt.pdf): PDF inclusion: 
-found PDF version <1.7>, but at most version <1.5> allowed
-<figures/seq_auth_jwt.pdf, id=3350, 904.46017pt x 1366.30763pt>
-File: figures/seq_auth_jwt.pdf Graphic file (type pdf)
-<use figures/seq_auth_jwt.pdf>
-Package pdftex.def Info: figures/seq_auth_jwt.pdf  used on input line 823.
-(pdftex.def)             Requested size: 455.24411pt x 687.7179pt.
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[61
-
-]
-Overfull \vbox (9.4348pt too high) has occurred while \output is active []
-
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1228 ...textwidth]{figures/diagram_activity.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2775,15 +3068,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[62 <./figures/seq_auth_jwt.pdf>]
-
-pdfTeX warning: pdflatex.exe (file ./figures/seq_mitigation.pdf): PDF inclusion
-: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/seq_mitigation.pdf, id=4492, 857.00694pt x 1043.2305pt>
-File: figures/seq_mitigation.pdf Graphic file (type pdf)
-<use figures/seq_mitigation.pdf>
-Package pdftex.def Info: figures/seq_mitigation.pdf  used on input line 836.
-(pdftex.def)             Requested size: 432.48051pt x 526.45316pt.
+[65 <./figures/wsm_distribution_figure.pdf>]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2791,54 +3076,22 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[63
+[66]
 
-]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[64 <./figures/seq_mitigation.pdf>]
-Overfull \hbox (48.25616pt too wide) in paragraph at lines 845--846
-\T1/lmr/m/n/12 col-lecte la cré-di-bi-lité ré-seau $\OML/lmm/m/it/12 Cr[]$ \T1/
-lmr/m/n/12 en in-ter-ro-geant chaque pair ac-tif via \T1/lmtt/m/n/12 GET /trust
-/{self_node_id} \T1/lmr/m/n/12 ;
- []
+LaTeX Warning: File `figures/DS1.pdf' not found on input line 1248.
 
 
+! Package pdftex.def Error: File `figures/DS1.pdf' not found: using draft setti
+ng.
 
-pdfTeX warning: pdflatex.exe (file ./figures/seq_peertrust.pdf): PDF inclusion:
- found PDF version <1.7>, but at most version <1.5> allowed
-<figures/seq_peertrust.pdf, id=5205, 914.01044pt x 1664.15967pt>
-File: figures/seq_peertrust.pdf Graphic file (type pdf)
-<use figures/seq_peertrust.pdf>
-Package pdftex.def Info: figures/seq_peertrust.pdf  used on input line 849.
-(pdftex.def)             Requested size: 318.66948pt x 580.20464pt.
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[65
-
-]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[66 <./figures/seq_peertrust.pdf>]
-Overfull \hbox (7.26883pt too wide) in paragraph at lines 865--866
-[]\T1/lmr/m/n/12 L'empreinte du cer-ti-fi-cat de chaque pair est sto-ckée dans 
-le champ cer-ti-fi-cate_fingerprint
- []
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1248 {figures/DS1.pdf}
+                        
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -2857,7 +3110,15 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[68]) (chapters/chapter4.tex
+[68]
+
+pdfTeX warning: pdflatex.exe (file ./figures/seq_mitigation.pdf): PDF inclusion
+: found PDF version <1.7>, but at most version <1.5> allowed
+<figures/seq_mitigation.pdf, id=3082, 857.00694pt x 1043.2305pt>
+File: figures/seq_mitigation.pdf Graphic file (type pdf)
+<use figures/seq_mitigation.pdf>
+Package pdftex.def Info: figures/seq_mitigation.pdf  used on input line 1261.
+(pdftex.def)             Requested size: 455.24411pt x 554.16708pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -2865,7 +3126,125 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[69]
+[69
+
+]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[70 <./figures/seq_mitigation.pdf>]
+Overfull \hbox (48.25616pt too wide) in paragraph at lines 1270--1271
+\T1/lmr/m/n/12 col-lecte la cré-di-bi-lité ré-seau $\OML/lmm/m/it/12 Cr[]$ \T1/
+lmr/m/n/12 en in-ter-ro-geant chaque pair ac-tif via \T1/lmtt/m/n/12 GET /trust
+/{self_node_id} \T1/lmr/m/n/12 ;
+ []
+
+
+
+pdfTeX warning: pdflatex.exe (file ./figures/seq_peertrust.pdf): PDF inclusion:
+ found PDF version <1.7>, but at most version <1.5> allowed
+<figures/seq_peertrust.pdf, id=3795, 914.01044pt x 1664.15967pt>
+File: figures/seq_peertrust.pdf Graphic file (type pdf)
+<use figures/seq_peertrust.pdf>
+Package pdftex.def Info: figures/seq_peertrust.pdf  used on input line 1274.
+(pdftex.def)             Requested size: 364.19667pt x 663.08739pt.
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[71
+
+]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[72 <./figures/seq_peertrust.pdf>]
+Overfull \hbox (7.26883pt too wide) in paragraph at lines 1290--1291
+[]\T1/lmr/m/n/12 L'empreinte du cer-ti-fi-cat de chaque pair est sto-ckée dans 
+le champ cer-ti-fi-cate_fingerprint
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[73
+
+]
+
+! LaTeX Error: Environment comment undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1314 \begin{comment}
+                      
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{comment}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1353 \end{comment}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (2.18356pt too wide) in paragraph at lines 1447--1447
+[]|\T1/lmtt/m/n/12 /trust/{peer_id}/recalculate|  
+ []
+
+
+Overfull \hbox (3.14717pt too wide) in paragraph at lines 1366--1465
+ [][] 
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[74]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[75]) (chapters/chapter4.tex
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[76]
 Chapitre 4.
 ! Undefined control sequence.
 l.21 \techentry
@@ -2929,7 +3308,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[70
+[77
 
 ]
 ! Undefined control sequence.
@@ -2992,7 +3371,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[71]
+[78]
 ! Undefined control sequence.
 l.80 \techentry
                {%
@@ -3018,8 +3397,8 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[72]
-<figures/shieldnet_directory_tree.png, id=6936, 1445.4pt x 843.15pt>
+[79]
+<figures/shieldnet_directory_tree.png, id=5529, 1445.4pt x 843.15pt>
 File: figures/shieldnet_directory_tree.png Graphic file (type png)
 <use figures/shieldnet_directory_tree.png>
 Package pdftex.def Info: figures/shieldnet_directory_tree.png  used on input li
@@ -3037,7 +3416,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[73 <./figures/shieldnet_directory_tree.png>]
+[80 <./figures/shieldnet_directory_tree.png>]
 Overfull \hbox (34.11105pt too wide) in paragraph at lines 176--177
 []\T1/lmr/m/n/12 La fonc-tion \T1/lmtt/m/n/12 recalculateAndSave(peer_id) \T1/l
 mr/m/n/12 re-cal-cule le score, le per-siste dans \T1/lmtt/m/n/12 TRUST_SCORES
@@ -3063,7 +3442,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[74]
+[81]
 Overfull \hbox (28.76523pt too wide) in paragraph at lines 184--185
 []\T1/lmr/m/n/12 Le mo-dule \T1/lmtt/m/n/12 utils/peerSelector.js \T1/lmr/m/n/1
 2 im-plé-mente l'Équa-tion [][]3.2[][]. La fonc-tion \T1/lmtt/m/n/12 selectPeer
@@ -3077,7 +3456,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[75]
+[82]
 Overfull \hbox (37.5312pt too wide) in paragraph at lines 246--247
  []\T1/lmr/bx/sc/12 Principe d'un cycle.[] \T1/lmr/m/n/12 Les pairs sont par-co
 u-rus sé-quen-tiel-le-ment dans l'ordre $\OML/lmm/m/it/12 N[]; N[]; [] ; N[]$\T
@@ -3088,105 +3467,11 @@ u-rus sé-quen-tiel-le-ment dans l'ordre $\OML/lmm/m/it/12 N[]; N[]; [] ; N[]$\T
 
 pdfTeX warning: pdflatex.exe (file ./figures/wrr_distribution.pdf): PDF inclusi
 on: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/wrr_distribution.pdf, id=7035, 952.8097pt x 574.64688pt>
+<figures/wrr_distribution.pdf, id=5627, 952.8097pt x 574.64688pt>
 File: figures/wrr_distribution.pdf Graphic file (type pdf)
 <use figures/wrr_distribution.pdf>
 Package pdftex.def Info: figures/wrr_distribution.pdf  used on input line 257.
 (pdftex.def)             Requested size: 455.24411pt x 274.56471pt.
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[76]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[77 <./figures/wrr_distribution.pdf>]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[78]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[79]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[80]
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[81]
-Overfull \hbox (10.28624pt too wide) in paragraph at lines 511--512
-\T1/lmtt/m/n/12 asyncio \T1/lmr/m/n/12 ([][]\T1/lmr/m/sc/12 Python Software Fou
-ndation[]\T1/lmr/m/n/12 , [][]2024[][]) et \T1/lmtt/m/n/12 aiohttp \T1/lmr/m/n/
-12 ([][]\T1/lmr/m/sc/12 aiohttp contributors[]\T1/lmr/m/n/12 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 536--536
-[]|\T1/lmr/m/n/10.95 2 ses-sions :
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 536--536
-\OML/lmm/m/it/10.95 S[][]\OT1/lmr/m/n/10.95 0[]8\OML/lmm/m/it/10.95 ; Cr[][]\OT
-1/lmr/m/n/10.95 0[]9\OML/lmm/m/it/10.95 ; D[][]\OT1/lmr/m/n/10.95 0[]75$
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 536--536
-\T1/lmr/m/n/10.95 (HIGH) ;
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 536--536
-\OML/lmm/m/it/10.95 S[][]\OT1/lmr/m/n/10.95 0[]5\OML/lmm/m/it/10.95 ; Cr[][]\OT
-1/lmr/m/n/10.95 0[]6\OML/lmm/m/it/10.95 ; D[][]\OT1/lmr/m/n/10.95 0[]25$
- []
-
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[82]
-Overfull \hbox (41.2285pt too wide) in paragraph at lines 552--570
- [][] 
- []
-
-<figures/shieldnet_scalability.png, id=7539, 1076.3412pt x 356.532pt>
-File: figures/shieldnet_scalability.png Graphic file (type png)
-<use figures/shieldnet_scalability.png>
-Package pdftex.def Info: figures/shieldnet_scalability.png  used on input line 
-574.
-(pdftex.def)             Requested size: 455.24411pt x 150.7978pt.
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -3202,18 +3487,118 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[84 <./figures/shieldnet_scalability.png>]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 6
-44.
+[84 <./figures/wrr_distribution.pdf>]
 
-(C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[85]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[86]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[87]
+Overfull \hbox (87.76074pt too wide) in paragraph at lines 451--452
+[]\T1/lmr/m/n/12 Une fois les ré-ponses des pairs sol-li-ci-tés connues, le n÷u
+d vic-time ap-pelle \T1/lmtt/m/n/12 POST /attack/{id}/allocate
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[88]
+Overfull \hbox (44.46135pt too wide) in paragraph at lines 525--526
+[]\T1/lmr/m/n/12 Une mi-ti-ga-tion en cours n'est ja-mais fi-gée : la fonc-tion
+ \T1/lmtt/m/n/12 reconsiderCoalition(triggerPeerId,
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[89]
+Overfull \hbox (10.28624pt too wide) in paragraph at lines 566--567
+\T1/lmtt/m/n/12 asyncio \T1/lmr/m/n/12 ([][]\T1/lmr/m/sc/12 Python Software Fou
+ndation[]\T1/lmr/m/n/12 , [][]2024[][]) et \T1/lmtt/m/n/12 aiohttp \T1/lmr/m/n/
+12 ([][]\T1/lmr/m/sc/12 aiohttp contributors[]\T1/lmr/m/n/12 ,
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[90]
+Overfull \hbox (23.2285pt too wide) in paragraph at lines 581--599
+ [][] 
+ []
+
+
+LaTeX Warning: File `figures/shieldnet_scalability1.png' not found on input lin
+e 606.
+
+
+! Package pdftex.def Error: File `figures/shieldnet_scalability1.png' not found
+: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.606 ...idth]{figures/shieldnet_scalability1.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[91]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.1595pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.1595pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
+
+[92]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 6
+76.
+ (C:\Users\21355\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-<figures/captures/cap_overview.png, id=7560, 1432.60219pt x 596.2275pt>
+<figures/captures/cap_overview.png, id=6180, 1432.60219pt x 596.2275pt>
 File: figures/captures/cap_overview.png Graphic file (type png)
 <use figures/captures/cap_overview.png>
 Package pdftex.def Info: figures/captures/cap_overview.png  used on input line 
-657.
+689.
 (pdftex.def)             Requested size: 455.24411pt x 189.45934pt.
 
 
@@ -3223,19 +3608,19 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[85{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}
-]
-<figures/captures/cap_nodes.png, id=7568, 1412.27625pt x 526.96875pt>
+[93{C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}
+ <./figures/captures/cap_overview.png>]
+<figures/captures/cap_nodes.png, id=6190, 1412.27625pt x 526.96875pt>
 File: figures/captures/cap_nodes.png Graphic file (type png)
 <use figures/captures/cap_nodes.png>
-Package pdftex.def Info: figures/captures/cap_nodes.png  used on input line 666
+Package pdftex.def Info: figures/captures/cap_nodes.png  used on input line 698
 .
 (pdftex.def)             Requested size: 455.24411pt x 169.8637pt.
-<figures/captures/cap_attack_wsm.png, id=7570, 1426.57968pt x 592.46344pt>
+<figures/captures/cap_attack_wsm.png, id=6192, 1426.57968pt x 592.46344pt>
 File: figures/captures/cap_attack_wsm.png Graphic file (type png)
 <use figures/captures/cap_attack_wsm.png>
 Package pdftex.def Info: figures/captures/cap_attack_wsm.png  used on input lin
-e 676.
+e 715.
 (pdftex.def)             Requested size: 455.24411pt x 189.05879pt.
 
 
@@ -3245,20 +3630,19 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[86 <./figures/captures/cap_overview.png> <./figures/captures/cap_nodes.png>]
-<figures/captures/cap_wsm_full.png, id=7580, 1376.14125pt x 593.21625pt>
+[94 <./figures/captures/cap_nodes.png> <./figures/captures/cap_attack_wsm.png>]
+<figures/captures/cap_wsm_full.png, id=6203, 1376.14125pt x 593.21625pt>
 File: figures/captures/cap_wsm_full.png Graphic file (type png)
 <use figures/captures/cap_wsm_full.png>
 Package pdftex.def Info: figures/captures/cap_wsm_full.png  used on input line 
-686.
+725.
 (pdftex.def)             Requested size: 455.24411pt x 196.2417pt.
-<figures/captures/cap_mitigation.png, id=7582, 1391.1975pt x 524.71031pt>
+<figures/captures/cap_mitigation.png, id=6205, 1391.1975pt x 524.71031pt>
 File: figures/captures/cap_mitigation.png Graphic file (type png)
 <use figures/captures/cap_mitigation.png>
 Package pdftex.def Info: figures/captures/cap_mitigation.png  used on input lin
-e 696.
+e 735.
 (pdftex.def)             Requested size: 455.24411pt x 171.69775pt.
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -3266,41 +3650,32 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[87 <./figures/captures/cap_attack_wsm.png> <./figures/captures/cap_wsm_full.pn
+[95 <./figures/captures/cap_wsm_full.png> <./figures/captures/cap_mitigation.pn
 g>]
-<figures/captures/cap_audit.png, id=7592, 1394.20876pt x 439.6425pt>
+<figures/captures/cap_audit.png, id=6214, 1394.20876pt x 439.6425pt>
 File: figures/captures/cap_audit.png Graphic file (type png)
 <use figures/captures/cap_audit.png>
-Package pdftex.def Info: figures/captures/cap_audit.png  used on input line 706
+Package pdftex.def Info: figures/captures/cap_audit.png  used on input line 745
 .
 (pdftex.def)             Requested size: 455.24411pt x 143.55295pt.
 
-Overfull \hbox (19.87288pt too wide) in paragraph at lines 711--712
+Overfull \hbox (19.87288pt too wide) in paragraph at lines 750--751
 []\T1/lmr/m/n/12 La Fi-gure [][]4.11[][] pré-sente les mes-sages P2P échan-gés 
 pen-dant la si-mu-la-tion : les \T1/lmtt/m/n/12 HELP_ACCEPT
  []
 
-<figures/captures/cap_messages.png, id=7594, 1400.98407pt x 435.87843pt>
+<figures/captures/cap_messages.png, id=6216, 1400.98407pt x 435.87843pt>
 File: figures/captures/cap_messages.png Graphic file (type png)
 <use figures/captures/cap_messages.png>
 Package pdftex.def Info: figures/captures/cap_messages.png  used on input line 
-715.
+754.
 (pdftex.def)             Requested size: 455.24411pt x 141.6322pt.
-
-Package fancyhdr Warning: \headheight is too small (14.0pt): 
-(fancyhdr)                Make it at least 14.1595pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.1595pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
-
-[88 <./figures/captures/cap_mitigation.png> <./figures/captures/cap_audit.png>]
-<figures/captures/cap_heartbeats.png, id=7604, 1397.97281pt x 423.08063pt>
+<figures/captures/cap_heartbeats.png, id=6218, 1397.97281pt x 423.08063pt>
 File: figures/captures/cap_heartbeats.png Graphic file (type png)
 <use figures/captures/cap_heartbeats.png>
 Package pdftex.def Info: figures/captures/cap_heartbeats.png  used on input lin
-e 725.
+e 764.
 (pdftex.def)             Requested size: 455.24411pt x 137.7707pt.
-) (chapters/conclusion.tex
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -3308,8 +3683,8 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[89 <./figures/captures/cap_messages.png> <./figures/captures/cap_heartbeats.pn
-g>]
+[96 <./figures/captures/cap_audit.png> <./figures/captures/cap_messages.png>])
+(chapters/conclusion.tex
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 14.1595pt, for example:
@@ -3317,24 +3692,24 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-0.1595pt}.
 
-[90] [91
+[97 <./figures/captures/cap_heartbeats.png>] [98
 
-]) [92]
+]) [99]
 Overfull \hbox (20.57066pt too wide) in paragraph at lines 247--247
 \T1/lmr/m/n/12 [Cloud-flare Blog]. \T1/lmr/m/sc/12 url \T1/lmr/m/n/12 : [][]$ht
 tps : / / blog . cloud^^]are . com / memcrashed -[] major -[] ampli^^\cation -[
 ]
  []
 
-[93
+[100
 
-] [94] [95]
+] [101] [102]
 
 Package glossaries Warning: No \printglossary or \printglossaries found. 
 (Remove \makeglossaries if you don't want any glossaries.) 
 This document will not have a glossary.
 
-[96] (main.aux)
+[103] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -3343,17 +3718,28 @@ L3 programming layer <2026-01-19>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: There were multiply-defined labels.
+
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: BD1E7D7BA30BFDA04717D056AA9EA534;33178.
+(rerunfilecheck)             Checksum: 70BE07F8D03F4FC7AE104EAF8CE97745;33283.
+
+Package biblatex Warning: Please (re)run Biber on the file:
+(biblatex)                main
+(biblatex)                and rerun LaTeX afterwards.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 47349 strings out of 467867
- 950398 string characters out of 5418335
- 2160428 words of memory out of 5000000
- 74824 multiletter control sequences out of 15000+600000
+ 47506 strings out of 467867
+ 954943 string characters out of 5418335
+ 2156764 words of memory out of 5000000
+ 74937 multiletter control sequences out of 15000+600000
  736753 words of font info for 102 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,16n,94p,2524b,2905s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -3372,10 +3758,6 @@ placed by a fixed one
 
 pdfTeX warning (dest): name{glo:uuid} has been referenced but does not exist, r
 eplaced by a fixed one
-
-
-pdfTeX warning (dest): name{glo:uml} has been referenced but does not exist, re
-placed by a fixed one
 
 
 pdfTeX warning (dest): name{glo:as} has been referenced but does not exist, rep
@@ -3490,11 +3872,10 @@ s/21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb><C:/Users
 /21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt8.pfb><C:/Users/
 21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtti10.pfb><C:/Users
 /21355/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam10
-.pfb><C:/Users/21355/AppData/Local/Programs/MiKTeX/fonts/type1/urw/zapfding/uzd
-r.pfb>
-Output written on main.pdf (111 pages, 8795848 bytes).
+.pfb>
+Output written on main.pdf (119 pages, 7649636 bytes).
 PDF statistics:
- 7981 PDF objects out of 8907 (max. 8388607)
- 716 named destinations out of 1000 (max. 500000)
- 1342 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6604 PDF objects out of 7423 (max. 8388607)
+ 760 named destinations out of 1000 (max. 500000)
+ 1314 words of extra memory for PDF output out of 10000 (max. 10000000)
 

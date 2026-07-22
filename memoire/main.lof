@@ -13,27 +13,27 @@
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Exemple de coalition~: sept nœuds hétérogènes interconnectés en overlay \gls {p2p} plat non structuré.}}{31}{figure.caption.27}%
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Architecture globale du système ShieldNet~: périmètre applicatif et redirection réseau hors périmètre.}}{32}{figure.caption.28}%
 \contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation~: Protocole de mitigation collaborative.}}{33}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{35}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{37}{figure.caption.31}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Vue globale du diagramme de classes — les quatorze entités du système.}}{48}{figure.caption.40}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme de classes — Configuration du nœud local.}}{49}{figure.caption.41}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagramme de classes — Gestion des pairs et de la confiance.}}{50}{figure.caption.43}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Diagramme de classes — Sessions de mitigation et traçabilité.}}{53}{figure.caption.45}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces Distribution du trafic selon l'algorithme WSM~: répartition proportionnelle de l'overflow entre les pairs sélectionnés.}}{59}{figure.caption.51}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative (deux couloirs~: nœud victime et nœud pair).}}{60}{figure.caption.52}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces DS1 — Diagramme de séquence~: Authentification JWT RS256 (CU1).}}{62}{figure.caption.53}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces DS2 — Diagramme de séquence~: Session de mitigation collaborative (CU4 + CU5 + CU6).}}{64}{figure.caption.54}%
-\contentsline {figure}{\numberline {3.14}{\ignorespaces DS3 — Diagramme de séquence~: Recalcul du score PeerTrust (CU7).}}{66}{figure.caption.55}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Diagramme de cas d'utilisation~: Moteur de confiance PeerTrust.}}{34}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Diagramme de cas d'utilisation~: Rôle du nœud pair dans la coalition (12 cas d'usage).}}{36}{figure.caption.31}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Vue globale du diagramme de classes — les quatorze entités du système.}}{50}{figure.caption.42}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme de classes — Configuration du nœud local.}}{51}{figure.caption.43}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagramme de classes — Gestion des pairs et de la confiance.}}{53}{figure.caption.46}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Diagramme de classes — Sessions de mitigation et traçabilité.}}{58}{figure.caption.48}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Distribution du trafic selon l'algorithme WSM~: répartition proportionnelle de l'overflow entre les pairs sélectionnés.}}{65}{figure.caption.55}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Diagramme d'activités d'une session de mitigation collaborative (deux couloirs : nœud victime et nœud pair).}}{66}{figure.caption.56}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces DS1 — Diagramme de séquence~: Authentification JWT RS256 (CU1).}}{68}{figure.caption.57}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces DS2 — Diagramme de séquence~: Session de mitigation collaborative (CU4 + CU5 + CU6).}}{70}{figure.caption.58}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces DS3 — Diagramme de séquence~: Recalcul du score PeerTrust (CU7).}}{72}{figure.caption.59}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Diagramme de déploiement du prototype.}}{72}{figure.caption.57}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Structure des répertoires du projet.}}{73}{figure.caption.58}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Distribution des paquets par Round-Robin pondéré~: le nœud victime $N_v$ distribue $n$ paquets vers $m$ pairs en cycles successifs, chaque pair $N_{p_i}$ recevant $\mathrm {alloc}_i$ paquets par cycle.}}{77}{figure.caption.60}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}}{84}{figure.caption.63}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Vue d'ensemble du tableau de bord~: état de la coalition avant le lancement du scénario.}}{86}{figure.caption.70}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Tableau des pairs de la coalition triés par score PeerTrust décroissant.}}{86}{figure.caption.71}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Configuration de l'attaque simulée et début du tableau de sélection WSM.}}{87}{figure.caption.73}%
-\contentsline {figure}{\numberline {4.8}{\ignorespaces Tableau WSM complet~: classement des 38 pairs éligibles avec scores et allocations.}}{87}{figure.caption.75}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Mitigation distribuée active~: 52 tunnels GRE, 15{,}7~Gbps absorbés, recalcul PeerTrust sur 52 pairs.}}{88}{figure.caption.77}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Journal d'audit~: événements \texttt {TRUST\_LEVEL\_CHANGED} à la clôture de l'attaque.}}{88}{figure.caption.79}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Messages P2P~: \texttt {HELP\_ACCEPT} et \texttt {TRAFFIC\_REDIRECT} échangés durant la mitigation.}}{89}{figure.caption.80}%
-\contentsline {figure}{\numberline {4.12}{\ignorespaces Panel Heartbeats~: battements périodiques des nœuds réels reçus par node-university.}}{89}{figure.caption.82}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Diagramme de déploiement du prototype.}}{79}{figure.caption.62}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Structure des répertoires du projet.}}{80}{figure.caption.63}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Distribution des paquets par Round-Robin pondéré~: le nœud victime $N_v$ distribue $n$ paquets vers $m$ pairs en cycles successifs, chaque pair $N_{p_i}$ recevant $\mathrm {alloc}_i$ paquets par cycle.}}{84}{figure.caption.65}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Temps de réponse en fonction du nombre de nœuds simulés (enregistrement, heartbeat et sélection WSM).}}{92}{figure.caption.67}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Vue d'ensemble du tableau de bord~: état de la coalition avant le lancement du scénario.}}{93}{figure.caption.70}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Tableau des pairs de la coalition triés par score PeerTrust décroissant.}}{94}{figure.caption.71}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Configuration de l'attaque simulée et résultat de la sollicitation diffusée.}}{94}{figure.caption.73}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Tableau WSM complet~: classement des pairs accepteurs avec scores et allocations.}}{95}{figure.caption.75}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Mitigation distribuée active~: 52 tunnels GRE, 15{,}7~Gbps absorbés, recalcul PeerTrust sur 52 pairs.}}{95}{figure.caption.77}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Journal d'audit~: événements \texttt {TRUST\_LEVEL\_CHANGED} à la clôture de l'attaque.}}{96}{figure.caption.79}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Messages P2P~: \texttt {HELP\_ACCEPT} et \texttt {TRAFFIC\_REDIRECT} échangés durant la mitigation.}}{96}{figure.caption.80}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces Panel Heartbeats~: battements périodiques des nœuds réels reçus par node-university.}}{97}{figure.caption.82}%

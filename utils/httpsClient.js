@@ -1,15 +1,3 @@
-/**
- * utils/httpsClient.js
- * Client HTTPS mTLS pour les communications inter-nœuds ShieldNet.
- *
- * Chaque requête sortante présente :
- *   - Le certificat du nœud local  (TLS_CERT → node.crt)
- *   - La clé privée du nœud local  (TLS_KEY  → node.key)
- *   - Le certificat CA coalition   (TLS_CA   → ca.crt)
- *
- * Le nœud récepteur peut ainsi vérifier l'identité du nœud appelant
- * → authentification mutuelle réelle (true mTLS).
- */
 
 "use strict";
 
@@ -21,10 +9,6 @@ const http  = require("http");
 let _mtlsAgent = null;
 let _plainAgent = null;
 
-/**
- * Construit (ou retourne en cache) un https.Agent configuré pour mTLS.
- * Présente le certificat client à chaque connexion sortante.
- */
 function getMtlsAgent() {
   if (_mtlsAgent) return _mtlsAgent;
 
@@ -145,8 +129,9 @@ function request(url, options = {}) {
 
 // ─── Raccourcis ──────────────────────────────────────────────────────────────
 
-const get  = (url, opts = {}) => request(url, { ...opts, method: "GET"  });
-const post = (url, body, opts = {}) => request(url, { ...opts, method: "POST", body });
-const put  = (url, body, opts = {}) => request(url, { ...opts, method: "PUT",  body });
+const get   = (url, opts = {}) => request(url, { ...opts, method: "GET"  });
+const post  = (url, body, opts = {}) => request(url, { ...opts, method: "POST",  body });
+const put   = (url, body, opts = {}) => request(url, { ...opts, method: "PUT",   body });
+const patch = (url, body, opts = {}) => request(url, { ...opts, method: "PATCH", body });
 
-module.exports = { request, get, post, put, getMtlsAgent };
+module.exports = { request, get, post, put, patch, getMtlsAgent };

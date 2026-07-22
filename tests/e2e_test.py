@@ -10,15 +10,14 @@ Scenario :
   6.  Heartbeat
   7.  Decouvrir les pairs
   8.  Alert (detection d'attaque DDoS)
-  9.  Selection WSM des pairs
-  10. Demande d'aide (help request)
-  11. Acceptation de session
-  12. Redirection trafic
-  13. Verification sessions actives
-  14. Cloture attaque
-  15. Recalcul PeerTrust
-  16. Enregistrer une violation
-  17. Logs audit
+  9.  Sollicitation broadcast (help request a tous les pairs ACTIVE)
+  10. Allocation WSM (calculee sur les seuls pairs ayant accepte)
+  11. Redirection trafic
+  12. Verification sessions actives
+  13. Cloture attaque
+  14. Recalcul PeerTrust
+  15. Enregistrer une violation
+  16. Logs audit
 
 Usage : python tests/e2e_test.py
 """
@@ -27,6 +26,9 @@ import asyncio
 import aiohttp
 import json
 import sys
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
 
 BASE_URL = "https://localhost:3001/api/v1"
 NODE_ID  = "node-university"
@@ -214,79 +216,63 @@ async def run():
                 err(f"HTTP {r.status} — {d}"); errors.append("Alert")
 
         # ------------------------------------------------------------------ #
-        step(10, "Selection WSM des pairs (formule 4.7-4.8)")
-        async with s.post(
-            f"{BASE_URL}/trust/select-peers", headers=H,
-            json={"overflow_gbps": 8, "min_trust_score": 0.4}, ssl=SSL,
-        ) as r:
-            d = await r.json()
-            if r.status == 200:
-                selected = d.get("selected_peers", [])
-                ok(f"{len(selected)} pairs selectionnes par WSM")
-                for p in selected[:3]:
-                    info(f"  {p.get('peer_name','?'):<20} wsm={p.get('wsm_score',0):.3f}  alloc={p.get('allocation_pct',0):.1f}%")
-                if selected:
-                    ctx["wsm_peer_id"] = selected[0].get("peer_id")
-            else:
-                err(f"HTTP {r.status} — {d}"); errors.append("WSM")
+        step(10, "Sollicitation broadcast (help/request a tous les pairs ACTIVE)")
+        accepted_sessions = []
+        async with s.get(f"{BASE_URL}/peers", headers=H, ssl=SSL) as r:
+            all_peers = await r.json()
+        active_peers = [p for p in all_peers if p.get("status") == "ACTIVE"]
+        for p in active_peers:
+            async with s.post(f"{BASE_URL}/help/request", headers=H, json={
+                "attack_id": ctx.get("attack_id"), "helping_peer_id": p["peer_id"],
+            }, ssl=SSL) as r:
+                d = await r.json()
+                if r.status in (200, 201) and d.get("status") == "ACCEPTED":
+                    accepted_sessions.append({
+                        "session_id": d.get("session_id"), "peer_id": p["peer_id"],
+                        "accepted_volume_gbps": d.get("accepted_volume_gbps"),
+                    })
+        ok(f"{len(active_peers)} pairs sollicites — {len(accepted_sessions)} acceptes (capacite auto-declaree)")
+        if accepted_sessions:
+            ctx["session_id"] = accepted_sessions[0]["session_id"]
 
         ctx["token"] = await get_token(s)
         H = headers(ctx["token"])
 
         # ------------------------------------------------------------------ #
-        step(11, "Demande d'aide au pair selectionne")
-        if ctx.get("attack_id") and ctx.get("wsm_peer_id"):
-            payload = {
-                "attack_id": ctx["attack_id"],
-                "helping_peer_id": ctx["wsm_peer_id"],
-                "allocation_pct": 60,
-            }
-            async with s.post(f"{BASE_URL}/help/request", headers=H, json=payload, ssl=SSL) as r:
-                d = await r.json()
-                if r.status in (200, 201):
-                    ctx["session_id"] = d.get("session_id")
-                    ok(f"Session creee : id={ctx['session_id'][:8]}...  status={d.get('status')}")
-                else:
-                    err(f"HTTP {r.status} — {d}"); errors.append("HelpRequest")
-        else:
-            info("Etape sautee (pas d'attaque ou de pair WSM)")
-
-        # ------------------------------------------------------------------ #
-        step(12, "Acceptation de la session d'aide")
-        if ctx.get("session_id"):
-            payload = {
-                "accepted_volume_gbps": 5,
-                "tunnel_type": "GRE",
-                "response_time_ms": 40,
-            }
-            url = f"{BASE_URL}/help/{ctx['session_id']}/accept"
-            async with s.put(url, headers=H, json=payload, ssl=SSL) as r:
+        step(11, "Allocation WSM (calculee sur les seuls pairs ayant accepte)")
+        plan = []
+        if ctx.get("attack_id") and accepted_sessions:
+            async with s.post(f"{BASE_URL}/attack/{ctx['attack_id']}/allocate", headers=H, ssl=SSL) as r:
                 d = await r.json()
                 if r.status == 200:
-                    ok(f"Session acceptee : status={d.get('status')}  tunnel={payload['tunnel_type']}")
+                    plan = d.get("plan", [])
+                    ok(f"Plan calcule sur {len(plan)} pair(s) accepteur(s)")
+                    for p in plan[:3]:
+                        pname = p.get("peer_name") or p.get("peer", {}).get("peer_name", "?")
+                        info(f"  {pname:<20} wsm={p.get('wsm_score',0):.3f}  alloc={p.get('allocation_pct',0)}%")
                 else:
-                    err(f"HTTP {r.status} — {d}"); errors.append("HelpAccept")
-
-        ctx["token"] = await get_token(s)
-        H = headers(ctx["token"])
+                    err(f"HTTP {r.status} — {d}"); errors.append("Allocate")
+        else:
+            info("Etape sautee (pas d'attaque ou aucun pair n'a accepte)")
 
         # ------------------------------------------------------------------ #
-        step(13, "Redirection du trafic")
-        if ctx.get("session_id"):
+        step(12, "Redirection du trafic")
+        if ctx.get("session_id") and accepted_sessions:
+            vol = accepted_sessions[0].get("accepted_volume_gbps") or 1.0
             payload = {
                 "session_id": ctx["session_id"],
                 "tunnel_type": "GRE",
-                "volume_gbps": 5,
+                "volume_gbps": vol,
             }
             async with s.post(f"{BASE_URL}/traffic/redirect", headers=H, json=payload, ssl=SSL) as r:
                 d = await r.json()
                 if r.status in (200, 201):
-                    ok(f"Trafic redirige : session status={d.get('status')}")
+                    ok(f"Trafic redirige : session status={d.get('status')}  volume={vol} Gbps")
                 else:
                     err(f"HTTP {r.status} — {d}"); errors.append("Redirect")
 
         # ------------------------------------------------------------------ #
-        step(14, "Verification des sessions actives")
+        step(13, "Verification des sessions actives")
         async with s.get(f"{BASE_URL}/sessions/active", headers=H, ssl=SSL) as r:
             d = await r.json()
             sessions = d if isinstance(d, list) else d.get("sessions", [])
@@ -295,7 +281,7 @@ async def run():
                 info(f"  session={str(sess.get('session_id',''))[:8]}...  status={sess.get('status')}")
 
         # ------------------------------------------------------------------ #
-        step(15, "Cloture de l'attaque")
+        step(14, "Cloture de l'attaque")
         if ctx.get("attack_id"):
             payload = {
                 "attack_id": ctx["attack_id"],
@@ -314,9 +300,10 @@ async def run():
         H = headers(ctx["token"])
 
         # ------------------------------------------------------------------ #
-        step(16, "Recalcul PeerTrust du pair selectionne")
-        if ctx.get("wsm_peer_id"):
-            url = f"{BASE_URL}/trust/{ctx['wsm_peer_id']}/recalculate"
+        step(15, "Recalcul PeerTrust du pair selectionne")
+        if accepted_sessions:
+            recalc_peer_id = accepted_sessions[0]["peer_id"]
+            url = f"{BASE_URL}/trust/{recalc_peer_id}/recalculate"
             async with s.post(url, headers=H, ssl=SSL) as r:
                 d = await r.json()
                 if r.status == 200:
@@ -325,7 +312,7 @@ async def run():
                     err(f"HTTP {r.status} — {d}"); errors.append("Recalculate")
 
         # ------------------------------------------------------------------ #
-        step(17, "Enregistrement d'une violation (pair defaillant)")
+        step(16, "Enregistrement d'une violation (pair defaillant)")
         if ctx.get("peer_id"):
             payload = {
                 "violation_type": "BROKEN_PROMISE",
@@ -342,7 +329,7 @@ async def run():
                     err(f"HTTP {r.status} — {d}"); errors.append("Violation")
 
         # ------------------------------------------------------------------ #
-        step(18, "Logs d'audit (5 derniers evenements)")
+        step(17, "Logs d'audit (5 derniers evenements)")
         async with s.get(f"{BASE_URL}/logs/audit?limit=5", headers=H, ssl=SSL) as r:
             d = await r.json()
             events = d.get("events", [])
@@ -351,7 +338,7 @@ async def run():
                 info(f"  [{e.get('severity')}] {e.get('event_type')} — {e.get('description', '')[:60]}")
 
         # ------------------------------------------------------------------ #
-        step(19, "Metriques finales du noeud")
+        step(18, "Metriques finales du noeud")
         async with s.get(f"{BASE_URL}/metrics", headers=H, ssl=SSL) as r:
             d = await r.json()
             if r.status == 200:

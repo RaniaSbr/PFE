@@ -12,11 +12,6 @@
  *   w_i          = Score(p_i) / Σ Score(p_j)     — poids normalisé du pair i
  *   allocation%(p_i) = w_i × 100                 — pourcentage de flux attribué
  *
- * Tous les pairs éligibles participent. Le flux total à redistribuer
- * est inconnu a priori — la répartition est exprimée en pourcentages.
- *
- * Poids AHP validés (CR = 1.6 % < 10 %) :
- *   wC = 0.52 | wL = 0.20 | wT = 0.20 | wR = 0.08
  */
 
 const { Op } = require("sequelize");
@@ -33,22 +28,13 @@ function computeScore({ Cp, Lp_inv, Tp, Rp }) {
 }
 
 /**
- * Sélectionne TOUS les pairs éligibles et calcule la répartition proportionnelle du flux.
- *
- * Le flux total n'est pas requis en entrée : chaque pair reçoit un pourcentage
- * proportionnel à son score WSM. Si le volume est connu, il peut être passé
- * via options.overflowGbps pour calculer les Gbps estimés en supplément.
  *
  * @param {object} options
- * @param {number} [options.overflowGbps]    - Volume excédentaire (optionnel, pour estimation Gbps)
- * @param {number} [options.minTrustScore]   - Score minimum pour participer (défaut : 0.0)
- * @param {boolean} [options.ignoreTrust]    - Ignorer le filtre de confiance
- * @param {string[]} [options.peerIds]       - Restreint le calcul à cet ensemble de pairs
- *   précis (ex: ceux ayant déjà accepté) — dans ce cas, le filtre d'éligibilité
- *   (statut, confiance minimale) est ignoré : l'appelant a déjà décidé du périmètre.
- * @param {object} [options.capacityOverrides] - { peer_id: capacité_gbps } — remplace
- *   declared_available_gbps par cette valeur pour le critère C (ex: accepted_volume_gbps
- *   déclaré au moment de l'acceptation, plus récent que la dernière capacité connue).
+ * @param {number} [options.overflowGbps]    
+ * @param {number} [options.minTrustScore] 
+ * @param {boolean} [options.ignoreTrust]   
+ * @param {string[]} [options.peerIds]      
+ * @param {object} [options.capacityOverrides] - 
  * @returns {Promise<{ plan: Array, total_peers: number }>}
  *   plan : [{ peer, allocation_pct, weight, score, estimated_gbps?, criteria }]
  */
@@ -68,9 +54,6 @@ async function selectPeers({
   const policyMin = policy?.min_trust_score_to_help ?? 0.0;
   const minTrust  = ignoreTrust ? 0.0 : Math.max(minTrustScore, policyMin);
 
-  // Pairs éligibles : ACTIVE, avec capacité disponible — ou, si peerIds est
-  // fourni, exactement cet ensemble (le périmètre a déjà été décidé ailleurs,
-  // ex. les pairs ayant accepté une sollicitation).
   const where = peerIds
     ? { peer_id: { [Op.in]: peerIds } }
     : {
@@ -103,11 +86,6 @@ async function selectPeers({
   if (candidates.length === 0) {
     return { plan: [], total_peers: 0 };
   }
-
-  // Pré-calculer les valeurs brutes pour normalisation — la capacité utilisée
-  // pour le critère C peut être remplacée par capacityOverrides (ex: le
-  // accepted_volume_gbps déclaré à l'acceptation, plus à jour que
-  // declared_available_gbps issu du dernier heartbeat).
   const capValues = candidates.map((p) =>
     Number(capacityOverrides?.[p.peer_id] ?? p.declared_available_gbps),
   );

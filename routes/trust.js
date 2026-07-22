@@ -191,6 +191,22 @@ router.post("/trust/:peer_id/violation", async (req, res) => {
       await peer.update({ ...peerUpdates, updated_at: new Date() });
     }
 
+    // Un bannissement permanent est une sanction manuelle, pas un résultat
+    // du calcul T(u) — mais le niveau de confiance affiché doit refléter ce
+    // statut immédiatement, sans attendre un recalcul (qui ne se déclenche
+    // qu'à la clôture d'une attaque).
+    if (sanction_applied === "PERMANENT_BAN") {
+      const [trustScore] = await TrustScore.findOrCreate({
+        where: { peer_id },
+        defaults: { peer_id, overall_score: 0, trust_level: "BANNED" },
+      });
+      await trustScore.update({
+        overall_score: 0,
+        trust_level: "BANNED",
+        last_calculated: new Date(),
+      });
+    }
+
     const auditEventType = sanction_applied === "PERMANENT_BAN" ? "PEER_BANNED" : "TRUST_LEVEL_CHANGED";
     logAudit({
       event_type: auditEventType,
